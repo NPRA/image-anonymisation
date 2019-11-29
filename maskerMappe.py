@@ -1,6 +1,4 @@
-
 # coding: utf-8
-
 
 import numpy as np
 import os
@@ -13,19 +11,16 @@ import zipfile
 import time
 import warnings
 
-from distutils.version import StrictVersion
+#from distutils.version import StrictVersion
 from collections import defaultdict
 from io import StringIO
 from PIL import Image
 
-# This is needed since the notebook is stored in the object_detection folder.
-sys.path.append("..")
 from object_detection.utils import ops as utils_ops
-
-warnings.filterwarnings("ignore")
-
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
+
+warnings.filterwarnings("ignore")
 
 def main(argv):
     basepath = ''
@@ -62,19 +57,21 @@ def initModel():
     PATH_TO_FROZEN_GRAPH = MODEL_NAME + '/frozen_inference_graph.pb'
 
     # List of the strings that is used to add correct label for each box.
-    PATH_TO_LABELS = 'C:\\Users\\Trantek\\tensorflow\\models\\research\\object_detection\\data\\mscoco_label_map.pbtxt'#os.path.join('/home/chskje/.local/lib/python3.6/site-packages/tensorflow/models/research/object_detection/data', 'mscoco_label_map.pbtxt')
+    PATH_TO_LABELS = 'mscoco_label_map.pbtxt'#os.path.join('/home/chskje/.local/lib/python3.6/site-packages/tensorflow/models/research/object_detection/data', 'mscoco_label_map.pbtxt')
     
     # Download and extract model
-    """
-    opener = urllib.request.URLopener()
-    opener.retrieve(DOWNLOAD_BASE + MODEL_FILE, MODEL_FILE)
-    tar_file = tarfile.open(MODEL_FILE)
-    for file in tar_file.getmembers():
-        file_name = os.path.basename(file.name)
-        if 'frozen_inference_graph.pb' in file_name:
-            tar_file.extract(file, os.getcwd())
-    """
-
+    if not os.path.isfile(PATH_TO_FROZEN_GRAPH):
+        print("Could not find the model graph file. Downloading...")
+        opener = urllib.request.URLopener()
+        opener.retrieve(DOWNLOAD_BASE + MODEL_FILE, MODEL_FILE)
+        tar_file = tarfile.open(MODEL_FILE)
+        for file in tar_file.getmembers():
+            file_name = os.path.basename(file.name)
+            if 'frozen_inference_graph.pb' in file_name:
+                tar_file.extract(file, os.getcwd())
+        print("Model graph file downloaded.")
+    
+    # Load model graph
     detection_graph = tf.Graph()
     with detection_graph.as_default():
         od_graph_def = tf.compat.v1.GraphDef()
@@ -92,7 +89,7 @@ def load_image_into_numpy_array(image):
   return np.array(image.getdata()).reshape(
       (im_height, im_width, 3)).astype(np.uint8)
 
-# TODO: handle images with different resolution
+# TODO: handle images with different resolution better
 def run_inference_for_multiple_images(images, graph):
     with graph.as_default():
         with tf.compat.v1.Session() as sess:
@@ -143,7 +140,7 @@ def run_inference_for_multiple_images(images, graph):
                 index += 1
     return output_dict_array, dict_time
 
-
+# Find images in the input path recursively
 def recurseFindFiles(path, pathArray, fileArray, depth=10):
     with os.scandir(path) as entries:
         for entry in entries:
@@ -154,13 +151,13 @@ def recurseFindFiles(path, pathArray, fileArray, depth=10):
                 pathArray.append(path)
                 fileArray.append(entry.name)
 
+# Find images in the input path NOT recursively
 def getImages(path):
     fileArray = []
     with os.scandir(path) as entries:
         for entry in entries:
             if entry.is_file() and entry.name.endswith('jpg'):
                 fileArray.append(entry.name)
-                #print(entry.name)
     return fileArray
 
 def maskImages(basepath, outputpath, detection_graph):
@@ -168,10 +165,8 @@ def maskImages(basepath, outputpath, detection_graph):
         basepath = basepath+os.sep
     if not outputpath.endswith(os.sep): 
         outputpath = outputpath+os.sep
-    #basepath = '/media/chskje/A878-EA94/images/tobemasked/Hp487_Berger_Grustak_rkj/F1_2019_06_02/'
     
-    #RECURSIVE:
-    #paths = getImages(basepath)
+
     pathArray = []
     fileArray = []
     recurseFindFiles(basepath, pathArray, fileArray, depth=10)
@@ -179,8 +174,6 @@ def maskImages(basepath, outputpath, detection_graph):
     current_milli_time = lambda: int(round(time.time() * 1000))
     images = []
     # Get image size (it needs to be the same for all images in the batch)
-    #RECURSIVE:
-    #im = Image.open(basepath+paths[0])
     im = Image.open(pathArray[0]+os.sep+fileArray[0])
     imHeight = im.height
     imWidth = im.width
@@ -194,7 +187,7 @@ def maskImages(basepath, outputpath, detection_graph):
         startTime = current_milli_time()
         print(f'{100*(index/size):3.1f}% File: {fullpath}')
         image = Image.open(fullpath)
-        image = image.resize((imWidth, imHeight), Image.ANTIALIAS)
+        image = image.resize((imWidth, imHeight), Image.ANTIALIAS) # TODO: this is probably expensive, and should be done changed
         # the array based representation of the image will be used later in order to prepare the
         # result image with boxes and labels on it.
         image_np = load_image_into_numpy_array(image)
@@ -205,14 +198,12 @@ def maskImages(basepath, outputpath, detection_graph):
     print('\nRunning inference:')
     output_dicts, out_time = run_inference_for_multiple_images(images, detection_graph)
 
-    # Visualization of the results of a detection.
+    # Apply mask and save the results of the detection. TODO: different colors for different object types
     ind = 0
     for output_dict in output_dicts:
         for maskIndex in range(0, len(output_dict['detection_masks'])):
             if output_dict['detection_classes'][maskIndex] in [1,2,3,4,6,8]:
                 vis_util.draw_mask_on_image_array(images[ind],output_dict['detection_masks'][maskIndex],'black',1)
-        #plt.figure(figsize=IMAGE_SIZE)
-        #plt.imshow(images[ind])
         fullpath = pathArray[ind]+os.sep+fileArray[ind]
         endpath = fullpath.replace(basepath,outputpath)
         im = Image.fromarray(images[ind])
@@ -227,5 +218,3 @@ def maskImages(basepath, outputpath, detection_graph):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-   # path = "images\\wikimaskert\\Case #001 - Skiltplate\\Fy08_Fv038_hp02_f1_m00165.jpg"
-   # os.makedirs(os.path.dirname(path), exist_ok=True)
