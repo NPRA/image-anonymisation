@@ -8,6 +8,10 @@ If you have a CUDA capable GPU I highly suggest you install CUDA and cuDNN to sp
 - python3.6 (or higher)
 - pip
 
+For GPU support:
+- CUDA drivers https://developer.nvidia.com/cuda-toolkit
+- cuDNN https://developer.nvidia.com/cudnn
+
 ### GPU
 If you want to use your GPU (suggested):
 ```
