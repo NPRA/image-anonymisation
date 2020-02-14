@@ -1,30 +1,25 @@
 # image-anonymisation
 Using pre-trained tensorflow models to remove vehicles and people from images
 
-## Installation
-If you have a CUDA capable GPU I highly suggest you install CUDA and cuDNN to speed up the script.
+## Getting started
+Clone (`git clone https://github.com/NPRA/image-anonymisation.git`), or download (and extract) this repository.
 
-### Prerequisites
-- python3.6 (or higher)
-- pip
+#### Installing Anaconda
+1. Download the [installer](https://www.anaconda.com/distribution/).
+1. Run installer as Administrator.
+1. Select "Install for all users" during installation.
 
-For GPU support:
-- CUDA drivers https://developer.nvidia.com/cuda-toolkit
-- cuDNN https://developer.nvidia.com/cudnn
+#### Creating the conda environment
+1. Open an "Anaconda PowerShell Prompt" as Administrator.
+1. In the Anaconda PowerShell Prompt, navigate to the root directory of the cloned repository.
+1. Create the environment: `conda env create -f environment.yml`. This will create a new environment named `image-anonymisation`.
+1. Activate the environment: `conda activate image-anonymisation`.
 
-### GPU
-If you want to use your GPU (suggested):
-```
-pip3 install numpy==1.16.4 tensorflow-gpu tf-object-detection pillow
-```
-
-### CPU
-If you don't have a CUDA capable GPU you can still run the script on the CPU (Warning: it's going to be slow)
-```Bash
-pip3 install numpy==1.16.4 tensorflow tf-object-detection pillow
-```
-### Usage
+#### Installing `tf_object_detection`
+Run the PowerShell script `install-tf-object-detection.ps1` in the Anaconda PowerShell Prompt.  
+ 
+## Usage
 The script will recursively search \<inputfolder\> for .jpg files and mask off all cars, trucks, busses, bikes, motorcycles and people it finds in the photos. The recursive folder structure will be recreated in the \<outputfolder\>.
 ```Bash
-python3 maskerMappe.py -i <inputfolder> -o <outputfolder>
+python maskerMappe.py -i <inputfolder> -o <outputfolder>
 ```
