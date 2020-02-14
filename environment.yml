@@ -3,18 +3,17 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - h5py
-  - jupyter
-  - matplotlib
-  - mkl
-  - numpy
-  - pandas
-  - pip
-  - prettytable
-  - python=3.7
-  - scikit-learn
-  - scipy
-  - tqdm
+  - h5py=2.10.0
+  - jupyter=1.0.0
+  - matplotlib=3.1.3
+  - mkl=2019.4
+  - numpy=1.18.1
+  - pandas=1.0.1
+  - pip=20.0.2
+  - python=3.7.6
+  - scikit-learn=0.22.1
+  - scipy=1.3.1
   - tensorflow-gpu=1.15.0
+  - tqdm=4.42.1
   - pip:
-    - pillow
+    - pillow==7.0.0
