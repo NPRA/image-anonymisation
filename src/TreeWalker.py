@@ -1,8 +1,5 @@
 import os
-import logging
-
-
-LOGGER = logging.getLogger(__name__)
+from src.Logger import LOGGER
 
 
 class TreeWalker:
@@ -23,7 +20,7 @@ class TreeWalker:
                                  will return an iterator. Otherwise it will return a generator.
         :type precompute_paths: bool
         """
-        LOGGER.info(f"Initializing file tree walker at '{input_folder}'.")
+        LOGGER.info(__name__, f"Initializing file tree walker at '{input_folder}'.")
         self.input_folder = input_folder
         self.output_folder = output_folder
         self.skip_webp = skip_webp
@@ -31,11 +28,11 @@ class TreeWalker:
         self.n_valid_images = self.n_skipped_images = 0
 
         if self.precompute_paths:
-            LOGGER.info("Precomputing paths.")
+            LOGGER.info(__name__, "Precomputing paths.")
             self.paths = [p for p in self._walk()]
-            LOGGER.info(f"Found {self.n_valid_images} valid image paths.")
+            LOGGER.info(__name__, f"Found {self.n_valid_images} valid image paths.")
             if self.n_skipped_images > 0:
-                LOGGER.info(f"Found {self.n_skipped_images} images with masks. These will be skipped.")
+                LOGGER.info(__name__, f"Found {self.n_skipped_images} images with masks. These will be skipped.")
         else:
             self.paths = None
 
@@ -52,13 +49,13 @@ class TreeWalker:
 
         input_filepath = os.path.join(input_path, filename)
         if not os.access(input_filepath, os.R_OK):
-            LOGGER.info(f"Could not read image file '{input_filepath}'")
+            LOGGER.info(__name__, f"Could not read image file '{input_filepath}'")
             return False
 
         if self.skip_webp:
             webp_path = os.path.join(output_path, self._jpg_to_webp(filename))
             if os.path.exists(webp_path):
-                LOGGER.info(f"Mask already found for '{input_filepath}' at '{webp_path}'.")
+                LOGGER.info(__name__, f"Mask already found for '{input_filepath}' at '{webp_path}'.")
                 self.n_skipped_images += 1
                 return False
 

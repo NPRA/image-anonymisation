@@ -1,12 +1,10 @@
 import os
-import logging
 import tensorflow as tf
 from object_detection.utils import ops as utils_ops
 
 from src import config
 from src import graph_util
-
-LOGGER = logging.getLogger(__name__)
+from src.Logger import LOGGER
 
 
 class Masker:
@@ -23,9 +21,9 @@ class Masker:
         """
         # Download and extract model
         if not os.path.exists(config.PATH_TO_FROZEN_GRAPH):
-            LOGGER.info("Could not find the model graph file. Downloading...")
+            LOGGER.info(__name__, "Could not find the model graph file. Downloading...")
             graph_util.download_model(config.DOWNLOAD_BASE, config.MODEL_NAME, config.MODEL_PATH)
-            LOGGER.info("Model graph file downloaded.")
+            LOGGER.info(__name__, "Model graph file downloaded.")
 
         self.graph = graph_util.load_graph(config.PATH_TO_FROZEN_GRAPH)
         with self.graph.as_default():

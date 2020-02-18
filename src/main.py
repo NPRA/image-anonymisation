@@ -6,8 +6,7 @@ import argparse
 from src import image_util
 from src.TreeWalker import TreeWalker
 from src.Masker import Masker
-
-LOGGER = logging.getLogger(__name__)
+from src.Logger import LOGGER
 
 
 def get_args():
@@ -18,23 +17,34 @@ def get_args():
     :rtype: argparse.ArgumentParser
     """
     parser = argparse.ArgumentParser(description='Image anonymisation')
+
     parser.add_argument("-i", "--input-folder", dest="input_folder", help="Base directory for input images.")
-    parser.add_argument("-o", "--output-folder", dest="output_folder", help="Base directory for masked (output) "
-                                                                            "images and metadata files")
-    parser.add_argument("-d", "--draw-mask", action="store_true", dest="draw_mask", help="Apply the mask to the image?")
-    parser.add_argument("-e", "--exif-json", action="store_true", dest="exif_json", help="Export the EXIF header to a "
-                                                                                         ".json file?")
-    parser.add_argument("-m", "--mask-webp", action="store_true", dest="mask_webp", help="Save mask as separate .webp"
-                                                                                         " file?")
-    parser.add_argument("--force-remasking", action="store_true", dest="force_remask", help="When this flag is set, the"
-                                                                                            " masks will be recomputed"
-                                                                                            " even though the .webp "
-                                                                                            "file exists.")
-    parser.add_argument("--lazy-paths", action="store_true", dest="lazy_paths", help="When this flag is set, the file "
-                                                                                     "tree will be traversed during the"
-                                                                                     " masking process. Otherwise, all "
-                                                                                     "paths will be identified and "
-                                                                                     "stored before the masking starts")
+
+    parser.add_argument("-o", "--output-folder", dest="output_folder",
+                        help="Base directory for masked (output) images and metadata files")
+
+    parser.add_argument("-m", "--draw-mask", action="store_true", dest="draw_mask",
+                        help="Apply the mask to the image file?")
+
+    parser.add_argument("-rj", "--remote-json", action="store_true", dest="remote_json",
+                        help="Write the EXIF .json file to the output (remote) directory?")
+
+    parser.add_argument("-lj", "--local-json", action="store_true", dest="local_json",
+                        help="Write the EXIF .json file to the input (local) directory?")
+
+    parser.add_argument("-rm", "--remote-mask", action="store_true", dest="remote_mask",
+                        help="Write mask file to the output (remote) directory?")
+
+    parser.add_argument("-lm", "--local-mask", action="store_true", dest="local_mask",
+                        help="Write the mask file to the input (local) directory?")
+
+    parser.add_argument("--force-remasking", action="store_true", dest="force_remask",
+                        help="When this flag is set, the masks will be recomputed even though the .webp file exists.")
+
+    parser.add_argument("--lazy-paths", action="store_true", dest="lazy_paths",
+                        help="When this flag is set, the file tree will be traversed during the masking process. "
+                             "Otherwise, all paths will be identified and stored before the masking starts")
+
     args = parser.parse_args()
     return args
 
@@ -43,26 +53,34 @@ def main():
     """Run the masking."""
     logging.basicConfig(level=logging.INFO)
     args = get_args()
-    tree_walker = TreeWalker(args.input_folder, args.output_folder, skip_webp=(not args.force_remask),
+
+    base_input_dir = os.path.abspath(args.input_folder)
+    base_output_dir = os.path.abspath(args.output_folder)
+    LOGGER.base_input_dir = base_input_dir
+    LOGGER.base_output_dir = base_output_dir
+
+    tree_walker = TreeWalker(base_input_dir, base_output_dir, skip_webp=(not args.force_remask),
                              precompute_paths=(not args.lazy_paths))
     masker = Masker()
 
     for input_path, output_path, filename in tree_walker.walk():
+        LOGGER.set_state(input_path, output_path, filename)
+
         image_path = os.path.join(input_path, filename)
-        img, exif = image_util.load_image(image_path, read_exif=args.exif_json)
+        img = image_util.load_image(image_path, read_exif=True)
         if img is None:
-            # TODO: Copy image to error directory
             continue
+        img, exif = img
 
         start_time = time.time()
         mask_results = masker.mask(img)
         time_delta = round(time.time() - start_time, 3)
-        LOGGER.info(f"Successfully masked image {image_path} in {time_delta} s.")
+        LOGGER.info(__name__, f"Successfully masked image {image_path} in {time_delta} s.")
 
-        output_filepath = os.path.join(output_path, filename)
-        image_util.save_processed_img(img, mask_results, output_filepath, exif, args.draw_mask, args.exif_json,
-                                      args.mask_webp)
-
+        image_util.save_processed_img(img, mask_results, exif, input_path=input_path, output_path=output_path,
+                                      filename=filename, draw_mask=args.draw_mask, local_json=args.local_json,
+                                      remote_json=args.remote_json, local_mask=args.local_mask,
+                                      remote_mask=args.remote_mask)
     masker.close()
 
 
