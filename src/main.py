@@ -49,7 +49,7 @@ def main():
 
     for input_path, output_path, filename in tree_walker.walk():
         image_path = os.path.join(input_path, filename)
-        img = image_util.load_image(image_path)
+        img, exif = image_util.load_image(image_path, read_exif=args.exif_json)
         if img is None:
             # TODO: Copy image to error directory
             continue
@@ -60,7 +60,7 @@ def main():
         LOGGER.info(f"Successfully masked image {image_path} in {time_delta} s.")
 
         output_filepath = os.path.join(output_path, filename)
-        image_util.save_processed_img(img, mask_results, output_filepath, args.draw_mask, args.exif_json,
+        image_util.save_processed_img(img, mask_results, output_filepath, exif, args.draw_mask, args.exif_json,
                                       args.mask_webp)
 
     masker.close()
