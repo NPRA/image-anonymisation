@@ -6,11 +6,38 @@ LOGGER = logging.getLogger(__name__)
 
 
 class TreeWalker:
-    def __init__(self, input_folder, output_folder, skip_webp=True):
+    """
+    Traverses a file-tree and finds all valid .jpg images.
+    """
+    def __init__(self, input_folder, output_folder, skip_webp=True, precompute_paths=True):
+        """
+        Initialize the file-tree walker.
+
+        :param input_folder: Root directory for tree traversal.
+        :type input_folder: str
+        :param output_folder: Output directory in which to mirror the structure of `input_folder`.
+        :type output_folder: str
+        :param skip_webp: Skip images that already have an associated .webp file in `output_folder`.
+        :type skip_webp: bool
+        :param precompute_paths: Traverse the whole tree during initialization? When this is true, `TreeWalker.walk`
+                                 will return an iterator. Otherwise it will return a generator.
+        :type precompute_paths: bool
+        """
         LOGGER.info(f"Initializing file tree walker at '{input_folder}'.")
         self.input_folder = input_folder
         self.output_folder = output_folder
         self.skip_webp = skip_webp
+        self.precompute_paths = precompute_paths
+        self.n_valid_images = self.n_skipped_images = 0
+
+        if self.precompute_paths:
+            LOGGER.info("Precomputing paths.")
+            self.paths = [p for p in self._walk()]
+            LOGGER.info(f"Found {self.n_valid_images} valid image paths.")
+            if self.n_skipped_images > 0:
+                LOGGER.info(f"Found {self.n_skipped_images} images with masks. These will be skipped.")
+        else:
+            self.paths = None
 
     @staticmethod
     def _jpg_to_webp(path):
@@ -32,13 +59,34 @@ class TreeWalker:
             webp_path = os.path.join(output_path, self._jpg_to_webp(filename))
             if os.path.exists(webp_path):
                 LOGGER.info(f"Mask already found for '{input_filepath}' at '{webp_path}'.")
+                self.n_skipped_images += 1
                 return False
 
+        self.n_valid_images += 1
         return True
 
-    def walk(self):
+    def _walk(self):
         for input_path, _, file_names in os.walk(self.input_folder):
             output_path = self._get_output_path(input_path)
             for filename in file_names:
                 if self._path_is_valid(input_path, output_path, filename):
                     yield input_path, output_path, filename
+
+    def walk(self):
+        """
+        Traverse the file tree in `input_folder`.
+
+        :return: If `precompute_paths` is True, this will simply return an iterator whose elements are tuples with
+                 elements:
+
+                     - Full path to the current directory in `input_dir`
+                     - Full path to the corresponding directory in `output_dir`
+                     - Name of .jpg-file
+
+                 Otherwise, it will call a generator returning a tuple with the same elements as above.
+        :rtype: iterator | tuple of str
+        """
+        if not self.precompute_paths:
+            return self._walk()
+        else:
+            return iter(self.paths)

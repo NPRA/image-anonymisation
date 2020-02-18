@@ -1,5 +1,4 @@
 import os
-import time
 import logging
 import tensorflow as tf
 from object_detection.utils import ops as utils_ops
@@ -11,10 +10,17 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Masker:
+    """
+    Implements the masking functionality. Uses a pre-trained TensorFlow model to compute masks for images. Model
+    configuration is done in `src.config`.
+    """
     def __init__(self):
         self._init_model()
 
     def _init_model(self):
+        """
+        Initialize the TensorFlow-graph
+        """
         # Download and extract model
         if not os.path.exists(config.PATH_TO_FROZEN_GRAPH):
             LOGGER.info("Could not find the model graph file. Downloading...")
@@ -53,6 +59,13 @@ class Masker:
         self.sess = tf.compat.v1.Session(graph=self.graph)
 
     def mask(self, image):
+        """
+        Run the masking on `image`.
+        :param image: Input image. Must be a 4D color image array with shape (1, height, width, 3)
+        :type image: np.ndarray
+        :return: Dictionary containing masking results. Content depends on the model used.
+        :rtype: dict
+        """
         assert image.ndim == 4, "Expected a 4D image tensor (batch, height, width, channel)."
         feed_dict = {
             self.input_image: image,
@@ -63,4 +76,7 @@ class Masker:
         return out
 
     def close(self):
+        """
+        Close the TenosrFlow session created during initialization.
+        """
         self.sess.close()

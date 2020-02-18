@@ -1,3 +1,6 @@
+"""
+Configuration variables.
+"""
 import os
 
 

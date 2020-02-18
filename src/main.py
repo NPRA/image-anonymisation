@@ -11,6 +11,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 def get_args():
+    """
+    Parse command line arguments.
+
+    :return: Parsed arguments
+    :rtype: argparse.ArgumentParser
+    """
     parser = argparse.ArgumentParser(description='Image anonymisation')
     parser.add_argument("-i", "--input-folder", dest="input_folder", help="Base directory for input images.")
     parser.add_argument("-o", "--output-folder", dest="output_folder", help="Base directory for masked (output) "
@@ -24,20 +30,28 @@ def get_args():
                                                                                             " masks will be recomputed"
                                                                                             " even though the .webp "
                                                                                             "file exists.")
+    parser.add_argument("--lazy-paths", action="store_true", dest="lazy_paths", help="When this flag is set, the file "
+                                                                                     "tree will be traversed during the"
+                                                                                     " masking process. Otherwise, all "
+                                                                                     "paths will be identified and "
+                                                                                     "stored before the masking starts")
     args = parser.parse_args()
     return args
 
 
 def main():
+    """Run the masking."""
     logging.basicConfig(level=logging.INFO)
     args = get_args()
-    tree_walker = TreeWalker(args.input_folder, args.output_folder, skip_webp=(not args.force_remask))
+    tree_walker = TreeWalker(args.input_folder, args.output_folder, skip_webp=(not args.force_remask),
+                             precompute_paths=(not args.lazy_paths))
     masker = Masker()
 
     for input_path, output_path, filename in tree_walker.walk():
         image_path = os.path.join(input_path, filename)
         img = image_util.load_image(image_path)
         if img is None:
+            # TODO: Copy image to error directory
             continue
 
         start_time = time.time()
