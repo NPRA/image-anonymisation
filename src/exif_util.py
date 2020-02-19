@@ -1,44 +1,49 @@
 """From: https://github.com/vegvesen/vegbilder/blob/master/trinn1_lagmetadata/vegbilder_lesexif.py"""
 import xml.dom.minidom
+import uuid
 import json
 import re
 from copy import deepcopy
-
 
 from PIL import Image # Må installeres, pakken heter PILLOW
 from PIL.ExifTags import TAGS, GPSTAGS
 import xmltodict # Må installeres, rett fram
 
+from src.Logger import LOGGER
 
-def writeEXIFtoFile(imageFileName,pilImage=None,callersLogger=None):
-    """
-    Leser EXIF og skriver JSON-fil med metadata. Tilpasset firmaet "Signatur" sitt program 'sladd.pyc'.
-    Denne rutinen må kjøres FØR bildet er sladdet, fordi relevant EXIF-informasjon da slettes.
-    Hvis funksjonen fullfører uten feil returneres filnavnet til metadatafila ellers, None.
-    Hvis 'callersLogger' ikke er None brukes denne instansen av "logger" til å logge evt feilmelding.
-    Det er lagt inn en parameter 'pilImage' denne kan brukes til optimalisering når kallende funksjon (sladd) allerede
-    har lest og kan legge ved det aktuelle PIL.Image objektet.
-    """
-    from pathlib import Path
-    imageFileName = Path(imageFileName)
-    try:
-        metadata = lesexif( imageFileName)
-    except (AttributeError, TypeError, UnicodeDecodeError) as myErr:
-        msg = '%s:\n\tlesexif routine failed for %s' % (myErr,imageFileName)
-        print(msg)
-        if callersLogger is not None:
-            callersLogger.error(msg)
-        return
 
-    metadata['bildeuiid'] = str( uuid.uuid4() )
-    jsonFileName = imageFileName.with_suffix('.json')
-    metadata = fiksutf8( meta )
+def get_exif(img, image_path):
+    # img.verify()
+    exif = img._getexif()
+    if exif is None:
+        LOGGER.error(__name__, f"No EXIF data found for file {image_path}.")
+        exif = {}
 
-    with jsonFileName.open('w', encoding='utf-8') as fw:
-        json.dump( metadata, fw, indent=4, ensure_ascii=False)
+    labeled = get_labeled_exif(exif)
 
-    return jsonFileName
+    # Fisker ut XML'en som er stappet inn som ikke-standard exif element
+    xmldata = pyntxml(labeled)
+    if xmldata is not None:
+        # Fisker ut mer data fra viatech xml
+        viatekmeta = fiskFraviatechXML(xmldata)
+    else:
+        err_msg = f"Unable to clean XML-data for file {image_path}."
+        LOGGER.error(__name__, err_msg, save=True)
+        viatekmeta = {}
 
+    # Bildetittel - typisk etelleranna med viatech Systems
+    XPTitle = ''
+    if 'XPTitle' in labeled.keys():
+        XPTitle = labeled['XPTitle'].decode('utf16')
+
+    viatekmeta['exif_xptitle'] = XPTitle
+    viatekmeta['bildeuiid'] = str(uuid.uuid4())
+    return viatekmeta
+
+
+def write_exif(exif, output_filepath):
+    with open(output_filepath, "w") as out_file:
+        json.dump(exif, out_file, indent=4, ensure_ascii=False)
 
 def fiksutf8( meta):
     """
@@ -282,10 +287,10 @@ def get_geotagging(exif):
     return geotagging
 
 
-def get_exif(filename):
-    image = Image.open(filename)
-    image.verify()
-    return image._getexif()
+# def get_exif(filename):
+#     image = Image.open(filename)
+#     image.verify()
+#     return image._getexif()
 
 def get_labeled_exif(exif):
 

@@ -35,28 +35,26 @@ class Logger:
         with open(msg_filename, "w") as error_file:
             error_file.write(msg)
 
-    def _save_error(self, message):
-        output_path = self._get_error_output_path()
+    def _save_error(self, output_path, message):
         self._save_error_img(output_path)
         self._save_error_msg(output_path, message)
 
-    def info(self, namespace, msg, *args, save=False, **kwargs):
+    def _log(self, level, namespace, msg, *args, save=False, **kwargs):
         logger = logging.getLogger(namespace)
-        logger.info(msg, *args, **kwargs)
+        logger.log(level, msg, *args, **kwargs)
         if save:
-            self._save_error(msg)
+            output_path = self._get_error_output_path()
+            logger.log(level, f"Copying image file to {output_path} for manual inspection.")
+            self._save_error(output_path, msg)
 
-    def warning(self, namespace, msg, *args, save=False, **kwargs):
-        logger = logging.getLogger(namespace)
-        logger.warning(msg, *args, **kwargs)
-        if save:
-            self._save_error(msg)
+    def info(self, namespace, *args, **kwargs):
+        self._log(logging.INFO, namespace, *args, **kwargs)
 
-    def error(self, namespace, msg, *args, save=False, **kwargs):
-        logger = logging.getLogger(namespace)
-        logger.error(msg, *args, **kwargs)
-        if save:
-            self._save_error(msg)
+    def warning(self, namespace, *args, **kwargs):
+        self._log(logging.WARNING, namespace, *args, **kwargs)
+
+    def error(self, namespace, *args, **kwargs):
+        self._log(logging.ERROR, namespace, *args, **kwargs)
 
 
 LOGGER = Logger()

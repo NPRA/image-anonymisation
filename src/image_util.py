@@ -9,8 +9,9 @@ import numpy as np
 from PIL import Image
 
 from src import config
-from src.exif_util import get_labeled_exif, pyntxml, fiskFraviatechXML
+from src.exif_util import get_exif, write_exif
 from src.Logger import LOGGER
+from src.mscoco_label_map import LABEL_MAP
 
 
 def load_image(image_path, read_exif=True):
@@ -36,7 +37,7 @@ def load_image(image_path, read_exif=True):
         img = np.array(pil_img)
 
         if read_exif:
-            exif = _get_exif(pil_img, image_path)
+            exif = get_exif(pil_img, image_path)
         else:
             exif = None
     except (FileNotFoundError, ValueError, IndexError, RuntimeError) as e:
@@ -57,7 +58,7 @@ def load_image(image_path, read_exif=True):
 
 
 def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
-                       remote_json=False, local_mask=False, remote_mask=False):
+                       remote_json=False, local_mask=False, remote_mask=False, json_objects=True):
     """
     Save an image which has been processed by the masker.
 
@@ -83,6 +84,8 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     :type local_mask: bool
     :param remote_mask: Write the Mask file to the output directory?
     :type remote_mask: bool
+    :param json_objects: Add a dictionary containing the detected objects and their counts to the .json file?
+    :type json_objects: bool
     """
     os.makedirs(output_path, exist_ok=True)
 
@@ -98,17 +101,34 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     json_filename = os.path.splitext(filename)[0] + ".json"
     webp_filename = os.path.splitext(filename)[0] + ".webp"
 
+    if json_objects:
+        exif["detected_objects"] = _get_detected_objects_dict(mask_results)
+
     if local_mask:
         _save_mask(agg_mask, os.path.join(input_path, webp_filename))
     if remote_mask:
         _save_mask(agg_mask, os.path.join(output_path, webp_filename))
     if local_json:
-        _write_exif(exif, os.path.join(input_path, json_filename))
+        write_exif(exif, os.path.join(input_path, json_filename))
     if remote_json:
-        _write_exif(exif, os.path.join(output_path, json_filename))
+        write_exif(exif, os.path.join(output_path, json_filename))
 
     pil_img = Image.fromarray(img[0].astype(np.uint8))
     pil_img.save(os.path.join(output_path, filename))
+
+
+def _get_detected_objects_dict(mask_results):
+    objs = mask_results["detection_classes"].squeeze()[:int(mask_results["num_detections"])]
+    if objs.size > 0:
+        # Find unique objects and count them
+        objs, counts = np.unique(objs, return_counts=True)
+        # Convert object from id to string
+        objs = [LABEL_MAP[int(obj_id)] for obj_id in objs]
+        # Create dict
+        objs = dict(zip(objs, counts.astype(str)))
+    else:
+        objs = {}
+    return objs
 
 
 def _draw_mask_on_img(img, mask):
@@ -121,35 +141,4 @@ def _save_mask(mask, output_filepath):
     webp.imwrite(output_filepath, mask, pilmode="RGB")
 
 
-def _get_exif(img, image_path):
-    # img.verify()
-    exif = img._getexif()
-    if exif is None:
-        LOGGER.error(__name__, f"No EXIF data found for file {image_path}.")
-        exif = {}
 
-    labeled = get_labeled_exif(exif)
-
-    # Fisker ut XML'en som er stappet inn som ikke-standard exif element
-    xmldata = pyntxml(labeled)
-    if xmldata is not None:
-        # Fisker ut mer data fra viatech xml
-        viatekmeta = fiskFraviatechXML(xmldata)
-    else:
-        err_msg = f"Unable to clean XML-data for file {image_path}."
-        LOGGER.error(__name__, err_msg, save=True)
-        viatekmeta = {}
-
-    # Bildetittel - typisk etelleranna med viatech Systems
-    XPTitle = ''
-    if 'XPTitle' in labeled.keys():
-        XPTitle = labeled['XPTitle'].decode('utf16')
-
-    viatekmeta['exif_xptitle'] = XPTitle
-    viatekmeta['bildeuiid'] = str(uuid.uuid4())
-    return viatekmeta
-
-
-def _write_exif(exif, output_filepath):
-    with open(output_filepath, "w") as out_file:
-        json.dump(exif, out_file, indent=4, ensure_ascii=False)
