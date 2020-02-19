@@ -45,6 +45,10 @@ def get_args():
                         help="When this flag is set, the file tree will be traversed during the masking process. "
                              "Otherwise, all paths will be identified and stored before the masking starts")
 
+    parser.add_argument("--mask-color", dest="mask_color", default=None, nargs=3, type=int,
+                        help="RGB tuple [0-255] indicating the masking color. Setting this option will override the "
+                             "colors in config.py.")
+
     args = parser.parse_args()
     return args
 
@@ -80,7 +84,7 @@ def main():
         image_util.save_processed_img(img, mask_results, exif, input_path=input_path, output_path=output_path,
                                       filename=filename, draw_mask=args.draw_mask, local_json=args.local_json,
                                       remote_json=args.remote_json, local_mask=args.local_mask,
-                                      remote_mask=args.remote_mask)
+                                      remote_mask=args.remote_mask, mask_color=args.mask_color)
     masker.close()
 
 

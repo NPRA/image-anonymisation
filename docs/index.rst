@@ -10,18 +10,9 @@ Welcome to Image-anonymisation's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: src.config
-   :members:
-.. automodule:: src.graph_util
-   :members:
-.. automodule:: src.image_util
-   :members:
-.. automodule:: src.main
-   :members:
-.. automodule:: src.Masker
-   :members:
-.. automodule:: src.TreeWalker
-   :members:
+   readme
+   api-reference
+
 
 Indices and tables
 ==================

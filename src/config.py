@@ -23,3 +23,14 @@ PATH_TO_LABELS = 'mscoco_label_map.pbtxt'
 
 # COCO labels to mask in input images
 MASK_LABELS = (1, 2, 3, 4, 6, 8)
+
+# Masking colors <label id>: <RGB color>
+DEFAULT_COLOR = (100, 100, 100)
+LABEL_COLORS = {
+    1: (255, 255, 255),
+    2: (0, 0, 255),
+    3: (255, 0, 0),
+    4: (255, 255, 0),
+    6: (0, 255, 255),
+    8: (0, 255, 0)
+}

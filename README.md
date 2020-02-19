@@ -23,3 +23,14 @@ The script will recursively search \<inputfolder\> for .jpg files and mask off a
 ```Bash
 python maskerMappe.py -i <inputfolder> -o <outputfolder>
 ```
+
+## Documentation
+Buidling the documentation requires `sphinx` with the `m2r` extension. These can be installed with `conda` and `pip`:
+```Bash
+conda install sphinx
+pip install m2r
+``` 
+The HTML documentation can then be build from the `docs` directory by running
+```Bash
+.\make.bat html
+``` 

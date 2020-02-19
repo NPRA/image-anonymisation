@@ -2,8 +2,6 @@
 Utility functions for working with images.
 """
 import os
-import uuid
-import json
 import webp
 import numpy as np
 from PIL import Image
@@ -58,7 +56,7 @@ def load_image(image_path, read_exif=True):
 
 
 def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
-                       remote_json=False, local_mask=False, remote_mask=False, json_objects=True):
+                       remote_json=False, local_mask=False, remote_mask=False, json_objects=True, mask_color=None):
     """
     Save an image which has been processed by the masker.
 
@@ -86,6 +84,9 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     :type remote_mask: bool
     :param json_objects: Add a dictionary containing the detected objects and their counts to the .json file?
     :type json_objects: bool
+    :param mask_color: Mask color. All masks in the output image will have this color. If `mask_color` is None, the
+                       colors in `src.config` will be used.
+    :type mask_color: list | None
     """
     os.makedirs(output_path, exist_ok=True)
 
@@ -96,7 +97,7 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     agg_mask = np.isin(detection_masks, config.MASK_LABELS).any(axis=1)
 
     if draw_mask:
-        _draw_mask_on_img(img, agg_mask)
+        _draw_mask_on_img(img, mask_results, mask_color=mask_color)
 
     json_filename = os.path.splitext(filename)[0] + ".json"
     webp_filename = os.path.splitext(filename)[0] + ".webp"
@@ -131,9 +132,19 @@ def _get_detected_objects_dict(mask_results):
     return objs
 
 
-def _draw_mask_on_img(img, mask):
-    fill_color = np.array([0, 0, 0])
-    img[mask] = fill_color
+def _draw_mask_on_img(img, mask_results, mask_color=None):
+    detection_masks = mask_results["detection_masks"]
+    if mask_color is not None:
+        mask = np.isin(detection_masks, config.MASK_LABELS).any(axis=1)
+        img[mask] = np.array(mask_color)
+    else:
+        detection_classes = mask_results["detection_classes"].squeeze()
+        num_detections = int(mask_results["num_detections"])
+        for i in range(num_detections):
+            detected_label = int(detection_classes[i])
+            if detected_label in config.MASK_LABELS:
+                mask = detection_masks[:, i, ...] > 0
+                img[mask] = config.LABEL_COLORS.get(detected_label, config.DEFAULT_COLOR)
 
 
 def _save_mask(mask, output_filepath):
