@@ -78,13 +78,15 @@ def main():
 
         start_time = time.time()
         mask_results = masker.mask(img)
-        time_delta = round(time.time() - start_time, 3)
-        LOGGER.info(__name__, f"Successfully masked image {image_path} in {time_delta} s.")
 
         image_util.save_processed_img(img, mask_results, exif, input_path=input_path, output_path=output_path,
                                       filename=filename, draw_mask=args.draw_mask, local_json=args.local_json,
                                       remote_json=args.remote_json, local_mask=args.local_mask,
                                       remote_mask=args.remote_mask, mask_color=args.mask_color)
+
+        time_delta = round(time.time() - start_time, 3)
+        LOGGER.info(__name__, f"Successfully masked image {image_path} in {time_delta} s.")
+
     masker.close()
 
 

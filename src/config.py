@@ -10,10 +10,12 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 GRAPH_DIRECTORY = os.path.join(PROJECT_ROOT, "graphs")
 
 #: Name of the masking model
-MODEL_NAME = 'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28'
-# MODEL_NAME = 'mask_rcnn_inception_v2_coco_2018_01_28'
+# Slow
 # MODEL_NAME = 'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28'
-# MODEL_NAME = 'ssd_mobilenet_v1_coco_2017_11_17'
+# Medium
+MODEL_NAME = "mask_rcnn_resnet101_atrous_coco_2018_01_28"
+# Fast
+# MODEL_NAME = "mask_rcnn_inception_v2_coco_2018_01_28"
 
 #: Full path to the saved model
 MODEL_PATH = os.path.join(GRAPH_DIRECTORY, MODEL_NAME)

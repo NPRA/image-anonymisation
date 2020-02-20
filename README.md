@@ -8,7 +8,7 @@ Using pre-trained TensorFlow models to remove vehicles and people from images
 `git clone https://github.com/NPRA/image-anonymisation.git` (Requires `git` to be installed)
 
 **Option 2 - Manual download:**
- Select "Clone or download" and "Download ZIP" above. Then extract the downloaded archive to a suitable 
+Select "Clone or download" and "Download ZIP" above. Then extract the downloaded archive to a suitable 
 location.
 
 #### Installing Build Tools for Visual Studio 2019
