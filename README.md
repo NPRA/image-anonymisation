@@ -1,14 +1,14 @@
 # image-anonymisation
-Using pre-trained tensorflow models to remove vehicles and people from images
+Using pre-trained TensorFlow models to remove vehicles and people from images
 
 ## Getting started
 #### Clone or download the code
 
-**Option 1:** 
-With Git: `git clone https://github.com/NPRA/image-anonymisation.git` (Requires `git` to be installed)
+**Option 1 - With Git:** 
+`git clone https://github.com/NPRA/image-anonymisation.git` (Requires `git` to be installed)
 
-**Option 2:**
-Manual download: Select "Clone or download" and "Download ZIP" above. Then extract the downloaded archive to a suitable 
+**Option 2 - Manual download:**
+ Select "Clone or download" and "Download ZIP" above. Then extract the downloaded archive to a suitable 
 location.
 
 #### Installing Build Tools for Visual Studio 2019
@@ -36,6 +36,9 @@ Build Tools for Visual Studio 2019 is required to build some of the package-depe
     ```
 
 #### Installing `tf_object_detection`
+**Note:** The following step requires `git` to be installed. If `git` is not installed, it can be installed
+to the conda-environment directly by running `conda install git`.
+ 
 `tf-object detection` can be installed by running included PowerShell script Anaconda PowerShell Prompt 
 (make sure that the `image-anonymisation` environment is activated before running the script.):
 
