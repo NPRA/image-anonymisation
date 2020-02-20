@@ -1,3 +1,6 @@
+$work_dir=Get-Location
+
+# Create a temporary installation directory for
 mkdir tmp
 cd tmp
 
@@ -17,5 +20,5 @@ python setup.py build
 python setup.py install
 
 # Cleanup
-cd ..\..\..
+cd $work_dir
 rm -r tmp
