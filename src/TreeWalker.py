@@ -53,7 +53,8 @@ class TreeWalker:
             return False
 
         if self.skip_webp:
-            webp_path = os.path.join(output_path, self._jpg_to_webp(filename))
+            # webp_path = os.path.join(output_path, self._jpg_to_webp(filename))
+            webp_path = os.path.join(input_path, self._jpg_to_webp(filename))
             if os.path.exists(webp_path):
                 LOGGER.info(__name__, f"Mask already found for '{input_filepath}' at '{webp_path}'.")
                 self.n_skipped_images += 1
