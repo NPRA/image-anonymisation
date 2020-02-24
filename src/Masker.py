@@ -57,7 +57,21 @@ class Masker:
 
 
 def reframe_box_masks_to_image_masks(box_masks, boxes, image_height, image_width):
-    """The default function when there are more than 0 box masks."""
+    """
+    Convert from box-masks to image-masks. Adapted from
+    https://github.com/tensorflow/models/blob/master/research/object_detection/utils/ops.py
+
+    :param box_masks: Masks for each box.
+    :type box_masks: tf.Tensor
+    :param boxes: Box coordinates. The coordinates should be relative to image size
+    :type boxes: tf.Tensor.
+    :param image_height: Height of image
+    :type image_height: int
+    :param image_width: Width of image
+    :type image_width: int
+    :return: Whole-image masks
+    :rtype: tf.Tensor
+    """
     def transform_boxes_relative_to_boxes(boxes, reference_boxes):
         boxes = tf.reshape(boxes, [-1, 2, 2])
         min_corner = tf.expand_dims(reference_boxes[:, 0:2], 1)
@@ -82,8 +96,22 @@ def reframe_box_masks_to_image_masks(box_masks, boxes, image_height, image_width
 
 
 def tensor_dict_to_numpy(input_dict, ignore_keys=tuple()):
+    """
+    Convert all values of type `tf.Tensor` in a dictionary to `np.ndarray` by calling the `.numpy()` method.
+
+    :param input_dict: Dictionary containing tensors to convert.
+    :type input_dict: dict
+    :param ignore_keys: Optional iterable with keys to ignore
+    :type ignore_keys: tuple | list
+    :return: Converted dictionary containing original keys and converted tensors. Keys in `ignore_keys` will not be
+             included.
+    :rtype: dict
+    """
     output_dict = {}
     for key, value in input_dict.items():
-        if key not in ignore_keys and hasattr(value, "numpy"):
-            output_dict[key] = value.numpy()
+        if key not in ignore_keys:
+            if hasattr(value, "numpy"):
+                output_dict[key] = value.numpy()
+            else:
+                output_dict[key] = value
     return output_dict
