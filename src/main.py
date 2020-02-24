@@ -77,7 +77,11 @@ def main():
         img, exif = img
 
         start_time = time.time()
-        mask_results = masker.mask(img)
+        try:
+            mask_results = masker.mask(img)
+        except AssertionError as err:
+            LOGGER.error(__name__, f"Got error '{str(err)}' while processing image {image_path}.", save=True)
+            continue
 
         image_util.save_processed_img(img, mask_results, exif, input_path=input_path, output_path=output_path,
                                       filename=filename, draw_mask=args.draw_mask, local_json=args.local_json,

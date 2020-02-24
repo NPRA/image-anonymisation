@@ -1,6 +1,7 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
+import numpy as np
 
 from src import config
 from src import graph_util
@@ -36,9 +37,7 @@ class Masker:
         :return: Dictionary containing masking results. Content depends on the model used.
         :rtype: dict
         """
-        assert image.ndim == 4, "Expected a 4D image tensor (batch, height, width, channel)."
-        assert image.shape[0] == 1, "Batch size != 1 is currently not supported."
-
+        check_input_img(image)
         masking_results = self.model(tf.constant(image, tf.uint8))
 
         num_detections = int(masking_results["num_detections"].numpy().squeeze())
@@ -115,3 +114,14 @@ def tensor_dict_to_numpy(input_dict, ignore_keys=tuple()):
             else:
                 output_dict[key] = value
     return output_dict
+
+
+def check_input_img(img):
+    print(img[0, 0, 0, 0])
+    assert img.ndim == 4, "Expected a 4D image tensor (batch, height, width, channel)."
+    assert img.shape[0] == 1, "Batch size != 1 is currently not supported."
+    assert img.shape[3] == 3, "Image must have 3 channels."
+    assert (np.array(img.shape) > 0).all(), "All image dimensions must be > 0."
+    assert np.isfinite(img).all(), "Got non-finite numbers in input image."
+    assert ((img >= 0) & (img <= 255)).all(), "Expected all pixel-values to be in [0, ..., 255]."
+
