@@ -1,7 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
-from object_detection.utils import ops as utils_ops
 
 from src import config
 from src import graph_util
@@ -23,39 +22,11 @@ class Masker:
         # Download and extract model
         if not os.path.exists(config.PATH_TO_FROZEN_GRAPH):
             LOGGER.info(__name__, "Could not find the model graph file. Downloading...")
-            graph_util.download_model(config.DOWNLOAD_BASE, config.MODEL_NAME, config.MODEL_PATH)
+            graph_util.download_model(config.DOWNLOAD_BASE, config.MODEL_NAME, config.MODEL_PATH, extract_all=True)
             LOGGER.info(__name__, "Model graph file downloaded.")
 
-        self.graph = graph_util.load_graph(config.PATH_TO_FROZEN_GRAPH)
-        with self.graph.as_default():
-            self.width_placeholder = tf.compat.v1.placeholder(tf.int32, shape=[], name="image_width")
-            self.height_placeholder = tf.compat.v1.placeholder(tf.int32, shape=[], name="image_height")
-            self.input_image = self.graph.get_tensor_by_name('image_tensor:0')
-
-            ops = self.graph.get_operations()
-            all_tensor_names = {output.name for op in ops for output in op.outputs}
-            self.output_tensors = {}
-            for key in ['num_detections', 'detection_boxes', 'detection_scores',
-                        'detection_classes', 'detection_masks']:
-                tensor_name = key + ':0'
-                if tensor_name in all_tensor_names:
-                    self.output_tensors[key] = self.graph.get_tensor_by_name(tensor_name)
-            if 'detection_masks' in self.output_tensors:
-                detection_boxes = tf.squeeze(self.output_tensors['detection_boxes'], [0])
-                detection_masks = tf.squeeze(self.output_tensors['detection_masks'], [0])
-
-                # Reframe is required to translate mask from box coordinates to image coordinates and fit the image
-                # size.
-                real_num_detection = tf.cast(self.output_tensors['num_detections'][0], tf.int32)
-                detection_boxes = tf.slice(detection_boxes, [0, 0], [real_num_detection, -1])
-                detection_masks = tf.slice(detection_masks, [0, 0, 0], [real_num_detection, -1, -1])
-                detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(
-                    detection_masks, detection_boxes, self.height_placeholder, self.width_placeholder)
-                detection_masks_reframed = tf.cast(tf.greater(detection_masks_reframed, 0.5), tf.uint8)
-                # Follow the convention by adding back the batch dimension
-                self.output_tensors['detection_masks'] = tf.expand_dims(detection_masks_reframed, 0)
-
-        self.sess = tf.compat.v1.Session(graph=self.graph)
+        model = tf.saved_model.load(os.path.join(config.MODEL_PATH, "saved_model"))
+        self.model = model.signatures["serving_default"]
 
     def mask(self, image):
         """
@@ -66,16 +37,53 @@ class Masker:
         :rtype: dict
         """
         assert image.ndim == 4, "Expected a 4D image tensor (batch, height, width, channel)."
-        feed_dict = {
-            self.input_image: image,
-            self.height_placeholder: image.shape[1],
-            self.width_placeholder: image.shape[2],
-        }
-        out = self.sess.run(self.output_tensors, feed_dict=feed_dict)
-        return out
+        assert image.shape[0] == 1, "Batch size != 1 is currently not supported."
 
-    def close(self):
-        """
-        Close the TenosrFlow session created during initialization.
-        """
-        self.sess.close()
+        masking_results = self.model(tf.constant(image, tf.uint8))
+
+        num_detections = int(masking_results["num_detections"].numpy().squeeze())
+        if num_detections > 0:
+            masks = masking_results["detection_masks"][0, :num_detections]
+            boxes = masking_results["detection_boxes"][0, :num_detections]
+            reframed_masks = reframe_box_masks_to_image_masks(masks, boxes, image.shape[1], image.shape[2])
+            reframed_masks = tf.cast(reframed_masks > 0.5, tf.int32)
+        else:
+            reframed_masks = tf.zeros((num_detections, image.shape[1], image.shape[2]))
+
+        masking_results = tensor_dict_to_numpy(masking_results, ignore_keys=("detection_masks", "num_detections"))
+        masking_results["detection_masks"] = reframed_masks.numpy()[None, ...]
+        masking_results["num_detections"] = num_detections
+        return masking_results
+
+
+def reframe_box_masks_to_image_masks(box_masks, boxes, image_height, image_width):
+    """The default function when there are more than 0 box masks."""
+    def transform_boxes_relative_to_boxes(boxes, reference_boxes):
+        boxes = tf.reshape(boxes, [-1, 2, 2])
+        min_corner = tf.expand_dims(reference_boxes[:, 0:2], 1)
+        max_corner = tf.expand_dims(reference_boxes[:, 2:4], 1)
+        transformed_boxes = (boxes - min_corner) / (max_corner - min_corner)
+        return tf.reshape(transformed_boxes, [-1, 4])
+
+    box_masks_expanded = tf.expand_dims(box_masks, axis=3)
+    num_boxes = tf.shape(box_masks_expanded)[0]
+    unit_boxes = tf.concat(
+        [tf.zeros([num_boxes, 2]), tf.ones([num_boxes, 2])], axis=1)
+    reverse_boxes = transform_boxes_relative_to_boxes(unit_boxes, boxes)
+
+    reframed = tf.image.crop_and_resize(
+        image=box_masks_expanded,
+        boxes=reverse_boxes,
+        box_indices=tf.range(num_boxes),
+        crop_size=[image_height, image_width],
+        extrapolation_value=0.0)
+    reframed = tf.squeeze(reframed, axis=3)
+    return reframed
+
+
+def tensor_dict_to_numpy(input_dict, ignore_keys=tuple()):
+    output_dict = {}
+    for key, value in input_dict.items():
+        if key not in ignore_keys and hasattr(value, "numpy"):
+            output_dict[key] = value.numpy()
+    return output_dict

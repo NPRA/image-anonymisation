@@ -35,6 +35,8 @@ Build Tools for Visual Studio 2019 is required to build some of the package-depe
     conda activate image-anonymisation
     ```
 
+<!---
+This is no longer needed after the TF2 migration.
 #### Installing `tf_object_detection`
 **Note:** The following step requires `git` to be installed. If `git` is not installed, it can be installed
 to the conda-environment directly by running `conda install git`.
@@ -45,7 +47,8 @@ to the conda-environment directly by running `conda install git`.
 ```Bash
 .\install-tf-object-detection.ps1
 ```
-  
+--->
+
 ## Usage
 The program will traverse the file-tree rooted at the input folder, and mask all .jpg images within the tree. The masked 
 images will be written to an output directory with identical structure as the input folder. The program should be  

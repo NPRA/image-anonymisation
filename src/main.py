@@ -87,8 +87,6 @@ def main():
         time_delta = round(time.time() - start_time, 3)
         LOGGER.info(__name__, f"Successfully masked image {image_path} in {time_delta} s.")
 
-    masker.close()
-
 
 if __name__ == '__main__':
     main()
