@@ -117,7 +117,6 @@ def tensor_dict_to_numpy(input_dict, ignore_keys=tuple()):
 
 
 def check_input_img(img):
-    print(img[0, 0, 0, 0])
     assert img.ndim == 4, "Expected a 4D image tensor (batch, height, width, channel)."
     assert img.shape[0] == 1, "Batch size != 1 is currently not supported."
     assert img.shape[3] == 3, "Image must have 3 channels."
