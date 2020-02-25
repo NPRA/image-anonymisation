@@ -6,7 +6,7 @@ class TreeWalker:
     """
     Traverses a file-tree and finds all valid .jpg images.
     """
-    def __init__(self, input_folder, output_folder, skip_webp=True, precompute_paths=True):
+    def __init__(self, input_folder, mirror_folders, skip_webp=True, precompute_paths=True):
         """
         Initialize the file-tree walker.
 
@@ -22,7 +22,7 @@ class TreeWalker:
         """
         LOGGER.info(__name__, f"Initializing file tree walker at '{input_folder}'.")
         self.input_folder = input_folder
-        self.output_folder = output_folder
+        self.mirror_folders = mirror_folders
         self.skip_webp = skip_webp
         self.precompute_paths = precompute_paths
         self.n_valid_images = self.n_skipped_images = 0
@@ -40,10 +40,10 @@ class TreeWalker:
     def _jpg_to_webp(path):
         return path[:-4] + ".webp"
 
-    def _get_output_path(self, input_path):
-        return input_path.replace(self.input_folder, self.output_folder, 1)
+    def _get_mirror_paths(self, input_path):
+        return [input_path.replace(self.input_folder, mirror_base, 1) for mirror_base in self.mirror_folders]
 
-    def _path_is_valid(self, input_path, output_path, filename):
+    def _path_is_valid(self, input_path, mirror_paths, filename):
         if not filename.endswith(".jpg"):
             return False
 
@@ -53,7 +53,6 @@ class TreeWalker:
             return False
 
         if self.skip_webp:
-            # webp_path = os.path.join(output_path, self._jpg_to_webp(filename))
             webp_path = os.path.join(input_path, self._jpg_to_webp(filename))
             if os.path.exists(webp_path):
                 LOGGER.info(__name__, f"Mask already found for '{input_filepath}' at '{webp_path}'.")
@@ -65,10 +64,10 @@ class TreeWalker:
 
     def _walk(self):
         for input_path, _, file_names in os.walk(self.input_folder):
-            output_path = self._get_output_path(input_path)
+            mirror_paths = self._get_mirror_paths(input_path)
             for filename in file_names:
-                if self._path_is_valid(input_path, output_path, filename):
-                    yield input_path, output_path, filename
+                if self._path_is_valid(input_path, mirror_paths, filename):
+                    yield input_path, mirror_paths, filename
 
     def walk(self):
         """
