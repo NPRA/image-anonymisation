@@ -23,7 +23,7 @@ def get_args():
     return args
 
 
-def check_config():
+def check_config(args):
     """ Check that the specified configuration variables are valid. """
     if config.archive_json and not config.remote_json:
         raise ValueError("Argument '--archive-json' requires --remote-json.")
@@ -33,7 +33,7 @@ def check_config():
     if config.delete_input:
         LOGGER.warning(__name__, "Argument '--delete-input-image' is enabled. This will permanently delete the original"
                                  " image from the input directory!")
-        assert config.archive_folder, "Argument '--delete-input-image' requires a valid archive directory to be " \
+        assert args.archive_folder, "Argument '--delete-input-image' requires a valid archive directory to be " \
                                       "specified"
 
 
@@ -65,8 +65,8 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
 def main():
     """Run the masking."""
     logging.basicConfig(level=logging.INFO)
-    check_config()
     args = get_args()
+    check_config(args)
 
     base_input_dir = os.path.abspath(args.input_folder)
     base_output_dir = os.path.abspath(args.output_folder)
