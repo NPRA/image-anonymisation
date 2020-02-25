@@ -49,6 +49,11 @@ def get_args():
                         help="RGB tuple [0-255] indicating the masking color. Setting this option will override the "
                              "colors in config.py.")
 
+    parser.add_argument("--blur", dest="blur", default=None, type=int,
+                        help="Blurring coefficient [1-100] which specifies the degree of blurring to apply within the "
+                             "mask. When this parameter is specified, the image will be blurred, and not masked with a "
+                             "specific color.")
+
     args = parser.parse_args()
     return args
 
@@ -86,7 +91,7 @@ def main():
         image_util.save_processed_img(img, mask_results, exif, input_path=input_path, output_path=output_path,
                                       filename=filename, draw_mask=args.draw_mask, local_json=args.local_json,
                                       remote_json=args.remote_json, local_mask=args.local_mask,
-                                      remote_mask=args.remote_mask, mask_color=args.mask_color)
+                                      remote_mask=args.remote_mask, mask_color=args.mask_color, blur=args.blur)
 
         time_delta = round(time.time() - start_time, 3)
         LOGGER.info(__name__, f"Successfully masked image {image_path} in {time_delta} s.")

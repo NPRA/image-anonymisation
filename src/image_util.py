@@ -5,6 +5,7 @@ import os
 import webp
 import numpy as np
 from PIL import Image
+from cv2 import blur as cv2_blur
 
 from src import config
 from src.exif_util import get_exif, write_exif
@@ -56,7 +57,8 @@ def load_image(image_path, read_exif=True):
 
 
 def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
-                       remote_json=False, local_mask=False, remote_mask=False, json_objects=True, mask_color=None):
+                       remote_json=False, local_mask=False, remote_mask=False, json_objects=True, mask_color=None,
+                       blur=None):
     """
     Save an image which has been processed by the masker.
 
@@ -87,6 +89,10 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     :param mask_color: Mask color. All masks in the output image will have this color. If `mask_color` is None, the
                        colors in `src.config` will be used.
     :type mask_color: list | None
+    :param blur: When `blur` is not None, the image will be blurred instead of colored at the masked locations. `blur`
+                 should be a number in [1 - 1000] indicating the size of the mask used in for blurring. Specifically,
+                 `mask_size = (blur / 1000) * image_width`.
+    :type blur: int | float | None
     """
     os.makedirs(output_path, exist_ok=True)
 
@@ -97,7 +103,10 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     agg_mask = np.isin(detection_masks, config.MASK_LABELS).any(axis=1)
 
     if draw_mask:
-        _draw_mask_on_img(img, mask_results, mask_color=mask_color)
+        if blur is not None:
+            _blur_mask_on_img(img, agg_mask, blur_factor=blur)
+        else:
+            _draw_mask_on_img(img, mask_results, mask_color=mask_color)
 
     json_filename = os.path.splitext(filename)[0] + ".json"
     webp_filename = os.path.splitext(filename)[0] + ".webp"
@@ -147,9 +156,14 @@ def _draw_mask_on_img(img, mask_results, mask_color=None):
                 img[mask] = config.LABEL_COLORS.get(detected_label, config.DEFAULT_COLOR)
 
 
+def _blur_mask_on_img(img, mask, blur_factor):
+    if blur_factor < 1:
+        return
+    ksize = int((blur_factor / 1000) * img.shape[2])
+    blurred = cv2_blur(img[0], (ksize, ksize))[None, ...]
+    img[mask] = blurred[mask]
+
+
 def _save_mask(mask, output_filepath):
     mask = np.tile(mask[0, :, :, None], (1, 1, 3)).astype(np.uint8)
     webp.imwrite(output_filepath, mask, pilmode="RGB")
-
-
-
