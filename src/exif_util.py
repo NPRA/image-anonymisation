@@ -12,24 +12,16 @@ import xmltodict # Må installeres, rett fram
 from src.Logger import LOGGER
 
 
-def get_exif(img, image_path):
-    # img.verify()
+def get_exif(img):
     exif = img._getexif()
-    if exif is None:
-        LOGGER.error(__name__, f"No EXIF data found for file {image_path}.")
-        exif = {}
-
+    assert exif is not None, f"No EXIF data found for image."
     labeled = get_labeled_exif(exif)
 
     # Fisker ut XML'en som er stappet inn som ikke-standard exif element
     xmldata = pyntxml(labeled)
-    if xmldata is not None:
-        # Fisker ut mer data fra viatech xml
-        viatekmeta = fiskFraviatechXML(xmldata)
-    else:
-        err_msg = f"Unable to clean XML-data for file {image_path}."
-        LOGGER.error(__name__, err_msg, save=True)
-        viatekmeta = {}
+    assert xmldata is not None, f"Unable to clean XML-data for image."
+    # Fisker ut mer data fra viatech xml
+    viatekmeta = fiskFraviatechXML(xmldata)
 
     # Bildetittel - typisk etelleranna med viatech Systems
     XPTitle = ''

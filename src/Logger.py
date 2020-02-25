@@ -44,7 +44,7 @@ class Logger:
         logger.log(level, msg, *args, **kwargs)
         if save:
             output_path = self._get_error_output_path()
-            logger.log(level, f"Copying image file to {output_path} for manual inspection.")
+            logger.log(logging.INFO, f"Copying image file to {output_path} for manual inspection.")
             self._save_error(output_path, msg)
 
     def info(self, namespace, *args, **kwargs):

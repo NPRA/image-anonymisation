@@ -28,7 +28,7 @@ class TreeWalker:
         self.n_valid_images = self.n_skipped_images = 0
 
         if self.precompute_paths:
-            LOGGER.info(__name__, "Precomputing paths.")
+            LOGGER.info(__name__, "Precomputing paths...")
             self.paths = [p for p in self._walk()]
             LOGGER.info(__name__, f"Found {self.n_valid_images} valid image paths.")
             if self.n_skipped_images > 0:

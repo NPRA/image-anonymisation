@@ -80,8 +80,8 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
 
 def main():
     """Run the masking."""
-    # Set log-level
-    logging.basicConfig(level=logging.INFO)
+    # Configure logger
+    logging.basicConfig(level=logging.INFO, format="(%(levelname)s): %(message)s")
     # Get arguments
     args = get_args()
     check_config(args)
@@ -102,19 +102,23 @@ def main():
     # Initialize the walker
     tree_walker = TreeWalker(base_input_dir, mirror_dirs, skip_webp=(not config.force_remask),
                              precompute_paths=(not config.lazy_paths))
+    n_imgs = "?" if config.lazy_paths else str(tree_walker.n_valid_images)
+
     # Initialize the masker
     masker = Masker()
     # Mask images
-    for input_path, mirror_paths, filename in tree_walker.walk():
+    for i, (input_path, mirror_paths, filename) in enumerate(tree_walker.walk()):
         output_path = mirror_paths[0]
         image_path = os.path.join(input_path, filename)
         LOGGER.set_state(input_path, output_path, filename)
+        count_str = f"{i} of {n_imgs}"
 
         # Load image
         try:
             img, exif = image_util.load_image(image_path, read_exif=True)
         except AssertionError as err:
-            LOGGER.error(__name__, f"Got error '{str(err)}' while loading image {image_path}.", save=True)
+            LOGGER.error(__name__, f"Got error '{str(err)}' while loading image {count_str}. File: {image_path}.",
+                         save=True)
             continue
 
         # Mask image
@@ -122,7 +126,8 @@ def main():
             start_time = time.time()
             mask_results = masker.mask(img)
         except AssertionError as err:
-            LOGGER.error(__name__, f"Got error '{str(err)}' while masking image {image_path}.", save=True)
+            LOGGER.error(__name__, f"Got error '{str(err)}' while masking image {count_str}. File: {image_path}.",
+                         save=True)
             continue
 
         # Save results
@@ -133,11 +138,12 @@ def main():
                                           remote_mask=config.remote_mask, mask_color=config.mask_color,
                                           blur=config.blur)
         except AssertionError as err:
-            LOGGER.error(__name__, f"Got error '{str(err)}' while exporting masked image {image_path}.", save=True)
+            LOGGER.error(__name__, f"Got error '{str(err)}' while exporting masked image {count_str}. File: "
+                                   f"{image_path}.", save=True)
             continue
 
         time_delta = round(time.time() - start_time, 3)
-        LOGGER.info(__name__, f"Masked image {image_path} in {time_delta} s.")
+        LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. File: {image_path}.")
 
         # Archive
         if args.archive_folder is not None:

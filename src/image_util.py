@@ -32,7 +32,7 @@ def load_image(image_path, read_exif=True):
         img = np.array(pil_img)
 
         if read_exif:
-            exif = get_exif(pil_img, image_path)
+            exif = get_exif(pil_img)
         else:
             exif = None
     except (FileNotFoundError, ValueError, IndexError, RuntimeError) as e:
