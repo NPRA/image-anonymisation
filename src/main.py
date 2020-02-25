@@ -53,6 +53,22 @@ def _copy_file(source_path, destination_path, filename, ext=None):
 
 
 def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json=False, delete_input_img=False):
+    """
+    Copy the input image file (and possibly some output files) to the archive directory.
+
+    :param input_path: Path to the directory containing the input image.
+    :type input_path: str
+    :param mirror_paths: List with at least two elements, containing the output path and the archive path.
+    :type mirror_paths: list of str
+    :param filename: Name of image-file
+    :type filename: str
+    :param archive_mask: Copy the mask file to the archive directory?
+    :type archive_mask: bool
+    :param archive_json: Copy the EXIF file to the archive directory?
+    :type archive_json: bool
+    :param delete_input_img: Delete the image from the input directory?
+    :type delete_input_img: bool
+    """
     input_jpg = _copy_file(input_path, mirror_paths[1], filename, ext=None)
     if archive_mask:
         _copy_file(mirror_paths[0], mirror_paths[1], filename, ext=".webp")
@@ -64,23 +80,31 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
 
 def main():
     """Run the masking."""
+    # Set log-level
     logging.basicConfig(level=logging.INFO)
+    # Get arguments
     args = get_args()
     check_config(args)
 
+    # Get the absolute path of the directories
     base_input_dir = os.path.abspath(args.input_folder)
     base_output_dir = os.path.abspath(args.output_folder)
+    mirror_dirs = [base_output_dir]
+
+    # Configure the logger
     LOGGER.base_input_dir = base_input_dir
     LOGGER.base_output_dir = base_output_dir
 
-    mirror_dirs = [base_output_dir]
     if args.archive_folder is not None:
+        # Add the archive folder to the list of mirror directories.
         mirror_dirs.append(os.path.abspath(args.archive_folder))
 
+    # Initialize the walker
     tree_walker = TreeWalker(base_input_dir, mirror_dirs, skip_webp=(not config.force_remask),
                              precompute_paths=(not config.lazy_paths))
+    # Initialize the masker
     masker = Masker()
-
+    # Mask images
     for input_path, mirror_paths, filename in tree_walker.walk():
         output_path = mirror_paths[0]
         image_path = os.path.join(input_path, filename)
