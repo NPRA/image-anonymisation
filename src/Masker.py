@@ -3,7 +3,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 
-from src import config
+import config
 from src import graph_util
 from src.Logger import LOGGER
 
@@ -11,7 +11,7 @@ from src.Logger import LOGGER
 class Masker:
     """
     Implements the masking functionality. Uses a pre-trained TensorFlow model to compute masks for images. Model
-    configuration is done in `src.config`.
+    configuration is done in `config`.
     """
     def __init__(self):
         self._init_model()

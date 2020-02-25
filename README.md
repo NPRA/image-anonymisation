@@ -35,32 +35,13 @@ Build Tools for Visual Studio 2019 is required to build some of the package-depe
     conda activate image-anonymisation
     ```
 
-<!---
-This is no longer needed after the TF2 migration.
-#### Installing `tf_object_detection`
-**Note:** The following step requires `git` to be installed. If `git` is not installed, it can be installed
-to the conda-environment directly by running `conda install git`.
- 
-`tf-object detection` can be installed by running included PowerShell script Anaconda PowerShell Prompt 
-(make sure that the `image-anonymisation` environment is activated before running the script.):
-
-```Bash
-.\install-tf-object-detection.ps1
-```
---->
-
 ## Usage
 The program will traverse the file-tree rooted at the input folder, and mask all .jpg images within the tree. The masked 
 images will be written to an output directory with identical structure as the input folder. The program should be  
 executed as a python-module from the root directory:
 ```Bash
-pyhton -m src.main -i <input folder> -o <output folder> <options>
-```
-See below for a complete usage description.
-```Bash
-usage: main.py [-h] [-i INPUT_FOLDER] [-o OUTPUT_FOLDER] [-m] [-rj] [-lj]
-               [-rm] [-lm] [--force-remasking] [--lazy-paths]
-               [--mask-color MASK_COLOR MASK_COLOR MASK_COLOR]
+
+usage: python -m src.main [-h] [-i INPUT_FOLDER] [-o OUTPUT_FOLDER] [-a ARCHIVE_FOLDER]
 
 Image anonymisation
 
@@ -71,27 +52,12 @@ optional arguments:
   -o OUTPUT_FOLDER, --output-folder OUTPUT_FOLDER
                         Base directory for masked (output) images and metadata
                         files
-  -m, --draw-mask       Apply the mask to the image file?
-  -rj, --remote-json    Write the EXIF .json file to the output (remote)
-                        directory?
-  -lj, --local-json     Write the EXIF .json file to the input (local)
-                        directory?
-  -rm, --remote-mask    Write mask file to the output (remote) directory?
-  -lm, --local-mask     Write the mask file to the input (local) directory?
-  --force-remasking     When this flag is set, the masks will be recomputed
-                        even though the .webp file exists.
-  --lazy-paths          When this flag is set, the file tree will be traversed
-                        during the masking process. Otherwise, all paths will
-                        be identified and stored before the masking starts
-  --mask-color MASK_COLOR MASK_COLOR MASK_COLOR
-                        RGB tuple [0-255] indicating the masking color.
-                        Setting this option will override the colors in
-                        config.py.
+  -a ARCHIVE_FOLDER, --archive-folder ARCHIVE_FOLDER
+                        Base directory for archiving original images.
 ```
 
 #### Additional configuration
-Additional configuration variables are listed in `src/config.py`. Edit these at your own risk! 
-
+Additional configuration variables are listed in `config.py`.
 
 ## Documentation
 Buidling the documentation requires `sphinx` with the `m2r` extension. These can be installed with `conda` and `pip`:

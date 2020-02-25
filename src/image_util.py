@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 from cv2 import blur as cv2_blur
 
-from src import config
+import config
 from src.exif_util import get_exif, write_exif
 from src.Logger import LOGGER
 from src.mscoco_label_map import LABEL_MAP
@@ -24,12 +24,8 @@ def load_image(image_path, read_exif=True):
     :return: Image array
     :rtype: (np.ndarray, dict | None) | None
     """
-    if not os.path.exists(image_path):
-        LOGGER.warning(__name__, f"Could not find image at '{image_path}'")
-        return None
-    if not image_path.endswith(".jpg"):
-        LOGGER.warning(__name__, f"Expected image with .jpg extension. Got '{image_path}'")
-        return None
+    assert os.path.exists(image_path), f"Could not find image at '{image_path}'"
+    assert image_path.endswith(".jpg"), f"Expected image with .jpg extension. Got '{image_path}'"
 
     try:
         pil_img = Image.open(image_path)
@@ -40,20 +36,11 @@ def load_image(image_path, read_exif=True):
         else:
             exif = None
     except (FileNotFoundError, ValueError, IndexError, RuntimeError) as e:
-        LOGGER.warning(__name__, f"Got Exception '{str(e)}' while importing image '{image_path}'.", save=True)
-        return None
+        raise AssertionError(str(e))
 
-    if img.ndim != 3:
-        LOGGER.warning(__name__, f"Got wrong number of dimensions ({img.ndim} != 3) for loaded image '{image_path}'",
-                       save=True)
-        return None
-    if img.shape[2] != 3:
-        LOGGER.warning(__name__, f"Got wrong number of channels ({img.shape[2]} != 3) for loaded image '{image_path}'",
-                       save=True)
-        return None
-
-    img = np.expand_dims(img, 0)
-    return img, exif
+    assert img.ndim == 3, f"Got wrong number of dimensions ({img.ndim} != 3) for loaded image '{image_path}'"
+    assert img.shape[2] == 3, f"Got wrong number of channels ({img.shape[2]} != 3) for loaded image '{image_path}'"
+    return np.expand_dims(img, 0), exif
 
 
 def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
@@ -87,7 +74,7 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     :param json_objects: Add a dictionary containing the detected objects and their counts to the .json file?
     :type json_objects: bool
     :param mask_color: Mask color. All masks in the output image will have this color. If `mask_color` is None, the
-                       colors in `src.config` will be used.
+                       colors in `config` will be used.
     :type mask_color: list | None
     :param blur: When `blur` is not None, the image will be blurred instead of colored at the masked locations. `blur`
                  should be a number in [1 - 1000] indicating the size of the mask used in for blurring. Specifically,

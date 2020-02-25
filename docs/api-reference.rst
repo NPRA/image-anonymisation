@@ -4,7 +4,7 @@ API Reference
 
 config
 =========================
-.. automodule:: src.config
+.. automodule:: config
    :members:
 
 graph_util
