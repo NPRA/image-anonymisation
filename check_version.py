@@ -3,18 +3,15 @@ from importlib import import_module
 
 MODULES = [
     ("h5py", "2.10.0"),
-    ("jupyter", "1.0.0"),
-    ("matplotlib", "3.1.3"),
     ("mkl", "2.3.0"),
     ("numpy", "1.18.1"),
-    ("pandas", "1.0.1"),
     ("pip", "20.0.2"),
-    ("sklearn", "0.22.1"),
     ("scipy", "1.3.1"),
-    ("tensorflow", "1.15.0"),
-    ("tqdm", "4.42.1"),
+    ("tensorflow", "2.1.0"),
+    ("xmltodict", "0.12.0"),
+    ("cv2", "4.2.0"),
     ("PIL", "7.0.0"),
-    ("object_detection", "0.1")
+    ("webp", "0.1.0a15")
 ]
 
 

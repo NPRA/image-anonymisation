@@ -12,5 +12,6 @@ dependencies:
   - tensorflow-gpu=2.1.0
   - xmltodict=0.12.0
   - pip:
+    - opencv-python==4.2.0.32
     - pillow==7.0.0
     - webp==0.1.0a15
