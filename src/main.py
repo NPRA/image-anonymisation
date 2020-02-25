@@ -111,7 +111,7 @@ def main():
         output_path = mirror_paths[0]
         image_path = os.path.join(input_path, filename)
         LOGGER.set_state(input_path, output_path, filename)
-        count_str = f"{i} of {n_imgs}"
+        count_str = f"{i+1} of {n_imgs}"
 
         # Load image
         try:
@@ -142,7 +142,7 @@ def main():
                                    f"{image_path}.", save=True)
             continue
 
-        time_delta = round(time.time() - start_time, 3)
+        time_delta = "{:.3f}".format(time.time() - start_time)
         LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. File: {image_path}.")
 
         # Archive

@@ -4,7 +4,7 @@ Utility functions for working with images.
 import os
 import webp
 import numpy as np
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from cv2 import blur as cv2_blur
 
 import config
@@ -35,7 +35,7 @@ def load_image(image_path, read_exif=True):
             exif = get_exif(pil_img)
         else:
             exif = None
-    except (FileNotFoundError, ValueError, IndexError, RuntimeError) as e:
+    except (FileNotFoundError, ValueError, IndexError, RuntimeError, UnidentifiedImageError) as e:
         raise AssertionError(str(e))
 
     assert img.ndim == 3, f"Got wrong number of dimensions ({img.ndim} != 3) for loaded image '{image_path}'"
