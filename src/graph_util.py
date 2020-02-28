@@ -17,6 +17,8 @@ def download_model(download_base, model_name, model_path, extract_all=False):
     :param model_path: Directory where the downloaded model shoud be stored.
     :type model_path: str
     """
+    os.makedirs(model_path, exist_ok=True)
+
     tf.keras.utils.get_file(model_path + ".tar.gz", download_base + model_name + ".tar.gz")
     tar_file = tarfile.open(model_path + '.tar.gz')
 
@@ -32,23 +34,3 @@ def download_model(download_base, model_name, model_path, extract_all=False):
                 tar_file.extract(file, os.path.dirname(model_path))
 
     tar_file.close()
-
-
-def load_graph(path):
-    """
-    Load the TensorFlow graph stored at 'path'.
-
-    :param path: Local path to TensorFlow graph.
-    :type path: str
-    :return: Loaded graph
-    :rtype: tf.Graph
-    """
-    # Load model graph
-    detection_graph = tf.Graph()
-    with detection_graph.as_default():
-        od_graph_def = tf.compat.v1.GraphDef()
-        with tf.io.gfile.GFile(path, 'rb') as fid:
-            serialized_graph = fid.read()
-            od_graph_def.ParseFromString(serialized_graph)
-            tf.import_graph_def(od_graph_def, name='')
-    return detection_graph

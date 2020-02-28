@@ -1,13 +1,7 @@
 import os
 
-from src.config import PROJECT_ROOT
 from src.TreeWalker import TreeWalker
 
-
-# File discovery
-# Skip webp
-# Weird directory names
-# Correct input-output correspondence
 
 EXPECTED_FILES = [
     os.path.join("tests", "data", "in", "%#{} _  _ _", "test_0.jpg"),
@@ -23,30 +17,36 @@ def _check_files(tree_walker, expected_files):
 
 
 def test_TreeWalker_find_files():
+    """
+    Check that the TreeWalker finds a;; the files it is supposed to find.
+    """
     base_input_dir = os.path.join("tests", "data", "in")
     base_output_dir = os.path.join("tests", "data", "out")
 
     # Check that all files are discovered when .webp skipping is disabled
-    _check_files(TreeWalker(input_folder=base_input_dir, output_folder=base_output_dir, skip_webp=False,
+    _check_files(TreeWalker(input_folder=base_input_dir, mirror_folders=[base_output_dir], skip_webp=False,
                             precompute_paths=False), EXPECTED_FILES)
-    _check_files(TreeWalker(input_folder=base_input_dir, output_folder=base_output_dir, skip_webp=False,
+    _check_files(TreeWalker(input_folder=base_input_dir, mirror_folders=[base_output_dir], skip_webp=False,
                             precompute_paths=True), EXPECTED_FILES)
 
     # Check that all files are discovered when .webp skipping is disabled
     expected_files = EXPECTED_FILES.copy()
     expected_files.remove(os.path.join("tests", "data", "in", "åæø", "test_1.jpg"))
 
-    _check_files(TreeWalker(input_folder=base_input_dir, output_folder=base_output_dir, skip_webp=True,
+    _check_files(TreeWalker(input_folder=base_input_dir, mirror_folders=[base_output_dir], skip_webp=True,
                             precompute_paths=False), expected_files)
-    _check_files(TreeWalker(input_folder=base_input_dir, output_folder=base_output_dir, skip_webp=True,
+    _check_files(TreeWalker(input_folder=base_input_dir, mirror_folders=[base_output_dir], skip_webp=True,
                             precompute_paths=True), expected_files)
 
 
-def test_TreeWalker_input_outout_correspondence():
+def test_TreeWalker_input_output_correspondence():
+    """
+    Make sure that the the mirror paths from the TreeWalker are correct.
+    """
     base_input_dir = "foo"
     base_output_dir = "bar"
 
-    tree_walker = TreeWalker(input_folder=base_input_dir, output_folder=base_output_dir)
+    tree_walker = TreeWalker(input_folder=base_input_dir, mirror_folders=[base_output_dir])
 
     # Convenience alias
     j = lambda *args: os.path.join(*args)
@@ -59,6 +59,6 @@ def test_TreeWalker_input_outout_correspondence():
     ]
 
     for input_dir, expected_output_dir in test_subdirs:
-        output_dir = tree_walker._get_output_path(input_dir)
+        output_dir = tree_walker._get_mirror_paths(input_dir)[0]
         assert output_dir == expected_output_dir, f"Expected output dir '{expected_output_dir}' for input dir " \
                                                   f"'{input_dir}' but got '{output_dir}' instead."

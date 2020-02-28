@@ -5,6 +5,9 @@ from src.Masker import Masker
 
 
 def test_Masker_bad_input():
+    """
+    Check that Masker.mask() raises an assertion error on "bad" input images.
+    """
     masker = Masker()
 
     bad_imgs = {

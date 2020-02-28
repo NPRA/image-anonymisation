@@ -22,7 +22,7 @@ archive_mask = False
 delete_input = False
 #: When this flag is set, the masks will be recomputed even though the .webp file exists.
 force_remask = False
-#: When this flag is set, the file tree will be traversed during the masking process. "
+#: When this flag is set, the file tree will be traversed during the masking process.
 #: Otherwise, all paths will be identified and stored before the masking starts
 lazy_paths = False
 #: "RGB tuple [0-255] indicating the masking color. Setting this option will override the
@@ -38,7 +38,7 @@ blur = None
 
 #: Root directory for the project
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
-#: Directory containing saved mdoels
+#: Directory containing saved models
 GRAPH_DIRECTORY = os.path.join(PROJECT_ROOT, "graphs")
 #: Name of the masking model
 # Slow
