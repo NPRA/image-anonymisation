@@ -3,6 +3,7 @@ import time
 import logging
 import argparse
 from shutil import copy2
+from datetime import datetime, timedelta
 
 import config
 from src import image_util
@@ -26,15 +27,14 @@ def get_args():
 def check_config(args):
     """ Check that the specified configuration variables are valid. """
     if config.archive_json and not config.remote_json:
-        raise ValueError("Argument '--archive-json' requires --remote-json.")
+        raise ValueError("Parameter 'archive_json' requires remote_json=True.")
     if config.archive_mask and not config.remote_mask:
-        raise ValueError("Argument '--archive-mask' requires --remote-mask.")
+        raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
 
     if config.delete_input:
-        LOGGER.warning(__name__, "Argument '--delete-input-image' is enabled. This will permanently delete the original"
+        LOGGER.warning(__name__, "Parameter 'delete_input' is enabled. This will permanently delete the original"
                                  " image from the input directory!")
-        assert args.archive_folder, "Argument '--delete-input-image' requires a valid archive directory to be " \
-                                      "specified"
+        assert args.archive_folder, "Argument 'delete_input' requires a valid archive directory to be specified."
 
 
 def _copy_file(source_path, destination_path, filename, ext=None):
@@ -80,6 +80,7 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
 
 def main():
     """Run the masking."""
+    start_datetime = datetime.now()
     # Configure logger
     logging.basicConfig(level=logging.INFO, format="(%(levelname)s): %(message)s")
     # Get arguments
@@ -102,55 +103,62 @@ def main():
     # Initialize the walker
     tree_walker = TreeWalker(base_input_dir, mirror_dirs, skip_webp=(not config.force_remask),
                              precompute_paths=(not config.lazy_paths))
-    n_imgs = "?" if config.lazy_paths else str(tree_walker.n_valid_images)
+    n_imgs = "?" if config.lazy_paths else tree_walker.n_valid_images
+    n_masked = 0
 
     # Initialize the masker
     masker = Masker()
     # Mask images
+    time_at_iter_start = time.time()
     for i, (input_path, mirror_paths, filename) in enumerate(tree_walker.walk()):
         output_path = mirror_paths[0]
         image_path = os.path.join(input_path, filename)
         LOGGER.set_state(input_path, output_path, filename)
         count_str = f"{i+1} of {n_imgs}"
 
-        # Load image
         try:
+            # Load image
             img, exif = image_util.load_image(image_path, read_exif=True)
-        except AssertionError as err:
-            LOGGER.error(__name__, f"Got error '{str(err)}' while loading image {count_str}. File: {image_path}.",
-                         save=True)
-            continue
-
-        # Mask image
-        try:
+            # Start masking
             start_time = time.time()
             mask_results = masker.mask(img)
-        except AssertionError as err:
-            LOGGER.error(__name__, f"Got error '{str(err)}' while masking image {count_str}. File: {image_path}.",
-                         save=True)
-            continue
-
-        # Save results
-        try:
+            # Save results
             image_util.save_processed_img(img, mask_results, exif, input_path=input_path, output_path=output_path,
                                           filename=filename, draw_mask=config.draw_mask, local_json=config.local_json,
                                           remote_json=config.remote_json, local_mask=config.local_mask,
                                           remote_mask=config.remote_mask, mask_color=config.mask_color,
                                           blur=config.blur)
+        # Catch any AssertionErrors encountered while processing the image.
         except AssertionError as err:
-            LOGGER.error(__name__, f"Got error '{str(err)}' while exporting masked image {count_str}. File: "
+            LOGGER.error(__name__, f"Got error '{str(err)}' while processing image {count_str}. File: "
                                    f"{image_path}.", save=True)
             continue
 
+        n_masked += 1
         time_delta = "{:.3f}".format(time.time() - start_time)
-        LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. File: {image_path}.")
+        if not config.lazy_paths:
+            time_since_start = time.time() - time_at_iter_start
+            est_time_remaining = (time_since_start / n_masked) * (n_imgs - n_masked)
+            est_done = (datetime.now() + timedelta(seconds=est_time_remaining)).strftime("%Y-%m-%d, %H:%M:%S")
+        else:
+            est_done = "?"
+
+        LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: {image_path}.")
 
         # Archive
         if args.archive_folder is not None:
             os.makedirs(mirror_paths[1], exist_ok=True)
             archive(input_path, mirror_paths, filename, archive_json=config.archive_json,
                     archive_mask=config.archive_mask, delete_input_img=config.delete_input)
-            # LOGGER.info(__name__, f"Archived image {image_path}")
+
+    # Summary
+    LOGGER.info(__name__, "")
+    LOGGER.info(__name__, f"Number of identified images: "
+                          f"{tree_walker.n_valid_images + tree_walker.n_skipped_images}")
+    LOGGER.info(__name__, f"Number of masked images: {n_masked}")
+    LOGGER.info(__name__, f"Number of images skipped due to existing masks: {tree_walker.n_skipped_images}")
+    LOGGER.info(__name__, f"Number of images skipped due to errors: {tree_walker.n_valid_images - n_masked}")
+    LOGGER.info(__name__, f"Total time spent: {str(datetime.now() - start_datetime)}")
 
 
 if __name__ == '__main__':
