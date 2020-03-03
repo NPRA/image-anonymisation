@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import argparse
+import multiprocessing
 from shutil import copy2
 from datetime import datetime, timedelta
 
@@ -108,6 +109,10 @@ def main():
 
     # Initialize the masker
     masker = Masker()
+    # multiprocessing.Pool for asynchronous result export
+    pool = multiprocessing.Pool(processes=1)
+    export_result = None
+
     # Mask images
     time_at_iter_start = time.time()
     for i, (input_path, mirror_paths, filename) in enumerate(tree_walker.walk()):
@@ -122,12 +127,22 @@ def main():
             # Start masking
             start_time = time.time()
             mask_results = masker.mask(img)
+
+            # Make sure that the previous export is done before starting a new one.
+            if export_result is not None:
+                assert export_result.get() == 0
             # Save results
-            image_util.save_processed_img(img, mask_results, exif, input_path=input_path, output_path=output_path,
-                                          filename=filename, draw_mask=config.draw_mask, local_json=config.local_json,
-                                          remote_json=config.remote_json, local_mask=config.local_mask,
-                                          remote_mask=config.remote_mask, mask_color=config.mask_color,
-                                          blur=config.blur)
+            export_result = pool.apply_async(
+                image_util.save_processed_img,
+                args=(img, mask_results, exif),
+                kwds=dict(
+                    input_path=input_path, output_path=output_path,
+                    filename=filename, draw_mask=config.draw_mask, local_json=config.local_json,
+                    remote_json=config.remote_json, local_mask=config.local_mask,
+                    remote_mask=config.remote_mask, mask_color=config.mask_color,
+                    blur=config.blur
+                )
+            )
         # Catch any AssertionErrors encountered while processing the image.
         except AssertionError as err:
             LOGGER.error(__name__, f"Got error '{str(err)}' while processing image {count_str}. File: "

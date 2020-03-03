@@ -21,7 +21,7 @@ class Masker:
         Initialize the TensorFlow-graph
         """
         # Download and extract model
-        if not os.path.exists(config.PATH_TO_FROZEN_GRAPH):
+        if not os.path.exists(config.MODEL_PATH):
             LOGGER.info(__name__, "Could not find the model graph file. Downloading...")
             graph_util.download_model(config.DOWNLOAD_BASE, config.MODEL_NAME, config.MODEL_PATH, extract_all=True)
             LOGGER.info(__name__, "Model graph file downloaded.")

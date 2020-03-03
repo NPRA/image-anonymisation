@@ -80,6 +80,9 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
                  should be a number in [1 - 1000] indicating the size of the mask used in for blurring. Specifically,
                  `mask_size = (blur / 1000) * image_width`.
     :type blur: int | float | None
+
+    :returns: 0
+    :rtype: int
     """
     os.makedirs(output_path, exist_ok=True)
 
@@ -112,6 +115,7 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
 
     pil_img = Image.fromarray(img[0].astype(np.uint8))
     pil_img.save(os.path.join(output_path, filename))
+    return 0
 
 
 def _get_detected_objects_dict(mask_results):
