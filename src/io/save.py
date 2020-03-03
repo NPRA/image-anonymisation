@@ -1,46 +1,13 @@
-"""
-Utility functions for working with images.
-"""
 import os
 import webp
 import numpy as np
-from PIL import Image, UnidentifiedImageError
+from shutil import copy2
+from PIL import Image
 from cv2 import blur as cv2_blur
 
 import config
-from src.exif_util import get_exif, write_exif
 from src.Logger import LOGGER
-from src.mscoco_label_map import LABEL_MAP
-
-
-def load_image(image_path, read_exif=True):
-    """
-    Reads the image at 'image_path' and returns it as an array. None is returned i the image could not be loaded.
-
-    :param image_path: Path to image. Must end with '.jpg'
-    :type image_path: str
-    :param read_exif: Read the EXIF data from the input image?
-    :type read_exif: bool
-    :return: Image array
-    :rtype: (np.ndarray, dict | None) | None
-    """
-    assert os.path.exists(image_path), f"Could not find image at '{image_path}'"
-    assert image_path.endswith(".jpg"), f"Expected image with .jpg extension. Got '{image_path}'"
-
-    try:
-        pil_img = Image.open(image_path)
-        img = np.array(pil_img)
-
-        if read_exif:
-            exif = get_exif(pil_img)
-        else:
-            exif = None
-    except (FileNotFoundError, ValueError, IndexError, RuntimeError, UnidentifiedImageError) as e:
-        raise AssertionError(str(e))
-
-    assert img.ndim == 3, f"Got wrong number of dimensions ({img.ndim} != 3) for loaded image '{image_path}'"
-    assert img.shape[2] == 3, f"Got wrong number of channels ({img.shape[2]} != 3) for loaded image '{image_path}'"
-    return np.expand_dims(img, 0), exif
+from src.io.exif_util import write_exif
 
 
 def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
@@ -98,24 +65,65 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
         else:
             _draw_mask_on_img(img, mask_results, mask_color=mask_color)
 
+    # Save masked image
+    pil_img = Image.fromarray(img[0].astype(np.uint8))
+    pil_img.save(os.path.join(output_path, filename))
+
+    # Save metadata and .webp mask
     json_filename = os.path.splitext(filename)[0] + ".json"
     webp_filename = os.path.splitext(filename)[0] + ".webp"
-
     if json_objects:
         exif["detected_objects"] = _get_detected_objects_dict(mask_results)
-
-    if local_mask:
-        _save_mask(agg_mask, os.path.join(input_path, webp_filename))
-    if remote_mask:
-        _save_mask(agg_mask, os.path.join(output_path, webp_filename))
     if local_json:
         write_exif(exif, os.path.join(input_path, json_filename))
     if remote_json:
         write_exif(exif, os.path.join(output_path, json_filename))
-
-    pil_img = Image.fromarray(img[0].astype(np.uint8))
-    pil_img.save(os.path.join(output_path, filename))
+    if local_mask:
+        _save_mask(agg_mask, os.path.join(input_path, webp_filename))
+    if remote_mask:
+        _save_mask(agg_mask, os.path.join(output_path, webp_filename))
     return 0
+
+
+def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json=False, delete_input_img=False):
+    """
+    Copy the input image file (and possibly some output files) to the archive directory.
+
+    :param input_path: Path to the directory containing the input image.
+    :type input_path: str
+    :param mirror_paths: List with at least two elements, containing the output path and the archive path.
+    :type mirror_paths: list of str
+    :param filename: Name of image-file
+    :type filename: str
+    :param archive_mask: Copy the mask file to the archive directory?
+    :type archive_mask: bool
+    :param archive_json: Copy the EXIF file to the archive directory?
+    :type archive_json: bool
+    :param delete_input_img: Delete the image from the input directory?
+    :type delete_input_img: bool
+    """
+    input_jpg = _copy_file(input_path, mirror_paths[1], filename, ext=None)
+    if archive_mask:
+        _copy_file(mirror_paths[0], mirror_paths[1], filename, ext=".webp")
+    if archive_json:
+        _copy_file(mirror_paths[0], mirror_paths[1], filename, ext=".json")
+    if delete_input_img:
+        os.remove(input_jpg)
+
+
+def _copy_file(source_path, destination_path, filename, ext=None):
+    if ext is not None:
+        filename = os.path.splitext(filename)[0] + ext
+
+    source_file = os.path.join(source_path, filename)
+    destination_file = os.path.join(destination_path, filename)
+
+    if os.path.exists(destination_file):
+        LOGGER.warning(__name__, f"Archive file {destination_file} already exists. The existing file will be "
+                                 f"overwritten.")
+
+    copy2(source_file, destination_file)
+    return source_file
 
 
 def _get_detected_objects_dict(mask_results):
@@ -124,7 +132,7 @@ def _get_detected_objects_dict(mask_results):
         # Find unique objects and count them
         objs, counts = np.unique(objs, return_counts=True)
         # Convert object from id to string
-        objs = [LABEL_MAP[int(obj_id)] for obj_id in objs]
+        objs = [config.LABEL_MAP[int(obj_id)] for obj_id in objs]
         # Create dict
         objs = dict(zip(objs, counts.astype(str)))
     else:

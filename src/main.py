@@ -7,8 +7,9 @@ from shutil import copy2
 from datetime import datetime, timedelta
 
 import config
-from src import image_util
-from src.TreeWalker import TreeWalker
+from src.io.load import load_image
+from src.io.save import save_processed_img, archive
+from src.io.TreeWalker import TreeWalker
 from src.Masker import Masker
 from src.Logger import LOGGER
 
@@ -36,47 +37,6 @@ def check_config(args):
         LOGGER.warning(__name__, "Parameter 'delete_input' is enabled. This will permanently delete the original"
                                  " image from the input directory!")
         assert args.archive_folder, "Argument 'delete_input' requires a valid archive directory to be specified."
-
-
-def _copy_file(source_path, destination_path, filename, ext=None):
-    if ext is not None:
-        filename = os.path.splitext(filename)[0] + ext
-
-    source_file = os.path.join(source_path, filename)
-    destination_file = os.path.join(destination_path, filename)
-
-    if os.path.exists(destination_file):
-        LOGGER.warning(__name__, f"Archive file {destination_file} already exists. The existing file will be "
-                                 f"overwritten.")
-
-    copy2(source_file, destination_file)
-    return source_file
-
-
-def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json=False, delete_input_img=False):
-    """
-    Copy the input image file (and possibly some output files) to the archive directory.
-
-    :param input_path: Path to the directory containing the input image.
-    :type input_path: str
-    :param mirror_paths: List with at least two elements, containing the output path and the archive path.
-    :type mirror_paths: list of str
-    :param filename: Name of image-file
-    :type filename: str
-    :param archive_mask: Copy the mask file to the archive directory?
-    :type archive_mask: bool
-    :param archive_json: Copy the EXIF file to the archive directory?
-    :type archive_json: bool
-    :param delete_input_img: Delete the image from the input directory?
-    :type delete_input_img: bool
-    """
-    input_jpg = _copy_file(input_path, mirror_paths[1], filename, ext=None)
-    if archive_mask:
-        _copy_file(mirror_paths[0], mirror_paths[1], filename, ext=".webp")
-    if archive_json:
-        _copy_file(mirror_paths[0], mirror_paths[1], filename, ext=".json")
-    if delete_input_img:
-        os.remove(input_jpg)
 
 
 def main():
@@ -122,10 +82,10 @@ def main():
         count_str = f"{i+1} of {n_imgs}"
 
         try:
-            # Load image
-            img, exif = image_util.load_image(image_path, read_exif=True)
-            # Start masking
             start_time = time.time()
+            # Load image
+            img, exif = load_image(image_path, read_exif=True)
+            # Start masking
             mask_results = masker.mask(img)
 
             # Make sure that the previous export is done before starting a new one.
@@ -133,7 +93,7 @@ def main():
                 assert export_result.get() == 0
             # Save results
             export_result = pool.apply_async(
-                image_util.save_processed_img,
+                save_processed_img,
                 args=(img, mask_results, exif),
                 kwds=dict(
                     input_path=input_path, output_path=output_path,

@@ -1,6 +1,6 @@
 import os
 
-from src.TreeWalker import TreeWalker
+from src.io.TreeWalker import TreeWalker
 
 
 EXPECTED_FILES = [
