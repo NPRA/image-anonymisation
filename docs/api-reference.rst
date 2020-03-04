@@ -7,14 +7,31 @@ config
 .. automodule:: config
    :members:
 
-graph_util
+io
 =========================
-.. automodule:: src.graph_util
+io.exif_util
+-------------------------
+.. automodule:: src.io.exif_util
    :members:
 
-image_util
-=========================
-.. automodule:: src.image_util
+io.load
+-------------------------
+.. automodule:: src.io.load
+   :members:
+
+io.save
+-------------------------
+.. automodule:: src.io.save
+   :members:
+
+io.tf_dataset
+-------------------------
+.. automodule:: src.io.tf_dataset
+   :members:
+
+io.TreeWalker
+-------------------------
+.. automodule:: src.io.TreeWalker
    :members:
 
 main
@@ -25,9 +42,4 @@ main
 Masker
 =========================
 .. automodule:: src.Masker
-   :members:
-
-TreeWalker
-=========================
-.. automodule:: src.TreeWalker
    :members:
