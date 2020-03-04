@@ -39,9 +39,14 @@ def check_config(args):
         assert args.archive_folder, "Argument 'delete_input' requires a valid archive directory to be specified."
 
 
-def main():
-    """Run the masking."""
-    start_datetime = datetime.now()
+def initialize():
+    """
+    Get command line arguments, and initialize the TreeWalker and Masker.
+
+    :return: Command line arguments, an instance of `TreeWalker` initialized at the specified directories, and an
+             instance of `Masker` ready for masking.
+    :rtype: argparse.Namespace, TreeWalker, Masker
+    """
     # Configure logger
     logging.basicConfig(level=logging.INFO, format="(%(levelname)s): %(message)s")
     # Get arguments
@@ -64,11 +69,107 @@ def main():
     # Initialize the walker
     tree_walker = TreeWalker(base_input_dir, mirror_dirs, skip_webp=(not config.force_remask),
                              precompute_paths=(not config.lazy_paths))
+    # Initialize the masker
+    masker = Masker()
+    return args, tree_walker, masker
+
+
+def process_image(image_path, masker, pool, export_result, input_path, output_path, filename):
+    """
+    Complete procedure for processing a single image.
+
+    :param image_path: Full path to the image. Must end with '.jpg'.
+    :type image_path: str
+    :param masker: Instance of `Masker` to use for computing masks.
+    :type masker: Masker
+    :param pool: Processing pool for asynchronous export of results.
+    :type pool: multiprocessing.Pool
+    :param export_result: Result of previous call to `pool.apply_async`. This is used to ensure that the previous export
+                          is complete before a new one is started.
+    :type export_result: multiprocessing.ApplyResult
+    :param input_path: Full path to directory of input image
+    :type input_path: str
+    :param output_path: Full path to directory of output files
+    :type output_path: str
+    :param filename: Name of image file
+    :type filename: str
+
+    :return: Result from the current call to `pool.apply_async`
+    :rtype: multiprocessing.ApplyResult
+    """
+    # Load image
+    img, exif = load_image(image_path, read_exif=True)
+    # Start masking
+    mask_results = masker.mask(img)
+
+    # Make sure that the previous export is done before starting a new one.
+    if export_result is not None:
+        assert export_result.get() == 0
+    # Save results
+    export_result = pool.apply_async(
+        save_processed_img,
+        args=(img, mask_results, exif),
+        kwds=dict(
+            input_path=input_path, output_path=output_path,
+            filename=filename, draw_mask=config.draw_mask, local_json=config.local_json,
+            remote_json=config.remote_json, local_mask=config.local_mask,
+            remote_mask=config.remote_mask, mask_color=config.mask_color,
+            blur=config.blur
+        )
+    )
+    return export_result
+
+
+def get_estimated_done(time_at_iter_start, n_imgs, n_masked):
+    """
+    Get the estimated completion time for the program.
+
+    :param time_at_iter_start: Time of iteration start
+    :type time_at_iter_start: float
+    :param n_imgs: Number of total images to process. If this is not an int or a float, a "?" will be returned.
+    :type n_imgs: int | float | str
+    :param n_masked: Number of completed images
+    :type n_masked: int
+
+    :return: String-formatted estimated time of completion
+    :rtype: str
+    """
+    if not isinstance(n_imgs, (int, float)):
+        return "?"
+    time_since_start = time.time() - time_at_iter_start
+    est_time_remaining = (time_since_start / n_masked) * (n_imgs - n_masked)
+    est_done = (datetime.now() + timedelta(seconds=est_time_remaining)).strftime("%Y-%m-%d, %H:%M:%S")
+    return est_done
+
+
+def log_summary(tree_walker, n_masked, start_datetime):
+    """
+    Log a summary of the masking process.
+
+    :param tree_walker: `TreeWalker` instance used in masking.
+    :type tree_walker: TreeWalker
+    :param n_masked: Number of masked images
+    :type n_masked: int
+    :param start_datetime: Datetime object indicating when the program started.
+    :type start_datetime: datetime.datetime
+    """
+    LOGGER.info(__name__, "")
+    LOGGER.info(__name__, f"Number of identified images: "
+                          f"{tree_walker.n_valid_images + tree_walker.n_skipped_images}")
+    LOGGER.info(__name__, f"Number of masked images: {n_masked}")
+    LOGGER.info(__name__, f"Number of images skipped due to existing masks: {tree_walker.n_skipped_images}")
+    LOGGER.info(__name__, f"Number of images skipped due to errors: {tree_walker.n_valid_images - n_masked}")
+    LOGGER.info(__name__, f"Total time spent: {str(datetime.now() - start_datetime)}")
+
+
+def main():
+    """Run the masking."""
+    # Initialize
+    start_datetime = datetime.now()
+    args, tree_walker, masker = initialize()
     n_imgs = "?" if config.lazy_paths else tree_walker.n_valid_images
     n_masked = 0
 
-    # Initialize the masker
-    masker = Masker()
     # multiprocessing.Pool for asynchronous result export
     pool = multiprocessing.Pool(processes=1)
     export_result = None
@@ -80,30 +181,12 @@ def main():
         image_path = os.path.join(input_path, filename)
         LOGGER.set_state(input_path, output_path, filename)
         count_str = f"{i+1} of {n_imgs}"
+        start_time = time.time()
 
-        try:
-            start_time = time.time()
-            # Load image
-            img, exif = load_image(image_path, read_exif=True)
-            # Start masking
-            mask_results = masker.mask(img)
-
-            # Make sure that the previous export is done before starting a new one.
-            if export_result is not None:
-                assert export_result.get() == 0
-            # Save results
-            export_result = pool.apply_async(
-                save_processed_img,
-                args=(img, mask_results, exif),
-                kwds=dict(
-                    input_path=input_path, output_path=output_path,
-                    filename=filename, draw_mask=config.draw_mask, local_json=config.local_json,
-                    remote_json=config.remote_json, local_mask=config.local_mask,
-                    remote_mask=config.remote_mask, mask_color=config.mask_color,
-                    blur=config.blur
-                )
-            )
         # Catch any AssertionErrors encountered while processing the image.
+        try:
+            # Do the processing
+            export_result = process_image(image_path, masker, pool, export_result, input_path, output_path, filename)
         except AssertionError as err:
             LOGGER.error(__name__, f"Got error '{str(err)}' while processing image {count_str}. File: "
                                    f"{image_path}.", save=True)
@@ -111,14 +194,9 @@ def main():
 
         n_masked += 1
         time_delta = "{:.3f}".format(time.time() - start_time)
-        if not config.lazy_paths:
-            time_since_start = time.time() - time_at_iter_start
-            est_time_remaining = (time_since_start / n_masked) * (n_imgs - n_masked)
-            est_done = (datetime.now() + timedelta(seconds=est_time_remaining)).strftime("%Y-%m-%d, %H:%M:%S")
-        else:
-            est_done = "?"
-
-        LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: {image_path}.")
+        est_done = get_estimated_done(time_at_iter_start, n_imgs, n_masked)
+        LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
+                              f"{image_path}.")
 
         # Archive
         if args.archive_folder is not None:
@@ -127,13 +205,9 @@ def main():
                     archive_mask=config.archive_mask, delete_input_img=config.delete_input)
 
     # Summary
-    LOGGER.info(__name__, "")
-    LOGGER.info(__name__, f"Number of identified images: "
-                          f"{tree_walker.n_valid_images + tree_walker.n_skipped_images}")
-    LOGGER.info(__name__, f"Number of masked images: {n_masked}")
-    LOGGER.info(__name__, f"Number of images skipped due to existing masks: {tree_walker.n_skipped_images}")
-    LOGGER.info(__name__, f"Number of images skipped due to errors: {tree_walker.n_valid_images - n_masked}")
-    LOGGER.info(__name__, f"Total time spent: {str(datetime.now() - start_datetime)}")
+    log_summary(tree_walker, n_masked, start_datetime)
+    # Close the processing pool
+    pool.close()
 
 
 if __name__ == '__main__':
