@@ -14,6 +14,14 @@ from src.io.tf_dataset import get_tf_dataset
 from src.Masker import Masker
 from src.Logger import LOGGER
 
+# Exceptions to catch when processing an image
+PROCESSING_EXCEPTIONS = (
+    AssertionError,
+    tf.errors.InvalidArgumentError,
+    tf.errors.UnknownError,
+    tf.errors.NotFoundError,
+)
+
 
 def get_args():
     """ Get the command-line arguments. """
@@ -200,7 +208,8 @@ def main():
             # Do the processing
             export_result = process_image(img, image_path, masker, pool, export_result, input_path, output_path,
                                           filename)
-        except (AssertionError, tf.errors.InvalidArgumentError) as err:
+        # Catch potential exceptions raised while processing the image
+        except PROCESSING_EXCEPTIONS as err:
             LOGGER.error(__name__, f"Got error '{str(err)}' while processing image {count_str}. File: "
                                    f"{image_path}.", save=True)
             continue
