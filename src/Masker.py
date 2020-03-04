@@ -37,8 +37,7 @@ class Masker:
         :return: Dictionary containing masking results. Content depends on the model used.
         :rtype: dict
         """
-        # check_input_img(image)
-        masking_results = self.model(tf.constant(image, tf.uint8))
+        masking_results = self.model(image)
         num_detections = masking_results["num_detections"].numpy().squeeze()
         reframed_masks = _reframe_masks(masking_results, tf.constant(image.shape, tf.int32))
 
@@ -68,15 +67,6 @@ def tensor_dict_to_numpy(input_dict, ignore_keys=tuple()):
             else:
                 output_dict[key] = value
     return output_dict
-
-
-def check_input_img(img):
-    assert img.ndim == 4, "Expected a 4D image tensor (batch, height, width, channel)."
-    assert img.shape[0] == 1, "Batch size != 1 is currently not supported."
-    assert img.shape[3] == 3, "Image must have 3 channels."
-    assert (np.array(img.shape) > 0).all(), "All image dimensions must be > 0."
-    assert np.isfinite(img).all(), "Got non-finite numbers in input image."
-    assert ((img >= 0) & (img <= 255)).all(), "Expected all pixel-values to be in [0, ..., 255]."
 
 
 def download_model(download_base, model_name, model_path, extract_all=False):

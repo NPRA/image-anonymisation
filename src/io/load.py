@@ -33,3 +33,19 @@ def load_image(image_path, read_exif=True):
     assert img.ndim == 3, f"Got wrong number of dimensions ({img.ndim} != 3) for loaded image '{image_path}'"
     assert img.shape[2] == 3, f"Got wrong number of channels ({img.shape[2]} != 3) for loaded image '{image_path}'"
     return np.expand_dims(img, 0), exif
+
+
+def check_input_img(img):
+    """
+    Check that the given image (represented as a numpy array) is valid for masking.
+
+    :param img: Input image
+    :type img: np.ndarray
+    """
+    assert img.ndim == 4, "Expected a 4D image tensor (batch, height, width, channel)."
+    assert img.shape[0] == 1, "Batch size != 1 is currently not supported."
+    assert img.shape[3] == 3, "Image must have 3 channels."
+    assert (np.array(img.shape) > 0).all(), "All image dimensions must be > 0."
+    assert np.isfinite(img).all(), "Got non-finite numbers in input image."
+    assert ((img >= 0) & (img <= 255)).all(), "Expected all pixel-values to be in [0, ..., 255]."
+    return 0

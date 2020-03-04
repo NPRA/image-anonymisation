@@ -3,13 +3,14 @@ import time
 import logging
 import argparse
 import multiprocessing
-from shutil import copy2
 from datetime import datetime, timedelta
+import tensorflow as tf
 
 import config
-from src.io.load import load_image
+from src.io.exif_util import exif_from_file
 from src.io.save import save_processed_img, archive
 from src.io.TreeWalker import TreeWalker
+from src.io.tf_dataset import get_tf_dataset
 from src.Masker import Masker
 from src.Logger import LOGGER
 
@@ -71,13 +72,17 @@ def initialize():
                              precompute_paths=(not config.lazy_paths))
     # Initialize the masker
     masker = Masker()
-    return args, tree_walker, masker
+    # Create the TensorFlow datatset
+    dataset = get_tf_dataset(tree_walker)
+    return args, tree_walker, masker, dataset
 
 
-def process_image(image_path, masker, pool, export_result, input_path, output_path, filename):
+def process_image(img, image_path, masker, pool, export_result, input_path, output_path, filename):
     """
     Complete procedure for processing a single image.
 
+    :param img: Input image
+    :type img: tf.python.framework.ops.EagerTensor
     :param image_path: Full path to the image. Must end with '.jpg'.
     :type image_path: str
     :param masker: Instance of `Masker` to use for computing masks.
@@ -98,10 +103,12 @@ def process_image(image_path, masker, pool, export_result, input_path, output_pa
     :rtype: multiprocessing.ApplyResult
     """
     # Load image
-    img, exif = load_image(image_path, read_exif=True)
+    exif = exif_from_file(image_path)
     # Start masking
     mask_results = masker.mask(img)
 
+    # Convert to numpy array for exporting
+    img = img.numpy()
     # Make sure that the previous export is done before starting a new one.
     if export_result is not None:
         assert export_result.get() == 0
@@ -166,7 +173,7 @@ def main():
     """Run the masking."""
     # Initialize
     start_datetime = datetime.now()
-    args, tree_walker, masker = initialize()
+    args, tree_walker, masker, dataset = initialize()
     n_imgs = "?" if config.lazy_paths else tree_walker.n_valid_images
     n_masked = 0
 
@@ -174,20 +181,26 @@ def main():
     pool = multiprocessing.Pool(processes=1)
     export_result = None
 
+    dataset_iterator = iter(dataset)
+
     # Mask images
     time_at_iter_start = time.time()
     for i, (input_path, mirror_paths, filename) in enumerate(tree_walker.walk()):
+        count_str = f"{i+1} of {n_imgs}"
+
         output_path = mirror_paths[0]
         image_path = os.path.join(input_path, filename)
         LOGGER.set_state(input_path, output_path, filename)
-        count_str = f"{i+1} of {n_imgs}"
         start_time = time.time()
 
-        # Catch any AssertionErrors encountered while processing the image.
+        # Catch errors encountered while processing the image.
         try:
+            # Get the image
+            img = next(dataset_iterator)
             # Do the processing
-            export_result = process_image(image_path, masker, pool, export_result, input_path, output_path, filename)
-        except AssertionError as err:
+            export_result = process_image(img, image_path, masker, pool, export_result, input_path, output_path,
+                                          filename)
+        except (AssertionError, tf.errors.InvalidArgumentError) as err:
             LOGGER.error(__name__, f"Got error '{str(err)}' while processing image {count_str}. File: "
                                    f"{image_path}.", save=True)
             continue

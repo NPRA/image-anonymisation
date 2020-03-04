@@ -9,7 +9,11 @@ from PIL import Image # Må installeres, pakken heter PILLOW
 from PIL.ExifTags import TAGS, GPSTAGS
 import xmltodict # Må installeres, rett fram
 
-from src.Logger import LOGGER
+
+def exif_from_file(image_path):
+    pil_img = Image.open(image_path)
+    exif = get_exif(pil_img)
+    return exif
 
 
 def get_exif(img):
