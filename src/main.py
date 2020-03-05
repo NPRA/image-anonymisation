@@ -4,6 +4,7 @@ import logging
 import argparse
 import multiprocessing
 from datetime import datetime, timedelta
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 
 import config
@@ -201,14 +202,13 @@ def main():
         LOGGER.set_state(input_path, output_path, filename)
         start_time = time.time()
 
-        # Catch errors encountered while processing the image.
+        # Catch potential exceptions raised while processing the image
         try:
             # Get the image
             img = next(dataset_iterator)
             # Do the processing
             export_result = process_image(img, image_path, masker, pool, export_result, input_path, output_path,
                                           filename)
-        # Catch potential exceptions raised while processing the image
         except PROCESSING_EXCEPTIONS as err:
             LOGGER.error(__name__, f"Got error '{str(err)}' while processing image {count_str}. File: "
                                    f"{image_path}.", save=True)
