@@ -1,11 +1,9 @@
 import os
 import time
-import pytest
 from shutil import rmtree, copytree
 from unittest import mock
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
-
 
 from src.main import main
 import config
