@@ -98,13 +98,16 @@ def process_image(img, image_path, masker, pool, export_result, archive_result, 
     :type masker: Masker
     :param pool: Processing pool for asynchronous export of results.
     :type pool: multiprocessing.Pool
-    :param export_result: Result of previous call to `pool.apply_async`. This is used to ensure that the previous export
-                          is complete before a new one is started.
+    :param export_result: Result of previous export call to `pool.apply_async`. This is used to ensure that the previous
+                          export is complete before a new one is started.
     :type export_result: multiprocessing.ApplyResult
+    :param archive_result: Result of previous archive call to `pool.apply_async`. This is used to ensure that the
+                           previous archiving is complete before a new one is started.
+    :type archive_result: multiprocessing.ApplyResult
     :param input_path: Full path to directory of input image
     :type input_path: str
-    :param output_path: Full path to directory of output files
-    :type output_path: str
+    :param mirror_paths: List with at least one element, containing the output path and optionally, the archive path.
+    :type mirror_paths: list of str
     :param filename: Name of image file
     :type filename: str
 
