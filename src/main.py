@@ -86,7 +86,7 @@ def initialize():
     return args, tree_walker, masker, dataset
 
 
-def process_image(img, image_path, masker, pool, export_result, input_path, output_path, filename):
+def process_image(img, image_path, masker, pool, export_result, archive_result, input_path, mirror_paths, filename):
     """
     Complete procedure for processing a single image.
 
@@ -126,14 +126,26 @@ def process_image(img, image_path, masker, pool, export_result, input_path, outp
         save_processed_img,
         args=(img, mask_results, exif),
         kwds=dict(
-            input_path=input_path, output_path=output_path,
+            input_path=input_path, output_path=mirror_paths[0],
             filename=filename, draw_mask=config.draw_mask, local_json=config.local_json,
             remote_json=config.remote_json, local_mask=config.local_mask,
             remote_mask=config.remote_mask, mask_color=config.mask_color,
             blur=config.blur
         )
     )
-    return export_result
+
+    if len(mirror_paths) > 1:
+        # Do async. archiving
+        os.makedirs(mirror_paths[1], exist_ok=True)
+        if archive_result is not None:
+            assert archive_result.get() == 0
+        archive_result = pool.apply_async(
+            archive,
+            args=(input_path, mirror_paths, filename),
+            kwds=dict(archive_json=config.archive_json, archive_mask=config.archive_mask,
+                      delete_input_img=config.delete_input, assert_output_mask=True)
+        )
+    return export_result, archive_result
 
 
 def get_estimated_done(time_at_iter_start, n_imgs, n_masked):
@@ -188,7 +200,7 @@ def main():
 
     # multiprocessing.Pool for asynchronous result export
     pool = multiprocessing.Pool(processes=1)
-    export_result = None
+    export_result = archive_result = None
 
     dataset_iterator = iter(dataset)
 
@@ -207,8 +219,10 @@ def main():
             # Get the image
             img = next(dataset_iterator)
             # Do the processing
-            export_result = process_image(img, image_path, masker, pool, export_result, input_path, output_path,
-                                          filename)
+            export_result, archive_result = process_image(img=img, image_path=image_path, masker=masker, pool=pool,
+                                                          export_result=export_result, archive_result=archive_result,
+                                                          input_path=input_path, mirror_paths=mirror_paths,
+                                                          filename=filename)
         except PROCESSING_EXCEPTIONS as err:
             LOGGER.error(__name__, f"Got error '{str(err)}' while processing image {count_str}. File: "
                                    f"{image_path}.", save=True)
@@ -219,12 +233,6 @@ def main():
         est_done = get_estimated_done(time_at_iter_start, n_imgs, n_masked)
         LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
                               f"{image_path}.")
-
-        # Archive
-        if args.archive_folder is not None:
-            os.makedirs(mirror_paths[1], exist_ok=True)
-            archive(input_path, mirror_paths, filename, archive_json=config.archive_json,
-                    archive_mask=config.archive_mask, delete_input_img=config.delete_input)
 
     # Summary
     log_summary(tree_walker, n_masked, start_datetime)

@@ -3,7 +3,7 @@ import webp
 import numpy as np
 from shutil import copy2
 from PIL import Image
-from cv2 import blur as cv2_blur
+import cv2
 
 import config
 from src.Logger import LOGGER
@@ -85,7 +85,8 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     return 0
 
 
-def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json=False, delete_input_img=False):
+def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json=False, delete_input_img=False,
+            assert_output_mask=True):
     """
     Copy the input image file (and possibly some output files) to the archive directory.
 
@@ -102,6 +103,10 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
     :param delete_input_img: Delete the image from the input directory?
     :type delete_input_img: bool
     """
+    if assert_output_mask:
+        output_mask = os.path.join(mirror_paths[0], os.path.splitext(filename)[0] + ".webp")
+        assert os.path.isfile(output_mask), f"Archiving aborted. Output mask '{output_mask}' not found."
+
     input_jpg = _copy_file(input_path, mirror_paths[1], filename, ext=None)
     if archive_mask:
         _copy_file(mirror_paths[0], mirror_paths[1], filename, ext=".webp")
@@ -109,6 +114,7 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
         _copy_file(mirror_paths[0], mirror_paths[1], filename, ext=".json")
     if delete_input_img:
         os.remove(input_jpg)
+    return 0
 
 
 def _copy_file(source_path, destination_path, filename, ext=None):
@@ -159,7 +165,8 @@ def _blur_mask_on_img(img, mask, blur_factor):
     if blur_factor < 1:
         return
     ksize = int((blur_factor / 1000) * img.shape[2])
-    blurred = cv2_blur(img[0], (ksize, ksize))[None, ...]
+    gray = cv2.cvtColor(img[0], cv2.COLOR_RGB2GRAY)
+    blurred = cv2.blur(gray, (ksize, ksize))[None, :, :, None]
     img[mask] = blurred[mask]
 
 
