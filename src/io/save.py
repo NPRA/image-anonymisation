@@ -12,7 +12,7 @@ from src.io.exif_util import write_exif
 
 def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
                        remote_json=False, local_mask=False, remote_mask=False, json_objects=True, mask_color=None,
-                       blur=None):
+                       blur=None, gray_blur=True):
     """
     Save an image which has been processed by the masker.
 
@@ -47,6 +47,8 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
                  should be a number in [1 - 1000] indicating the size of the mask used in for blurring. Specifically,
                  `mask_size = (blur / 1000) * image_width`.
     :type blur: int | float | None
+    :param gray_blur: Convert the image to grayscale before blurring?
+    :type gray_blur: bool
 
     :returns: 0
     :rtype: int
@@ -61,7 +63,7 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
 
     if draw_mask:
         if blur is not None:
-            _blur_mask_on_img(img, agg_mask, blur_factor=blur)
+            _blur_mask_on_img(img, agg_mask, blur_factor=blur, gray_blur=gray_blur)
         else:
             _draw_mask_on_img(img, mask_results, mask_color=mask_color)
 
@@ -102,6 +104,10 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
     :type archive_json: bool
     :param delete_input_img: Delete the image from the input directory?
     :type delete_input_img: bool
+    :param assert_output_mask: Assert that the output mask exists before archiving?
+    :type assert_output_mask: bool
+    :returns: 0
+    :rtype: int
     """
     if assert_output_mask:
         output_mask = os.path.join(mirror_paths[0], os.path.splitext(filename)[0] + ".webp")
@@ -161,12 +167,15 @@ def _draw_mask_on_img(img, mask_results, mask_color=None):
                 img[mask] = config.LABEL_COLORS.get(detected_label, config.DEFAULT_COLOR)
 
 
-def _blur_mask_on_img(img, mask, blur_factor):
+def _blur_mask_on_img(img, mask, blur_factor, gray_blur=True):
     if blur_factor < 1:
         return
     ksize = int((blur_factor / 1000) * img.shape[2])
-    gray = cv2.cvtColor(img[0], cv2.COLOR_RGB2GRAY)
-    blurred = cv2.blur(gray, (ksize, ksize))[None, :, :, None]
+    if gray_blur:
+        gray = cv2.cvtColor(img[0], cv2.COLOR_RGB2GRAY)
+        blurred = cv2.blur(gray, (ksize, ksize))[None, :, :, None]
+    else:
+        blurred = cv2.blur(img[0], (ksize, ksize))[None, ...]
     img[mask] = blurred[mask]
 
 
