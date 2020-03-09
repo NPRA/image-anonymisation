@@ -35,20 +35,23 @@ blur = 20
 #: Convert the image to grayscale before blurring? (Ignored if blurring is disabled)
 gray_blur = True
 
-
-# Model constants below. Change these at your own risk!
-
-#: Root directory for the project
-PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
-#: Directory containing saved models
-GRAPH_DIRECTORY = os.path.join(PROJECT_ROOT, "graphs")
-#: Name of the masking model
+#: Name of the masking model. Currently, there are three available models with varying speed and accuracy.
+#: The slowest models produces the most accurate masks, while the masks from the medium model are slightly worse.
+#: The masks from the `Fast` model are currently not recommended due to poor quality.
 # Slow
 # MODEL_NAME = 'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28'
 # Medium
 MODEL_NAME = "mask_rcnn_resnet101_atrous_coco_2018_01_28"
 # Fast
 # MODEL_NAME = "mask_rcnn_inception_v2_coco_2018_01_28"
+
+
+# Configuration constants below. Change these at your own risk!
+
+#: Root directory for the project
+PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
+#: Directory containing saved models
+GRAPH_DIRECTORY = os.path.join(PROJECT_ROOT, "graphs")
 #: Full path to the saved model
 MODEL_PATH = os.path.join(GRAPH_DIRECTORY, MODEL_NAME)
 #: Base URL for model downloading
