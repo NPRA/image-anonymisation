@@ -2,6 +2,7 @@ import os
 import tensorflow as tf
 import numpy as np
 import tarfile
+import cv2
 
 import config
 from src.Logger import LOGGER
@@ -28,11 +29,16 @@ class Masker:
         model = tf.saved_model.load(os.path.join(config.MODEL_PATH, "saved_model"))
         self.model = model.signatures["serving_default"]
 
-    def mask(self, image):
+    def mask(self, image, mask_dilation_pixels=0):
         """
         Run the masking on `image`.
+        
         :param image: Input image. Must be a 4D color image array with shape (1, height, width, 3)
         :type image: np.ndarray
+        :param mask_dilation_pixels: Approximate number of pixels for mask dilation. This will help ensure that an
+                                    identified object is completely covered by the corresponding mask. Set
+                                    `mask_dilation_pixels = 0` to disable mask dilation.
+        :type mask_dilation_pixels: int
         :return: Dictionary containing masking results. Content depends on the model used.
         :rtype: dict
         """
@@ -43,6 +49,10 @@ class Masker:
         masking_results = tensor_dict_to_numpy(masking_results, ignore_keys=("detection_masks", "num_detections"))
         masking_results["detection_masks"] = reframed_masks.numpy()[None, ...]
         masking_results["num_detections"] = num_detections
+
+        if mask_dilation_pixels > 0:
+            dilate_masks(masking_results, mask_dilation_pixels)
+
         return masking_results
 
 
@@ -66,6 +76,20 @@ def tensor_dict_to_numpy(input_dict, ignore_keys=tuple()):
             else:
                 output_dict[key] = value
     return output_dict
+
+
+def dilate_masks(mask_results, mask_dilation_pixels):
+    masks = mask_results["detection_masks"]
+    classes = mask_results["detection_classes"]
+
+    kernel_size = 2 * mask_dilation_pixels + 1
+    kernel = np.ones((kernel_size, kernel_size)).astype(np.uint8)
+
+    for i in range(int(mask_results["num_detections"])):
+        mask = (masks[0, i, :, :] > 0).astype(np.uint8)
+        dilated = cv2.dilate(mask, kernel, iterations=1)
+        dilated[dilated > 0] = classes[0, i]
+        masks[0, i, :, :] = dilated
 
 
 def download_model(download_base, model_name, model_path, extract_all=False):

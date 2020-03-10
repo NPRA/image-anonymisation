@@ -117,7 +117,7 @@ def process_image(img, image_path, masker, pool, export_result, archive_result, 
     # Load image
     exif = exif_from_file(image_path)
     # Start masking
-    mask_results = masker.mask(img)
+    mask_results = masker.mask(img, mask_dilation_pixels=config.mask_dilation_pixels)
 
     # Convert to numpy array for exporting
     img = img.numpy()

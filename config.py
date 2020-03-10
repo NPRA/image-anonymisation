@@ -28,6 +28,9 @@ lazy_paths = False
 #: "RGB tuple [0-255] indicating the masking color. Setting this option will override the
 #: colors in config.py.
 mask_color = None
+#: Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
+#: by the corresponding mask. Set `mask_dilation_pixels = 0` to disable mask dilation.
+mask_dilation_pixels = 0
 #: Blurring coefficient [1-100] which specifies the degree of blurring to apply within the
 #: mask. When this parameter is specified, the image will be blurred, and not masked with a
 #: specific color.
