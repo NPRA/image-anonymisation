@@ -31,9 +31,14 @@ mask_color = None
 #: Blurring coefficient [1-100] which specifies the degree of blurring to apply within the
 #: mask. When this parameter is specified, the image will be blurred, and not masked with a
 #: specific color.
-blur = 20
+blur = 10
 #: Convert the image to grayscale before blurring? (Ignored if blurring is disabled)
 gray_blur = True
+#: Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark
+#: colors.
+#: NOTE: Requires gray_blur=True
+normalized_gray_blur = True
+
 
 #: Name of the masking model. Currently, there are three available models with varying speed and accuracy.
 #: The slowest models produces the most accurate masks, while the masks from the medium model are slightly worse.

@@ -12,7 +12,7 @@ from src.io.exif_util import write_exif
 
 def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
                        remote_json=False, local_mask=False, remote_mask=False, json_objects=True, mask_color=None,
-                       blur=None, gray_blur=True):
+                       blur=None, gray_blur=True, normalized_gray_blur=True):
     """
     Save an image which has been processed by the masker.
 
@@ -63,7 +63,8 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
 
     if draw_mask:
         if blur is not None:
-            _blur_mask_on_img(img, agg_mask, blur_factor=blur, gray_blur=gray_blur)
+            _blur_mask_on_img(img, agg_mask, blur_factor=blur, gray_blur=gray_blur,
+                              normalized_gray_blur=normalized_gray_blur)
         else:
             _draw_mask_on_img(img, mask_results, mask_color=mask_color)
 
@@ -167,16 +168,28 @@ def _draw_mask_on_img(img, mask_results, mask_color=None):
                 img[mask] = config.LABEL_COLORS.get(detected_label, config.DEFAULT_COLOR)
 
 
-def _blur_mask_on_img(img, mask, blur_factor, gray_blur=True):
+def _blur_mask_on_img(img, mask, blur_factor, gray_blur=True, normalized_gray_blur=True):
     if blur_factor < 1:
         return
     ksize = int((blur_factor / 1000) * img.shape[2])
     if gray_blur:
         gray = cv2.cvtColor(img[0], cv2.COLOR_RGB2GRAY)
-        blurred = cv2.blur(gray, (ksize, ksize))[None, :, :, None]
+        blurred = cv2.blur(gray, (ksize, ksize))
+        if normalized_gray_blur:
+            blurred = _local_gray_normalization(blurred, ksize)
+        blurred = blurred[None, :, :, None]
     else:
         blurred = cv2.blur(img[0], (ksize, ksize))[None, ...]
     img[mask] = blurred[mask]
+
+
+def _local_gray_normalization(blurred, ksize):
+    blurred = blurred.astype(np.float32)
+    blurred_again = cv2.blur(blurred, (ksize, ksize))
+    blurred_again[blurred_again < 0.1] = 0.1
+    blurred /= blurred_again
+    blurred *= 100
+    return blurred.astype(np.uint8)
 
 
 def _save_mask(mask, output_filepath):

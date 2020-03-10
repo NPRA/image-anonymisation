@@ -133,7 +133,7 @@ def process_image(img, image_path, masker, pool, export_result, archive_result, 
             filename=filename, draw_mask=config.draw_mask, local_json=config.local_json,
             remote_json=config.remote_json, local_mask=config.local_mask,
             remote_mask=config.remote_mask, mask_color=config.mask_color,
-            blur=config.blur, gray_blur=config.gray_blur
+            blur=config.blur, gray_blur=config.gray_blur, normalized_gray_blur=config.normalized_gray_blur,
         )
     )
 
