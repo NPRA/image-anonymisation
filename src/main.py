@@ -31,7 +31,9 @@ def get_args():
     parser.add_argument("-o", "--output-folder", dest="output_folder",
                         help="Base directory for masked (output) images and metadata files")
     parser.add_argument("-a", "--archive-folder", dest="archive_folder", default=None,
-                        help="Base directory for archiving original images.")
+                        help="Optional base directory for archiving original images.")
+    parser.add_argument("-l", "--log-file", dest="log_file", default=None,
+                        help="Optional path to log file.")
     args = parser.parse_args()
     return args
 
@@ -58,9 +60,13 @@ def initialize():
     :rtype: argparse.Namespace, TreeWalker, Masker
     """
     # Configure logger
-    logging.basicConfig(level=logging.INFO, format="(%(levelname)s): %(message)s")
+    logging.basicConfig(level=logging.INFO, format=LOGGER.fmt)
     # Get arguments
     args = get_args()
+    # Set log file
+    if args.log_file is not None:
+        LOGGER.set_log_file(args.log_file)
+    # Check that the config and command line arguments are valid
     check_config(args)
 
     # Get the absolute path of the directories

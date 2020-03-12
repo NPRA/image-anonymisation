@@ -10,6 +10,16 @@ class Logger:
         self.input_path = None
         self.output_path = None
         self.filename = None
+        self.namespace = "image-anonymisation"
+        self.logger = logging.getLogger(self.namespace)
+        self.fmt = "%(asctime)s (%(levelname)s): %(message)s"
+        self.datefmt = "%Y-%m-%d, %H:%M:%S"
+
+    def set_log_file(self, log_file_path, level=logging.INFO):
+        file_handler = logging.FileHandler(log_file_path)
+        file_handler.setLevel(level)
+        file_handler.setFormatter(logging.Formatter(self.fmt, datefmt=self.datefmt))
+        self.logger.addHandler(file_handler)
 
     def set_state(self, input_path, output_path, filename):
         self.input_path = input_path
@@ -40,7 +50,8 @@ class Logger:
         self._save_error_msg(output_path, message)
 
     def _log(self, level, namespace, msg, *args, save=False, **kwargs):
-        logger = logging.getLogger(namespace)
+        # logger = logging.getLogger(namespace)
+        logger = self.logger
         logger.log(level, msg, *args, **kwargs)
         if save:
             output_path = self._get_error_output_path()
