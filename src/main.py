@@ -4,6 +4,7 @@ import logging
 import argparse
 import multiprocessing
 from datetime import datetime, timedelta
+from socket import gethostname
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 
@@ -32,8 +33,9 @@ def get_args():
                         help="Base directory for masked (output) images and metadata files")
     parser.add_argument("-a", "--archive-folder", dest="archive_folder", default=None,
                         help="Optional base directory for archiving original images.")
-    parser.add_argument("-l", "--log-file", dest="log_file", default=None,
-                        help="Optional path to log file.")
+    parser.add_argument("-l", "--log-folder", dest="log_folder", default=None,
+                        help="Optional path to directory of log file. The log file will be named "
+                             "<log\\folder>\\<hostname>.log")
     args = parser.parse_args()
     return args
 
@@ -63,9 +65,13 @@ def initialize():
     logging.basicConfig(level=logging.INFO, format=LOGGER.fmt)
     # Get arguments
     args = get_args()
+
     # Set log file
-    if args.log_file is not None:
-        LOGGER.set_log_file(args.log_file)
+    if args.log_folder is not None:
+        os.makedirs(args.log_folder, exist_ok=True)
+        log_file = os.path.join(args.log_folder, gethostname() + ".log")
+        LOGGER.set_log_file(log_file)
+
     # Check that the config and command line arguments are valid
     check_config(args)
 
@@ -190,7 +196,7 @@ def log_summary(tree_walker, n_masked, start_datetime):
     :param start_datetime: Datetime object indicating when the program started.
     :type start_datetime: datetime.datetime
     """
-    LOGGER.info(__name__, "")
+    LOGGER.info(__name__, "Anonymisation finished.")
     LOGGER.info(__name__, f"Number of identified images: "
                           f"{tree_walker.n_valid_images + tree_walker.n_skipped_images}")
     LOGGER.info(__name__, f"Number of masked images: {n_masked}")
