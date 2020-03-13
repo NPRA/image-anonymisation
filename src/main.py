@@ -6,6 +6,7 @@ import multiprocessing
 from datetime import datetime, timedelta
 from socket import gethostname
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import tensorflow as tf
 
 import config
@@ -62,7 +63,7 @@ def initialize():
     :rtype: argparse.Namespace, TreeWalker, Masker
     """
     # Configure logger
-    logging.basicConfig(level=logging.INFO, format=LOGGER.fmt)
+    logging.basicConfig(level=logging.INFO, format=LOGGER.fmt, datefmt=LOGGER.datefmt)
     # Get arguments
     args = get_args()
 
