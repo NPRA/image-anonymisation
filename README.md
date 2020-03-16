@@ -37,10 +37,9 @@ Build Tools for Visual Studio 2019 is required to build some of the package-depe
 
 ## Usage
 The program will traverse the file-tree rooted at the input folder, and mask all .jpg images within the tree. The masked 
-images will be written to an output directory with identical structure as the input folder. The program should be  
+images will be written to an output directory with identical structure as the input folder. The program should be
 executed as a python-module from the root directory:
-```Bash
-
+```
 usage: python -m src.main [-h] [-i INPUT_FOLDER] [-o OUTPUT_FOLDER] [-a ARCHIVE_FOLDER]
 
 Image anonymisation
@@ -56,6 +55,10 @@ optional arguments:
                         Base directory for archiving original images.
 ```
 
+#### Batch script and PowerShell script.
+The anonymisation can be ran without manually activating the conda environment, by running either `bin/run-with-prompt.bat` or `bin/run.ps1`.
+The latter also works when conda is not initialized in the shell, as long as the `conda_path` parameter is specified correctly.
+
 #### Additional configuration
 Additional configuration variables are listed in `config.py`.
 
@@ -68,4 +71,28 @@ pip install m2r
 The HTML documentation can then be build from the `docs` directory by running
 ```Bash
 .\make.bat html
-``` 
+```
+
+## Evaluation
+The anonymisation model can be evaluated by running the evaluation script:
+```Bash
+usage: evaluate.py [-h] [-i INPUT_FOLDER] [-a ANNOTATION_FILE] [--accumulate]
+
+Evaluate the anonymisation model.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT_FOLDER, -input-folder INPUT_FOLDER
+                        Base directory of images to use for evaluation.
+  -a ANNOTATION_FILE, -annotation-file ANNOTATION_FILE
+                        Path to a .json file containing the ground-truth
+                        annotations. The file must be formatted according to
+                        the COCO annotation file guidelines.
+  --accumulate          Accumulate the results for all images?
+```
+Note that the annotations for the evaluation dataset must be on the [COCO format](http://cocodataset.org/#format-data).
+The evaluation script needs the `pycocotools` module, which can be installed by running:
+```Bash
+conda install Cython
+pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
+```
