@@ -1,6 +1,7 @@
 import os
 import time
 from shutil import rmtree, copytree
+from socket import gethostname
 from unittest import mock
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
@@ -16,6 +17,9 @@ TMP_DIR = os.path.join(DATA_DIR, "tmp")
 INPUT_DIR = os.path.join(TMP_DIR, "in")
 OUTPUT_DIR = os.path.join(TMP_DIR, "out")
 ARCHIVE_DIR = os.path.join(TMP_DIR, "arch")
+# Logging is disabled since it causes a PermissionError in cleanup
+LOG_DIR = None
+
 # Possible model names
 MODEL_NAMES = {
     "Slow": 'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28',
@@ -85,11 +89,15 @@ class FakeArgs:
     :type output_folder: str
     :param archive_folder: Path to base archive folder. None disables archiving
     :type archive_folder: str | None
+    :param log_folder: Path to base log folder. None disables file-logging
+    :type log_folder: str | None
     """
-    def __init__(self, input_folder=INPUT_DIR, output_folder=OUTPUT_DIR, archive_folder=ARCHIVE_DIR):
+    def __init__(self, input_folder=INPUT_DIR, output_folder=OUTPUT_DIR, archive_folder=ARCHIVE_DIR,
+                 log_folder=LOG_DIR):
         self.input_folder = input_folder
         self.output_folder = output_folder
         self.archive_folder = archive_folder
+        self.log_folder = log_folder
 
     def __call__(self):
         return self
@@ -165,6 +173,9 @@ def _check_files(cfg, args):
     """
     no_archive = args.archive_folder is None
 
+    if args.log_folder is not None:
+        _check_file_exists(LOG_DIR, gethostname() + ".log")
+
     for rel_path, filename in EXPECTED_PROCESSED_FILES:
         input_path = os.path.join(INPUT_DIR, rel_path)
         output_path = os.path.join(OUTPUT_DIR, rel_path)
@@ -217,7 +228,7 @@ def test_main_all_exports_disabled():
     Run `src.main.main` with all file-exports disabled, and check that files are created/not created as expected.
     """
     _setup_directories()
-    args = FakeArgs(archive_folder=None)
+    args = FakeArgs(archive_folder=None, log_folder=None)
     cfg = FakeConfig(delete_input=False, local_json=False, remote_json=False, local_mask=False, remote_mask=False)
     _run_main(cfg, args)
     # Wait for the asynchronous export to complete
