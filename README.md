@@ -35,6 +35,42 @@ Build Tools for Visual Studio 2019 is required to build some of the package-depe
     conda activate image-anonymisation
     ```
 
+#### Proxy setup
+If Anaconda fails to create the environment above due to a HTTP error, you might need to configure Anaconda to use
+a proxy:
+
+1. Add `HTTPS_PROXY=<your_proxy> to the system environment variables.
+2. In `~/.condarc` add the following lines:
+    ```
+    proxy_servers:
+        https: <your_proxy>
+    ```
+3. You should now be able to create the conda environment with:
+    ```Bash
+    conda env create -f environment.yml
+    ```
+   Note that the `pip`-part of the installation will fail, but the conda packages will be installed.
+4. Activate the environment:
+    ```Bash
+    conda activate image-anonymisation
+    ```
+5. The `pip`-packages will now have to be installed manually:
+    ```Bash
+    pip install opencv-python==4.2.0.32 pillow==7.0.0 --proxy <your_proxy>
+    ```
+    The `webp` package requires a little more trickery. First, install `importlib_resources` and `conan`:
+    ```Bash
+    pip install importlib_resources>=1.0.0  conan>=1.8.0 --proxy <your_proxy>
+    ```
+    Now, `conan` has to be configured to use the proxy server. In `~/.conan/conan.conf` under `[proxies]`, add the lines:
+    ```
+    http = <your_proxy>
+    https = <your_proxy>  
+    ```
+    The `webp` package can now be installed with
+    ```
+    pip install webp==0.1.0a15 --proxy <your_proxy>
+    ```
 ## Usage
 The program will traverse the file-tree rooted at the input folder, and mask all .jpg images within the tree. The masked 
 images will be written to an output directory with identical structure as the input folder. The program should be
@@ -54,6 +90,7 @@ optional arguments:
   -a ARCHIVE_FOLDER, --archive-folder ARCHIVE_FOLDER
                         Base directory for archiving original images.
 ```
+Note: Make sure that the conda environment is activated before executing the command above.
 
 #### Batch script and PowerShell script.
 The anonymisation can be ran without manually activating the conda environment, by running either `bin/run-with-prompt.bat` or `bin/run.ps1`.
