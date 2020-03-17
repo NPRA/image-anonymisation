@@ -134,10 +134,8 @@ dmypy.json
 .pytype/
 
 .vscode/settings.json
-mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28.tar.gz
-mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28/frozen_inference_graph.pb
 .idea
 data/
 tmp/
-graphs/
+models/
 logs/

@@ -59,9 +59,9 @@ MODEL_NAME = "mask_rcnn_resnet101_atrous_coco_2018_01_28"
 #: Root directory for the project
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 #: Directory containing saved models
-GRAPH_DIRECTORY = os.path.join(PROJECT_ROOT, "graphs")
+MODELS_DIRECTORY = os.path.join(PROJECT_ROOT, "models")
 #: Full path to the saved model
-MODEL_PATH = os.path.join(GRAPH_DIRECTORY, MODEL_NAME)
+MODEL_PATH = os.path.join(MODELS_DIRECTORY, MODEL_NAME)
 #: Base URL for model downloading
 DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 #: List of the strings that is used to add correct label for each box.
