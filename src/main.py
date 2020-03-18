@@ -14,7 +14,8 @@ from src.io.exif_util import exif_from_file
 from src.io.save import save_processed_img, archive
 from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
-from src.Masker import Masker
+# from src.Masker import Masker
+from src.train.Masker_v2 import Masker
 from src.Logger import LOGGER
 
 # Exceptions to catch when processing an image
