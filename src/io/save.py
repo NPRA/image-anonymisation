@@ -62,11 +62,11 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     agg_mask = np.isin(detection_masks, config.MASK_LABELS).any(axis=1)
 
     if draw_mask:
-        if blur is not None:
+        if blur is None or not blur:
+            _draw_mask_on_img(img, mask_results, mask_color=mask_color)
+        else:
             _blur_mask_on_img(img, agg_mask, blur_factor=blur, gray_blur=gray_blur,
                               normalized_gray_blur=normalized_gray_blur)
-        else:
-            _draw_mask_on_img(img, mask_results, mask_color=mask_color)
 
     # Save masked image
     pil_img = Image.fromarray(img[0].astype(np.uint8))
@@ -140,7 +140,7 @@ def _copy_file(source_path, destination_path, filename, ext=None):
 
 
 def _get_detected_objects_dict(mask_results):
-    objs = mask_results["detection_classes"].squeeze()[:int(mask_results["num_detections"])]
+    objs = mask_results["detection_classes"][0][:int(mask_results["num_detections"])]
     if objs.size > 0:
         # Find unique objects and count them
         objs, counts = np.unique(objs, return_counts=True)
@@ -159,7 +159,7 @@ def _draw_mask_on_img(img, mask_results, mask_color=None):
         mask = np.isin(detection_masks, config.MASK_LABELS).any(axis=1)
         img[mask] = np.array(mask_color)
     else:
-        detection_classes = mask_results["detection_classes"].squeeze()
+        detection_classes = mask_results["detection_classes"][0]
         num_detections = int(mask_results["num_detections"])
         for i in range(num_detections):
             detected_label = int(detection_classes[i])

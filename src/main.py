@@ -251,6 +251,12 @@ def main():
         LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
                               f"{image_path}.")
 
+    # Ensure that the async. jobs are completed before we exit.
+    if export_result is not None:
+        export_result.get()
+    if archive_result is not None:
+        archive_result.get()
+
     # Summary
     log_summary(tree_walker, n_masked, start_datetime)
     # Close the processing pool
