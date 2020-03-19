@@ -1,81 +1,53 @@
 import os
-import tensorflow as tf
 import numpy as np
-import tarfile
+from PIL import Image
 import cv2
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
-import config
+from Mask_RCNN.mrcnn.model import MaskRCNN
+from src.train import train_config
 from src.Logger import LOGGER
+from config import MODELS_DIRECTORY, weights_file
+
+
+RESULTS_KEYMAP = {
+    "detection_boxes": "rois",
+    "detection_classes": "class_ids",
+    "detection_scores": "scores",
+    "detection_masks": "masks"
+}
 
 
 class Masker:
-    """
-    Implements the masking functionality. Uses a pre-trained TensorFlow model to compute masks for images. Model
-    configuration is done in `config`.
-    """
     def __init__(self):
-        self._init_model()
+        LOGGER.info(__name__, "Initializing Mask R-CNN model")
+        self.coco_config = train_config.CarCocoConfigInference()
+        self.model = MaskRCNN(mode="inference", config=self.coco_config, model_dir=train_config.TRAIN_MODELS_DIR)
 
-    def _init_model(self):
-        """
-        Initialize the TensorFlow-graph
-        """
-        # Download and extract model
-        if not os.path.exists(config.MODEL_PATH):
-            LOGGER.info(__name__, "Could not find the model graph file. Downloading...")
-            download_model(config.DOWNLOAD_BASE, config.MODEL_NAME, config.MODEL_PATH, extract_all=True)
-            LOGGER.info(__name__, "Model graph file downloaded.")
+        weights_path = os.path.join(MODELS_DIRECTORY, weights_file)
+        LOGGER.info(__name__, f"Loading weights from file '{weights_path}'")
+        self.model.load_weights(weights_path, by_name=True)
 
-        model = tf.saved_model.load(os.path.join(config.MODEL_PATH, "saved_model"))
-        self.model = model.signatures["serving_default"]
+    def mask(self, image, mask_dilation_pixels=0, return_raw_results=False):
+        if not isinstance(image, np.ndarray):
+            image = image.numpy()
+        if image.ndim == 4:
+            image = image[0]
+        # Run prediction
+        results = self.model.detect([image], verbose=0)[0]
+        if return_raw_results:
+            return results
 
-    def mask(self, image, mask_dilation_pixels=0):
-        """
-        Run the masking on `image`.
-        
-        :param image: Input image. Must be a 4D color image array with shape (1, height, width, 3)
-        :type image: np.ndarray
-        :param mask_dilation_pixels: Approximate number of pixels for mask dilation. This will help ensure that an
-                                    identified object is completely covered by the corresponding mask. Set
-                                    `mask_dilation_pixels = 0` to disable mask dilation.
-        :type mask_dilation_pixels: int
-        :return: Dictionary containing masking results. Content depends on the model used.
-        :rtype: dict
-        """
-        masking_results = self.model(image)
-        num_detections = masking_results["num_detections"].numpy().squeeze()
-        reframed_masks = _reframe_masks(masking_results, tf.constant(image.shape, tf.int32))
+        # Convert results to expected format.
+        mask_results = {"num_detections": results["rois"].shape[0]}
+        for out_key, in_key in RESULTS_KEYMAP.items():
+            mask_results[out_key] = np.expand_dims(results[in_key], axis=0)
+        mask_results["detection_masks"] = np.transpose(mask_results["detection_masks"], (0, 3, 1, 2))
 
-        masking_results = tensor_dict_to_numpy(masking_results, ignore_keys=("detection_masks", "num_detections"))
-        masking_results["detection_masks"] = reframed_masks.numpy()[None, ...]
-        masking_results["num_detections"] = num_detections
-
+        # Dilate masks?
         if mask_dilation_pixels > 0:
-            dilate_masks(masking_results, mask_dilation_pixels)
-
-        return masking_results
-
-
-def tensor_dict_to_numpy(input_dict, ignore_keys=tuple()):
-    """
-    Convert all values of type `tf.Tensor` in a dictionary to `np.ndarray` by calling the `.numpy()` method.
-
-    :param input_dict: Dictionary containing tensors to convert.
-    :type input_dict: dict
-    :param ignore_keys: Optional iterable with keys to ignore
-    :type ignore_keys: tuple | list
-    :return: Converted dictionary containing original keys and converted tensors. Keys in `ignore_keys` will not be
-             included.
-    :rtype: dict
-    """
-    output_dict = {}
-    for key, value in input_dict.items():
-        if key not in ignore_keys:
-            if hasattr(value, "numpy"):
-                output_dict[key] = value.numpy()
-            else:
-                output_dict[key] = value
-    return output_dict
+            dilate_masks(mask_results, mask_dilation_pixels)
+        return mask_results
 
 
 def dilate_masks(mask_results, mask_dilation_pixels):
@@ -92,85 +64,33 @@ def dilate_masks(mask_results, mask_dilation_pixels):
         masks[0, i, :, :] = dilated
 
 
-def download_model(download_base, model_name, model_path, extract_all=False):
-    """
-    Download a pre-trained model.
+if __name__ == '__main__':
+    import argparse
+    import matplotlib
+    from tqdm import tqdm
+    matplotlib.use('TkAgg')
+    import matplotlib.pyplot as plt
+    from Mask_RCNN.mrcnn import visualize
+    from src.io.TreeWalker import TreeWalker
 
-    :param download_base: Base URL for downloading
-    :type download_base: str
-    :param model_name: Name of model-file (without the .tar.gz extension)
-    :type model_name: str
-    :param model_path: Directory where the downloaded model shoud be stored.
-    :type model_path: str
-    """
-    os.makedirs(model_path, exist_ok=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", dest="input_folder")
+    parser.add_argument("-o", dest="output_folder")
+    args = parser.parse_args()
+    tree_walker = TreeWalker(input_folder=args.input_folder, mirror_folders=[args.output_folder], skip_webp=False, precompute_paths=True)
+    masker = Masker()
 
-    tf.keras.utils.get_file(model_path + ".tar.gz", download_base + model_name + ".tar.gz")
-    tar_file = tarfile.open(model_path + '.tar.gz')
+    class_names = ["BG", "person", "bicycle", "car", "motorcycle", "bus", "truck"]
+    for input_path, mirror_dirs, filename in tqdm(tree_walker.walk()):
+        img = np.array(Image.open(os.path.join(input_path, filename)))
+        res = masker.mask(img, return_raw_results=True)
 
-    if extract_all:
-        tar_file.extractall(os.path.dirname(model_path))
-    else:
-        if not os.path.isdir(model_path):
-            os.makedirs(model_path)
+        fig, ax = plt.subplots(figsize=(10, (img.shape[1] / img.shape[0]) * 10))
+        visualize.display_instances(img, res['rois'], res['masks'], res['class_ids'],
+                                    class_names, res['scores'], ax=ax)
 
-        for file in tar_file.getmembers():
-            file_name = os.path.basename(file.name)
-            if 'frozen_inference_graph.pb' in file_name:
-                tar_file.extract(file, os.path.dirname(model_path))
-    tar_file.close()
-
-
-@tf.function
-def _reframe_masks(masking_results, image_shape):
-    num_detections = tf.cast(tf.squeeze(masking_results["num_detections"]), tf.int32)
-    if num_detections > 0:
-        masks = masking_results["detection_masks"][0, :num_detections]
-        boxes = masking_results["detection_boxes"][0, :num_detections]
-        reframed_masks = _reframe_box_masks_to_image_masks(masks, boxes, image_shape[1], image_shape[2])
-        reframed_masks = tf.cast(reframed_masks > 0.5, tf.int32)
-    else:
-        reframed_masks = tf.zeros((num_detections, image_shape[1], image_shape[2]), dtype=tf.int32)
-    return reframed_masks
-
-
-@tf.function
-def _reframe_box_masks_to_image_masks(box_masks, boxes, image_height, image_width):
-    """
-    Convert from box-masks to image-masks. Adapted from
-    https://github.com/tensorflow/models/blob/master/research/object_detection/utils/ops.py
-
-    :param box_masks: Masks for each box.
-    :type box_masks: tf.Tensor
-    :param boxes: Box coordinates. The coordinates should be relative to image size
-    :type boxes: tf.Tensor.
-    :param image_height: Height of image
-    :type image_height: int
-    :param image_width: Width of image
-    :type image_width: int
-    :return: Whole-image masks
-    :rtype: tf.Tensor
-    """
-    def transform_boxes_relative_to_boxes(boxes, reference_boxes):
-        boxes = tf.reshape(boxes, [-1, 2, 2])
-        min_corner = tf.expand_dims(reference_boxes[:, 0:2], 1)
-        max_corner = tf.expand_dims(reference_boxes[:, 2:4], 1)
-        transformed_boxes = (boxes - min_corner) / (max_corner - min_corner)
-        return tf.reshape(transformed_boxes, [-1, 4])
-
-    box_masks_expanded = tf.expand_dims(box_masks, axis=3)
-    num_boxes = tf.shape(box_masks_expanded)[0]
-    unit_boxes = tf.concat(
-        [tf.zeros([num_boxes, 2]), tf.ones([num_boxes, 2])], axis=1)
-    reverse_boxes = transform_boxes_relative_to_boxes(unit_boxes, boxes)
-
-    reframed = tf.image.crop_and_resize(
-        image=box_masks_expanded,
-        boxes=reverse_boxes,
-        box_indices=tf.range(num_boxes),
-        crop_size=[image_height, image_width],
-        extrapolation_value=0.0)
-    reframed = tf.squeeze(reframed, axis=3)
-    return reframed
-
-
+        os.makedirs(mirror_dirs[0], exist_ok=True)
+        output_image = os.path.join(mirror_dirs[0], os.path.splitext(filename)[0] + ".png")
+        fig.tight_layout()
+        plt.savefig(output_image, dpi=600, bbox_inches="tight")
+        plt.clf()

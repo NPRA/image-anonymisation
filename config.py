@@ -34,38 +34,25 @@ mask_dilation_pixels = 0
 #: Blurring coefficient [1-100] which specifies the degree of blurring to apply within the
 #: mask. When this parameter is specified, the image will be blurred, and not masked with a
 #: specific color.
-blur = 10
+blur = None
 #: Convert the image to grayscale before blurring? (Ignored if blurring is disabled)
 gray_blur = True
 #: Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark
 #: colors.
 #: NOTE: Requires gray_blur=True
 normalized_gray_blur = True
+#: Masking model weights. This weights file should be a result from a training run. The file should be placed in the
+#: `models` directory.
+weights_file = "mask_rcnn_car_coco.h5"
 
 
-#: Name of the masking model. Currently, there are three available models with varying speed and accuracy.
-#: The slowest models produces the most accurate masks, while the masks from the medium model are slightly worse.
-#: The masks from the `Fast` model are currently not recommended due to poor quality.
-# Slow
-# MODEL_NAME = 'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28'
-# Medium
-MODEL_NAME = "mask_rcnn_resnet101_atrous_coco_2018_01_28"
-# Fast
-# MODEL_NAME = "mask_rcnn_inception_v2_coco_2018_01_28"
-
-
+# =============================================================
 # Configuration constants below. Change these at your own risk!
-
+# =============================================================
 #: Root directory for the project
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 #: Directory containing saved models
 MODELS_DIRECTORY = os.path.join(PROJECT_ROOT, "models")
-#: Full path to the saved model
-MODEL_PATH = os.path.join(MODELS_DIRECTORY, MODEL_NAME)
-#: Base URL for model downloading
-DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
-#: List of the strings that is used to add correct label for each box.
-PATH_TO_LABELS = 'mscoco_label_map.pbtxt'
 #: COCO labels to mask in input images
 MASK_LABELS = (1, 2, 3, 4, 6, 8)
 #: Masking colors. <COCO label id>: <RGB color>
