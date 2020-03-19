@@ -24,15 +24,19 @@ Build Tools for Visual Studio 2019 is required to build some of the package-depe
 
 #### Creating the conda-environment
 1. Open an "Anaconda PowerShell Prompt" as Administrator.
-1. In the Anaconda PowerShell Prompt, navigate to the root directory of the cloned repository.
-1. Create the conda-environment by running: 
+2. In the Anaconda PowerShell Prompt, navigate to the root directory of the cloned repository.
+3. Create the conda-environment by running:
     ```Bash
     conda env create -f environment.yml
     ```
     This will create a new environment named `image-anonymisation`.
-1. Activate the environment by running: 
+5. Activate the environment by running:
     ```Bash
     conda activate image-anonymisation
+    ```
+4. Install `pycocotools`:
+    ```Bash
+    pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
     ```
 
 #### Proxy setup
@@ -128,11 +132,6 @@ optional arguments:
   --accumulate          Accumulate the results for all images?
 ```
 Note that the annotations for the evaluation dataset must be on the [COCO format](http://cocodataset.org/#format-data).
-The evaluation script needs the `pycocotools` module, which can be installed by running:
-```Bash
-conda install Cython
-pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
-```
 
 ## Training a new model
 The current implementation supports fine-tuning the COCO model from [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN) on the classes
