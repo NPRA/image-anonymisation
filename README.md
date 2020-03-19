@@ -110,10 +110,10 @@ The HTML documentation can then be build from the `docs` directory by running
 .\make.bat html
 ```
 
-## Evaluation
+## Evaluating the current model
 The anonymisation model can be evaluated by running the evaluation script:
-```Bash
-usage: evaluate.py [-h] [-i INPUT_FOLDER] [-a ANNOTATION_FILE] [--accumulate]
+```
+usage: python -m src.evaluate [-h] [-i INPUT_FOLDER] [-a ANNOTATION_FILE] [--accumulate]
 
 Evaluate the anonymisation model.
 
@@ -133,3 +133,53 @@ The evaluation script needs the `pycocotools` module, which can be installed by 
 conda install Cython
 pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
 ```
+
+## Training a new model
+The current implementation supports fine-tuning the COCO model from [matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN) on the classes
+we are interested in.
+
+### Set-up
+1. Make sure that the weight file [mask_rcnn_coco.h5](https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5) is downloaded,
+and placed in the `models` directory.
+2. Initialize the `Mask_RCNN` submodule by running
+    ```Bash
+    git submodule init
+    git submodule update
+    ```
+   Note: This step can be skipped if you cloned the repository with the `--recursive-submodules` flag.
+3. Install the `mrcnn` package:
+    ```Bash
+    cd Mask_RCNN
+    pip install -e .
+    ```
+
+### Training
+After the steps above are completed, the training can be invoked by running training script:
+```
+usage: src.train.train [-h] [--resume RESUME] [--summary-file SUMMARY_FILE]
+                [--enable-augmentation]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --resume RESUME       If specified, the training will be resumed from this
+                        weight file.
+  --summary-file SUMMARY_FILE
+                        Optional filename for writing the model summary.
+  --enable-augmentation
+                        Enable image augmentation during training?
+```
+The training process will save the weights of the model after each epoch. These will be stored in `models/train/car_coco<timestamp>/mask_rcnn_car_coco_<epoch>.h5`.
+
+#### Resuming a training session
+If you want to resume a previously interrupted training session, you can use the `--resume` parameter in the training script:
+```Bash
+python -m src.train.train --resume \path\to\last\saved\weights.h5
+```
+
+#### Training configuration
+Configuration variables for training are available in `src/train/train_config.py`.
+
+### Using a trained model in the Masker
+The weights used in `src.Masker.Masker` are specified by the `weights_file` parameter in `config.py`.
+Use this parameter to change the weighs used in the masking model.
+

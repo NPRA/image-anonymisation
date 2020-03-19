@@ -14,10 +14,12 @@ from src.Logger import LOGGER
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--resume", dest="resume", default=None, help="If specified, the training will be resumed from"
-                                                                      "this weight file.")
-    parser.add_argument("--summary-file", dest="summary_file", default=None)
-    parser.add_argument("--augmentation", dest="augmentation", action="store_true")
+    parser.add_argument("--resume", dest="resume", default=None,
+                        help="If specified, the training will be resumed from this weight file.")
+    parser.add_argument("--summary-file", dest="summary_file", default=None,
+                        help="Optional filename for writing the model summary.")
+    parser.add_argument("--enable-augmentation", dest="augmentation", action="store_true",
+                        help="Enable image augmentation during training?")
     return parser.parse_args()
 
 
