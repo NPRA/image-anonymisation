@@ -8,8 +8,9 @@ DATA_DIR = os.path.join(PROJECT_ROOT, "data", "train")
 COCO_DIR = os.path.join(DATA_DIR, "coco")
 TRAIN_MODELS_DIR = os.path.join(MODELS_DIRECTORY, "train")
 
-# Training parameters
+# COCO labels to use in training
 CLASS_IDS = [1, 2, 3, 4, 6, 8]
+# Number of epochs for each training stage
 EPOCHS = (5, 5, 5, 5)
 
 

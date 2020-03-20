@@ -10,20 +10,28 @@ LABEL_MAP_FLIPPED = {value: key for key, value in LABEL_MAP.items()}
 IMG_DIR = os.path.join("tests", "data", "objects")
 
 
+def _check_detections_are_valid(results, image_shape):
+    assert "num_detections" in results
+    num_detections = int(results["num_detections"])
+
+    expected_shapes = {
+        "detection_boxes": (1, num_detections, 4),
+        "detection_classes": (1, num_detections),
+        "detection_scores": (1, num_detections),
+        "detection_masks": (1, num_detections, image_shape[0], image_shape[1])
+    }
+
+    for key, expected_shape in expected_shapes.items():
+        assert key in results, f"Could not find key '{key}' in mask_results."
+        assert results[key].shape == expected_shape, f"Expected mask_results['{key}'] to have shape {expected_shape}," \
+                                                     f"but got shape {results[key].shape} instead."
+
+
 def test_Masker():
     masker = Masker()
     img = tf.zeros((1, 1018, 2703, 3), dtype=tf.uint8)
     results = masker.mask(img)
-
-    assert "num_detections" in results
-    assert "detection_boxes" in results
-    assert "detection_masks" in results
-    assert "detection_classes" in results
-    assert "detection_scores" in results
-
-    mask_shape = results["detection_masks"].shape
-    assert mask_shape[2] == img.shape[1]
-    assert mask_shape[3] == img.shape[2]
+    _check_detections_are_valid(results, img.shape[1:])
 
 
 def test_masker_finds_objects():
@@ -41,6 +49,7 @@ def test_masker_finds_objects():
         image_path = os.path.join(IMG_DIR, filename)
         img = np.array(Image.open(image_path))[None, ...]
         mask_results = masker.mask(img)
+        _check_detections_are_valid(mask_results, img.shape[1:])
 
         found_objects = list(mask_results["detection_classes"][0].astype(int))
         for object_name in expected_objects:

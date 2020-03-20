@@ -59,7 +59,7 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     detection_masks = mask_results["detection_masks"]
     assert detection_masks.ndim == 4, f"Expected detection_masks to be 4D (batch, mask_index, height, width). " \
                                       f"Got {detection_masks.ndim}."
-    agg_mask = np.isin(detection_masks, config.MASK_LABELS).any(axis=1)
+    agg_mask = detection_masks.any(axis=1)
 
     if draw_mask:
         if blur is None or not blur:
@@ -156,16 +156,15 @@ def _get_detected_objects_dict(mask_results):
 def _draw_mask_on_img(img, mask_results, mask_color=None):
     detection_masks = mask_results["detection_masks"]
     if mask_color is not None:
-        mask = np.isin(detection_masks, config.MASK_LABELS).any(axis=1)
+        mask = detection_masks.any(axis=1)
         img[mask] = np.array(mask_color)
     else:
         detection_classes = mask_results["detection_classes"][0]
         num_detections = int(mask_results["num_detections"])
         for i in range(num_detections):
             detected_label = int(detection_classes[i])
-            if detected_label in config.MASK_LABELS:
-                mask = detection_masks[:, i, ...] > 0
-                img[mask] = config.LABEL_COLORS.get(detected_label, config.DEFAULT_COLOR)
+            mask = detection_masks[:, i, ...]
+            img[mask] = config.LABEL_COLORS.get(detected_label, config.DEFAULT_COLOR)
 
 
 def _blur_mask_on_img(img, mask, blur_factor, gray_blur=True, normalized_gray_blur=True):

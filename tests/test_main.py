@@ -20,12 +20,6 @@ ARCHIVE_DIR = os.path.join(TMP_DIR, "arch")
 # Logging is disabled since it causes a PermissionError in cleanup
 LOG_DIR = None
 
-# Possible model names
-MODEL_NAMES = {
-    "Slow": 'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28',
-    "Medium": "mask_rcnn_resnet101_atrous_coco_2018_01_28",
-    "Fast": "mask_rcnn_inception_v2_coco_2018_01_28",
-}
 # Configuration variables and default values
 CONFIG_VARS = {
     "draw_mask": True,
@@ -46,6 +40,7 @@ CONFIG_VARS = {
     "weights_file": config.weights_file,
     "PROJECT_ROOT": config.PROJECT_ROOT,
     "MODELS_DIRECTORY": config.MODELS_DIRECTORY,
+    "MASK_LABELS": config.MASK_LABELS,
 }
 # List of files expected to be processed when `src.main.main` finishes
 EXPECTED_PROCESSED_FILES = [

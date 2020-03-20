@@ -2,22 +2,18 @@ import os
 import numpy as np
 from PIL import Image
 import cv2
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 import config
 from Mask_RCNN.mrcnn.model import MaskRCNN
 from src.train import train_config
 from src.Logger import LOGGER
 
-RESULTS_KEYMAP = {
-    "detection_boxes": "rois",
-    "detection_classes": "class_ids",
-    "detection_scores": "scores",
-    "detection_masks": "masks"
-}
-
 
 class Masker:
+    """
+    Implements the masking functionality. Uses a pre-trained TensorFlow model to compute masks for images. Model
+    configuration is done in `config`.
+    """
     def __init__(self):
         LOGGER.info(__name__, "Initializing Mask R-CNN model")
         self.coco_config = train_config.CarCocoConfigInference()
@@ -28,6 +24,18 @@ class Masker:
         self.model.load_weights(weights_path, by_name=True)
 
     def mask(self, image, mask_dilation_pixels=0, return_raw_results=False):
+        """
+        Run the masking on `image`.
+
+        :param image: Input image. Must be a 4D color image array with shape (1, height, width, 3)
+        :type image: np.ndarray
+        :param mask_dilation_pixels: Approximate number of pixels for mask dilation. This will help ensure that an
+                                    identified object is completely covered by the corresponding mask. Set
+                                    `mask_dilation_pixels = 0` to disable mask dilation.
+        :type mask_dilation_pixels: int
+        :return: Dictionary containing masking results. Content depends on the model used.
+        :rtype: dict
+        """
         if not isinstance(image, np.ndarray):
             image = image.numpy()
         if image.ndim == 4:
@@ -37,11 +45,22 @@ class Masker:
         if return_raw_results:
             return results
 
-        # Convert results to expected format.
-        mask_results = {"num_detections": results["rois"].shape[0]}
-        for out_key, in_key in RESULTS_KEYMAP.items():
-            mask_results[out_key] = np.expand_dims(results[in_key], axis=0)
-        mask_results["detection_masks"] = np.transpose(mask_results["detection_masks"], (0, 3, 1, 2))
+        # Convert the results to expected format. Only include the detections we are interested in.
+        # From MaskRCNN.detect():
+        #   rois: [N, (y1, x1, y2, x2)] detection bounding boxes
+        #   class_ids: [N] int class IDs
+        #   scores: [N] float probability scores for the class IDs
+        #   masks: [H, W, N] instance binary masks
+        detections_to_mask = np.isin(results["class_ids"], config.MASK_LABELS)
+        mask_results = {
+            "num_detections": detections_to_mask.sum(),
+            "detection_boxes": np.expand_dims(results["rois"][detections_to_mask], 0),
+            "detection_classes": np.expand_dims(results["class_ids"][detections_to_mask], 0),
+            "detection_scores": np.expand_dims(results["scores"][detections_to_mask], 0),
+            "detection_masks": np.expand_dims(
+                np.transpose(results["masks"], (2, 0, 1))[detections_to_mask, :, :], 0
+            ).astype(bool)
+        }
 
         # Dilate masks?
         if mask_dilation_pixels > 0:
@@ -51,15 +70,11 @@ class Masker:
 
 def dilate_masks(mask_results, mask_dilation_pixels):
     masks = mask_results["detection_masks"]
-    classes = mask_results["detection_classes"]
-
     kernel_size = 2 * mask_dilation_pixels + 1
     kernel = np.ones((kernel_size, kernel_size)).astype(np.uint8)
-
     for i in range(int(mask_results["num_detections"])):
-        mask = (masks[0, i, :, :] > 0).astype(np.uint8)
+        mask = masks[0, i, :, :]
         dilated = cv2.dilate(mask, kernel, iterations=1)
-        dilated[dilated > 0] = classes[0, i]
         masks[0, i, :, :] = dilated
 
 
@@ -67,6 +82,7 @@ if __name__ == '__main__':
     import argparse
     import matplotlib
     from tqdm import tqdm
+
     matplotlib.use('TkAgg')
     import matplotlib.pyplot as plt
     from Mask_RCNN.mrcnn import visualize
@@ -76,7 +92,8 @@ if __name__ == '__main__':
     parser.add_argument("-i", dest="input_folder")
     parser.add_argument("-o", dest="output_folder")
     args = parser.parse_args()
-    tree_walker = TreeWalker(input_folder=args.input_folder, mirror_folders=[args.output_folder], skip_webp=False, precompute_paths=True)
+    tree_walker = TreeWalker(input_folder=args.input_folder, mirror_folders=[args.output_folder], skip_webp=False,
+                             precompute_paths=True)
     masker = Masker()
 
     class_names = ["BG", "person", "bicycle", "car", "motorcycle", "bus", "truck"]
