@@ -137,6 +137,7 @@ def main():
         augmentation = None
     # Train
     run_training(model, coco_config, dataset_train, dataset_val, augmentation)
+    return model.log_dir
 
 
 if __name__ == '__main__':
