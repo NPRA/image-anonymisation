@@ -33,6 +33,8 @@ class Masker:
                                     identified object is completely covered by the corresponding mask. Set
                                     `mask_dilation_pixels = 0` to disable mask dilation.
         :type mask_dilation_pixels: int
+        :param return_raw_results: Return the masking results directly from `MaskRCNN.detect`?
+        :type return_raw_results: bool
         :return: Dictionary containing masking results. Content depends on the model used.
         :rtype: dict
         """
@@ -69,6 +71,14 @@ class Masker:
 
 
 def dilate_masks(mask_results, mask_dilation_pixels):
+    """
+    Dilate the masks.
+
+    :param mask_results: Results from `Masker.mask`
+    :type mask_results: dict
+    :param mask_dilation_pixels: Approximate number of pixels to dilate
+    :type mask_dilation_pixels: int
+    """
     masks = mask_results["detection_masks"]
     kernel_size = 2 * mask_dilation_pixels + 1
     kernel = np.ones((kernel_size, kernel_size)).astype(np.uint8)
@@ -79,6 +89,8 @@ def dilate_masks(mask_results, mask_dilation_pixels):
 
 
 if __name__ == '__main__':
+    # Simple test code which applies the masker to all images in the input directory, and writes ouput images
+    # with drawn masks, classifications, and scores.
     import argparse
     import matplotlib
     from tqdm import tqdm

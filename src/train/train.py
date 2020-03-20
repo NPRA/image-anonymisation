@@ -13,6 +13,7 @@ from src.Logger import LOGGER
 
 
 def get_args():
+    """ Get the command-line arguments. """
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("--data-folder", dest="data_folder",
                         help="Path to data. The folder is expected to contain the following directories:\n"
@@ -33,6 +34,12 @@ def get_args():
 
 
 def initialize():
+    """
+    Initialize the training procedure
+
+    :return: Command line arguments, masking model, and the masking model's config.
+    :rtype: (argparse.Namespace, MaskRcnn, train_config.CarCocoConfig)
+    """
     logging.basicConfig(level=logging.INFO, format=LOGGER.fmt, datefmt=LOGGER.datefmt)
     # EE has to be disabled for training
     tf.compat.v1.disable_eager_execution()
@@ -68,6 +75,15 @@ def initialize():
 
 
 def load_datasets(args):
+    """
+    Load the training and validation datasets. These are represented as `CocoDataset`s from Mask_RCNN.
+
+    :param args: Command line arguments
+    :type args: argparse.Namespace
+    :return: Training and validation datasets. If the data directory does not have a `val` subdirectory, the validation
+             dataset will be None
+    :rtype: (CocoDataset, CocoDataset | None)
+    """
     # Load data
     LOGGER.info(__name__, "Loading data")
     dataset_train = CocoDataset()
@@ -90,6 +106,20 @@ def load_datasets(args):
 
 
 def run_training(model, coco_config, dataset_train, dataset_val, augmentation):
+    """
+    Trains `model` on `dataset_train`
+
+    :param model: Model to train
+    :type model: MaskRCNN
+    :param coco_config: The model's config
+    :type coco_config: CarCocoConfig
+    :param dataset_train: Training dataset
+    :type dataset_train: CocoDataset
+    :param dataset_val: Validation dataset. If None, the training will be performed without validation data.
+    :type dataset_val: CocoDataset | None
+    :param augmentation: Use image augmentation in training?
+    :type augmentation: bool
+    """
     # Compute cumulative epoch count
     cumulative_epochs = np.cumsum(train_config.EPOCHS)
     # Run training
@@ -126,6 +156,11 @@ def run_training(model, coco_config, dataset_train, dataset_val, augmentation):
 
 
 def main():
+    """
+    Initialize the training process and run training
+    :return: Path to the resulting trained weights
+    :rtype: str
+    """
     # Setup
     args, model, coco_config = initialize()
     dataset_train, dataset_val = load_datasets(args)
