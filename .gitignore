@@ -135,7 +135,9 @@ dmypy.json
 
 .vscode/settings.json
 .idea
-data/
 tmp/
 models/
 logs/
+data/*
+tests/data/real
+!tests/data/fake/

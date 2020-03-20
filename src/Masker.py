@@ -4,11 +4,10 @@ from PIL import Image
 import cv2
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
+import config
 from Mask_RCNN.mrcnn.model import MaskRCNN
 from src.train import train_config
 from src.Logger import LOGGER
-from config import MODELS_DIRECTORY, weights_file
-
 
 RESULTS_KEYMAP = {
     "detection_boxes": "rois",
@@ -24,7 +23,7 @@ class Masker:
         self.coco_config = train_config.CarCocoConfigInference()
         self.model = MaskRCNN(mode="inference", config=self.coco_config, model_dir=train_config.TRAIN_MODELS_DIR)
 
-        weights_path = os.path.join(MODELS_DIRECTORY, weights_file)
+        weights_path = os.path.join(config.MODELS_DIRECTORY, config.weights_file)
         LOGGER.info(__name__, f"Loading weights from file '{weights_path}'")
         self.model.load_weights(weights_path, by_name=True)
 

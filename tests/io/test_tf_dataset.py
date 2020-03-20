@@ -7,7 +7,7 @@ import numpy as np
 from src.io.tf_dataset import get_tf_dataset, prepare_img
 from config import PROJECT_ROOT
 
-IMG_DIR = os.path.join(PROJECT_ROOT, "tests", "data", "in")
+IMG_DIR = os.path.join(PROJECT_ROOT, "tests", "data", "fake")
 
 
 class FakeTreeWalker:

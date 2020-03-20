@@ -4,32 +4,10 @@ from src.io.TreeWalker import TreeWalker
 
 
 EXPECTED_FILES = [
-    os.path.join("tests", "data", "in", "%#{} _  _ _", "test_0.jpg"),
-    os.path.join("tests", "data", "in", "åæø", "test_1.jpg"),
-    os.path.join("tests", "data", "in", "corrupted.jpg"),
-    os.path.join("tests", "data", "in", "test_2.jpg"),
-    os.path.join("tests", "data", "in", "real", "corrupted.jpg"),
-    os.path.join("tests", "data", "in", "real", "Fy50_Rv003_hp01_f1_m01237.jpg"),
-    os.path.join("tests", "data", "in", "real", "Fy50_Rv003_hp01_f1_m01247.jpg"),
-    os.path.join("tests", "data", "in", "real", "Fy50_Rv003_hp01_f1_m01267.jpg"),
-    os.path.join("tests", "data", "in", "real", "Fy50_Rv003_hp01_f1_m01277.jpg"),
-    os.path.join("tests", "data", "in", "real", "bar", "Fy50_Rv003_hp01_f1_m00114.jpg"),
-    os.path.join("tests", "data", "in", "real", "bar", "Fy50_Rv003_hp01_f1_m00124.jpg"),
-    os.path.join("tests", "data", "in", "real", "bar", "Fy50_Rv003_hp01_f1_m00134.jpg"),
-    os.path.join("tests", "data", "in", "real", "bar", "Fy50_Rv003_hp01_f1_m01176.jpg"),
-    os.path.join("tests", "data", "in", "real", "bar", "Fy50_Rv003_hp01_f1_m01186.jpg"),
-    os.path.join("tests", "data", "in", "real", "bar", "Fy50_Rv003_hp01_f1_m01197.jpg"),
-    os.path.join("tests", "data", "in", "real", "bar", "Fy50_Rv003_hp01_f1_m01206.jpg"),
-    os.path.join("tests", "data", "in", "real", "bar", "Fy50_Rv003_hp01_f1_m01227.jpg"),
-    os.path.join("tests", "data", "in", "real", "foo", "corrupted.jpg"),
-    os.path.join("tests", "data", "in", "real", "foo", "Fy08_Fv034_hp01_f1_m00028.jpg"),
-    os.path.join("tests", "data", "in", "real", "foo", "Fy08_Fv034_hp01_f1_m00048.jpg"),
-    os.path.join("tests", "data", "in", "real", "foo", "Fy08_Fv034_hp01_f1_m00088.jpg"),
-    os.path.join("tests", "data", "in", "real", "foo", "Fy08_Fv034_hp01_f1_m00108.jpg"),
-    os.path.join("tests", "data", "in", "real", "foo", "Fy08_Fv034_hp01_f1_m00128.jpg"),
-    os.path.join("tests", "data", "in", "real", "foo", "Fy08_Fv034_hp01_f1_m00148.jpg"),
-    os.path.join("tests", "data", "in", "real", "foo", "Fy08_Fv034_hp01_f1_m00168.jpg"),
-    os.path.join("tests", "data", "in", "real", "foo", "Fy08_Fv034_hp01_f1_m00188.jpg"),
+    os.path.join("tests", "data", "fake", "%#{} _  _ _", "test_0.jpg"),
+    os.path.join("tests", "data", "fake", "åæø", "test_1.jpg"),
+    os.path.join("tests", "data", "fake", "corrupted.jpg"),
+    os.path.join("tests", "data", "fake", "test_2.jpg"),
 ]
 
 
@@ -42,7 +20,7 @@ def test_TreeWalker_find_files():
     """
     Check that the TreeWalker finds a;; the files it is supposed to find.
     """
-    base_input_dir = os.path.join("tests", "data", "in")
+    base_input_dir = os.path.join("tests", "data", "fake")
     base_output_dir = os.path.join("tests", "data", "out")
 
     # Check that all files are discovered when .webp skipping is disabled
@@ -53,7 +31,7 @@ def test_TreeWalker_find_files():
 
     # Check that all files are discovered when .webp skipping is disabled
     expected_files = EXPECTED_FILES.copy()
-    expected_files.remove(os.path.join("tests", "data", "in", "åæø", "test_1.jpg"))
+    expected_files.remove(os.path.join("tests", "data", "fake", "åæø", "test_1.jpg"))
 
     _check_files(TreeWalker(input_folder=base_input_dir, mirror_folders=[base_output_dir], skip_webp=True,
                             precompute_paths=False), expected_files)

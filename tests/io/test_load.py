@@ -5,7 +5,7 @@ import numpy as np
 from src.io.load import load_image
 from config import PROJECT_ROOT
 
-IMG_DIR = os.path.join(PROJECT_ROOT, "tests", "data", "in")
+IMG_DIR = os.path.join(PROJECT_ROOT, "tests", "data", "fake")
 
 
 def test_load_image():

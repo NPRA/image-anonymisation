@@ -9,7 +9,7 @@ from src.io.save import save_processed_img
 from src.main import archive
 from config import PROJECT_ROOT
 
-IMG_DIR = os.path.join(PROJECT_ROOT, "tests", "data", "in")
+IMG_DIR = os.path.join(PROJECT_ROOT, "tests", "data", "fake")
 
 
 def test_save_processed_img():
@@ -21,13 +21,13 @@ def test_save_processed_img():
     os.makedirs(tmp_out)
     os.makedirs(tmp_archive)
 
-    orig_img = os.path.join(PROJECT_ROOT, "tests", "data", "in", "test_2.jpg")
+    orig_img = os.path.join(PROJECT_ROOT, "tests", "data", "fake", "test_2.jpg")
     tmp_img = os.path.join(tmp_in, "test_2.jpg")
     copy2(orig_img, tmp_img)
 
     img = np.array(Image.open(tmp_img))[None, ...]
     exif = {"Foo": "Bar"}
-    with open(os.path.join(PROJECT_ROOT, "tests", "data", "in", "test_2_mask_results.pkl"), "rb") as f:
+    with open(os.path.join(IMG_DIR, "test_2_mask_results.pkl"), "rb") as f:
         mask_results = pickle.load(f)
 
     # Test with all file-writes enabled

@@ -11,7 +11,7 @@ import config
 
 # Path to the testing data
 DATA_DIR = os.path.join(config.PROJECT_ROOT, "tests", "data")
-RAW_INPUT_DIR = os.path.join(DATA_DIR, "in", "real")
+RAW_INPUT_DIR = os.path.join(DATA_DIR, "real")
 # Temporary paths to use in testing
 TMP_DIR = os.path.join(DATA_DIR, "tmp")
 INPUT_DIR = os.path.join(TMP_DIR, "in")
@@ -43,11 +43,9 @@ CONFIG_VARS = {
     "blur": None,
     "gray_blur": True,
     "normalized_gray_blur": True,
-    "MODEL_NAME": MODEL_NAMES["Fast"],
+    "weights_file": config.weights_file,
     "PROJECT_ROOT": config.PROJECT_ROOT,
-    "GRAPH_DIRECTORY": config.GRAPH_DIRECTORY,
-    "MODEL_PATH": config.MODEL_PATH,
-    "DOWNLOAD_BASE": config.DOWNLOAD_BASE,
+    "MODELS_DIRECTORY": config.MODELS_DIRECTORY,
 }
 # List of files expected to be processed when `src.main.main` finishes
 EXPECTED_PROCESSED_FILES = [
