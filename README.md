@@ -151,17 +151,30 @@ and placed in the `models` directory.
     cd Mask_RCNN
     pip install -e .
     ```
+### Downloading the COCO dataset
+1. Download and extract [train2017.zip](http://images.cocodataset.org/zips/train2017.zip) and place the images in `data\train\coco\train2017`.
+2. Download and extract [val2017.zip](http://images.cocodataset.org/zips/val2017.zip) and place the images in `data\train\coco\val2017`.
+3. Download and extract [the annotations](http://images.cocodataset.org/annotations/annotations_trainval2017.zip) and place the files in `data\train\coco\annotations`.
 
 ### Training
 After the steps above are completed, the training can be invoked by running training script:
 ```
-usage: src.train.train [-h] [--resume RESUME] [--summary-file SUMMARY_FILE]
-                [--enable-augmentation]
+usage: python src.train.train [-h] [--data-folder DATA_FOLDER] [--data-year DATA_YEAR]
+                              [--resume RESUME] [--summary-file SUMMARY_FILE]
+                              [--enable-augmentation]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --resume RESUME       If specified, the training will be resumed from this
-                        weight file.
+  --data-folder DATA_FOLDER
+                        Path to data. The folder is expected to contain the following directories:
+                        - `train`: Contains the training images
+                        - `val`: (Optional) Contains the validation images
+                        - `annotations`: Contains COCO-formatted .json files with annotations.
+                        Training annotations should be in `annotations/instances_train.json`
+  --data-year DATA_YEAR
+                        Optional year-identifier for the data folder. The year will be appended
+                         to the folder and annotation names described above.
+  --resume RESUME       If specified, the training will be resumed from this weight file.
   --summary-file SUMMARY_FILE
                         Optional filename for writing the model summary.
   --enable-augmentation

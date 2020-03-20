@@ -13,7 +13,16 @@ from src.Logger import LOGGER
 
 
 def get_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument("--data-folder", dest="data_folder",
+                        help="Path to data. The folder is expected to contain the following directories:\n"
+                             "- `train`: Contains the training images\n"
+                             "- `val`: (Optional) Contains the validation images\n"
+                             "- `annotations`: Contains COCO-formatted .json files with annotations.\n"
+                             "Training annotations should be in `annotations/instances_train.json`")
+    parser.add_argument("--data-year", dest="data_year", default="",
+                        help="Optional year-identifier for the data folder. The year will be appended\n"
+                             " to the folder and annotation names described above.")
     parser.add_argument("--resume", dest="resume", default=None,
                         help="If specified, the training will be resumed from this weight file.")
     parser.add_argument("--summary-file", dest="summary_file", default=None,
@@ -58,18 +67,25 @@ def initialize():
     return args, model, coco_config
 
 
-def load_datasets():
+def load_datasets(args):
     # Load data
-    LOGGER.info(__name__, "Loading COCO data")
+    LOGGER.info(__name__, "Loading data")
     dataset_train = CocoDataset()
-    dataset_train.load_coco(train_config.COCO_DIR, "train", year="2017", auto_download=False,
+    dataset_train.load_coco(args.data_folder, "train", year=args.data_year, auto_download=False,
                             class_ids=train_config.CLASS_IDS)
     dataset_train.prepare()
 
-    dataset_val = CocoDataset()
-    dataset_val.load_coco(train_config.COCO_DIR, "val", year="2017", auto_download=False,
-                          class_ids=train_config.CLASS_IDS)
-    dataset_val.prepare()
+    # Do we have a validation dataset?
+    val_path = os.path.join(args.data_folder, "val" + args.data_year)
+    if os.path.isdir(val_path) and os.listdir(val_path):
+        dataset_val = CocoDataset()
+        dataset_val.load_coco(args.data_folder, "val", year=args.data_year, auto_download=False,
+                              class_ids=train_config.CLASS_IDS)
+        dataset_val.prepare()
+    else:
+        LOGGER.info(__name__, f"No validation dataset found at '{val_path}'")
+        dataset_val = None
+
     return dataset_train, dataset_val
 
 
@@ -112,7 +128,7 @@ def run_training(model, coco_config, dataset_train, dataset_val, augmentation):
 def main():
     # Setup
     args, model, coco_config = initialize()
-    dataset_train, dataset_val = load_datasets()
+    dataset_train, dataset_val = load_datasets(args)
     # Image Augmentation
     if args.augmentation:
         # Right/Left flip 50% of the time
