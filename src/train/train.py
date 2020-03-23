@@ -158,7 +158,8 @@ def run_training(model, coco_config, dataset_train, dataset_val, augmentation):
 
 def main():
     """
-    Initialize the training process and run training
+    Initialize the training process and run training.
+
     :return: Path to the resulting trained weights
     :rtype: str
     """

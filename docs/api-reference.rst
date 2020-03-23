@@ -34,6 +34,23 @@ io.TreeWalker
 .. automodule:: src.io.TreeWalker
    :members:
 
+train
+=========================
+train.train_config
+-------------------------
+.. automodule:: src.train.train_config
+   :members:
+
+train.train
+-------------------------
+.. automodule:: src.train.train
+   :members:
+
+train.augmentation
+-------------------------
+.. automodule:: src.train.augmentation
+   :members:
+
 main
 =========================
 .. automodule:: src.main

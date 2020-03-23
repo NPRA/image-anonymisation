@@ -2,6 +2,12 @@ import imgaug.augmenters as iaa
 
 
 def get_agumentations():
+    """
+    Get image-agumenters to use in training.
+
+    :return: Image augmenter
+    :rtype: iaa.SomeOf
+    """
     augmenter = iaa.SomeOf((0, None), [
         iaa.Identity(),
         iaa.Fliplr(0.5),
