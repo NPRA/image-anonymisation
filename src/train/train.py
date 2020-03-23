@@ -9,6 +9,7 @@ import tensorflow as tf
 from Mask_RCNN.mrcnn.model import MaskRCNN
 from Mask_RCNN.samples.coco.coco import CocoDataset
 from src.train import train_config
+from src.train.augmentation import get_agumentations
 from src.Logger import LOGGER
 
 
@@ -166,8 +167,8 @@ def main():
     dataset_train, dataset_val = load_datasets(args)
     # Image Augmentation
     if args.augmentation:
-        # Right/Left flip 50% of the time
-        augmentation = imgaug.augmenters.Fliplr(0.5)
+        # Image augmentations
+        augmentation = get_agumentations()
     else:
         augmentation = None
     # Train
