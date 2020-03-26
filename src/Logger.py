@@ -34,7 +34,6 @@ class Logger:
             rel_path = self.output_path.replace(self.base_output_dir + os.sep, "", 1)
             rel_error_path = os.path.join(*[d + error_extension for d in rel_path.split(os.sep)])
             abs_error_path = os.path.join(abs_error_path, rel_error_path)
-        os.makedirs(abs_error_path, exist_ok=True)
         return abs_error_path
 
     def _save_error_img(self, output_path):
@@ -50,13 +49,26 @@ class Logger:
         self._save_error_msg(output_path, message)
 
     def _log(self, level, namespace, msg, *args, save=False, **kwargs):
-        # logger = logging.getLogger(namespace)
         logger = self.logger
         logger.log(level, msg, *args, **kwargs)
         if save:
+            # Try to create the error directory. Abort saving if it fails.
             output_path = self._get_error_output_path()
-            logger.log(logging.INFO, f"Copying image file to {output_path} for manual inspection.")
-            self._save_error(output_path, msg)
+            try:
+                os.makedirs(output_path, exist_ok=True)
+            except FileNotFoundError as err:
+                logger.log(logging.ERROR, f"Got error '{str(err)}' while trying to save error image.")
+                return
+            
+            image_path = os.path.join(self.input_path, self.filename)
+            # Can we reach the input image?
+            if not os.path.exists(image_path):
+                logger.log(logging.ERROR, f"Could not copy image to error directory: Input image '{image_path}' not "
+                                          f"found.")
+            else:
+                # Save image
+                logger.log(logging.INFO, f"Copying image file to {output_path} for manual inspection.")
+                self._save_error(output_path, msg)
 
     def info(self, namespace, *args, **kwargs):
         self._log(logging.INFO, namespace, *args, **kwargs)

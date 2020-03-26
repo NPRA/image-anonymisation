@@ -7,7 +7,7 @@ import numpy as np
 from src.io.tf_dataset import get_tf_dataset, prepare_img
 from config import PROJECT_ROOT
 
-IMG_DIR = os.path.join(PROJECT_ROOT, "tests", "data", "in")
+IMG_DIR = os.path.join(PROJECT_ROOT, "tests", "data", "fake")
 
 
 class FakeTreeWalker:
@@ -35,10 +35,6 @@ def test_get_tf_dataset():
     for f1, f2 in zip(files, dataset_files):
         assert f1 == f2
 
-
-# Good files
-# Bad files
-# Bad arrays
 
 def test_prepare_img_loads_files():
     """
@@ -85,8 +81,9 @@ def test_prepare_imgs_bad_image_tensor():
     for _, img_array in bad_imgs.items():
         with mock.patch("tensorflow.io.read_file", new=lambda *_: tf.constant("")):
             with mock.patch("tensorflow.image.decode_jpeg", new=lambda *_: tf.constant(img_array)):
-                with pytest.raises(tf.errors.UnknownError):
-                    prepare_img("", "", "")
+                with mock.patch("src.io.tf_dataset.wait_until_path_is_found", new=lambda *_, **__: None):
+                    with pytest.raises(tf.errors.UnknownError):
+                        prepare_img("", "", "")
 
 
 def test_prepare_imgs_bad_image_file():
@@ -100,5 +97,5 @@ def test_prepare_imgs_bad_image_file():
         prepare_img(img_dir, "", corrupted_filename)
 
     non_existing_filename = tf.constant("foobar.jpg", tf.string)
-    with pytest.raises(tf.errors.NotFoundError):
+    with pytest.raises(FileNotFoundError):
         prepare_img(img_dir, "", non_existing_filename)

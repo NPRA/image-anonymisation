@@ -11,7 +11,7 @@ import config
 
 # Path to the testing data
 DATA_DIR = os.path.join(config.PROJECT_ROOT, "tests", "data")
-RAW_INPUT_DIR = os.path.join(DATA_DIR, "in", "real")
+RAW_INPUT_DIR = os.path.join(DATA_DIR, "real")
 # Temporary paths to use in testing
 TMP_DIR = os.path.join(DATA_DIR, "tmp")
 INPUT_DIR = os.path.join(TMP_DIR, "in")
@@ -20,12 +20,6 @@ ARCHIVE_DIR = os.path.join(TMP_DIR, "arch")
 # Logging is disabled since it causes a PermissionError in cleanup
 LOG_DIR = None
 
-# Possible model names
-MODEL_NAMES = {
-    "Slow": 'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28',
-    "Medium": "mask_rcnn_resnet101_atrous_coco_2018_01_28",
-    "Fast": "mask_rcnn_inception_v2_coco_2018_01_28",
-}
 # Configuration variables and default values
 CONFIG_VARS = {
     "draw_mask": True,
@@ -43,7 +37,8 @@ CONFIG_VARS = {
     "blur": None,
     "gray_blur": True,
     "normalized_gray_blur": True,
-    "MODEL_NAME": MODEL_NAMES["Fast"],
+    "TF_DATASET_NUM_PARALLEL_CALLS": 1,
+    "MODEL_NAME": config.MODEL_NAME,
     "PROJECT_ROOT": config.PROJECT_ROOT,
     "GRAPH_DIRECTORY": config.GRAPH_DIRECTORY,
     "MODEL_PATH": config.MODEL_PATH,
@@ -116,6 +111,21 @@ class FakeConfig:
             setattr(self, key, kwargs.get(key, CONFIG_VARS[key]))
 
 
+# The multiprocessing.Pool.apply_async call has to be mocked, since mocking does not work "inside" the call to
+# pool.apply_async. The config module is therefore not correctly mocked for asynchronously applied functions.
+def fake_apply_async(pool, func, args, kwds={}):
+    result = func(*args, **kwds)
+    return FakeAsyncResults(result)
+
+
+class FakeAsyncResults:
+    def __init__(self, result):
+        self.result = result
+
+    def get(self):
+        return self.result
+
+
 def _run_main(new_config, new_args):
     """
     Run `src.main.main` while mocking the command line arguments and the config.
@@ -128,6 +138,8 @@ def _run_main(new_config, new_args):
     tf.keras.backend.clear_session()
     mockers = [
         mock.patch("src.main.config", new=new_config),
+        mock.patch("src.ImageProcessor.config", new=new_config),
+        mock.patch("src.ImageProcessor.multiprocessing.pool.Pool.apply_async", new=fake_apply_async),
         mock.patch("src.Masker.config", new=new_config),
         mock.patch("src.main.get_args", new=new_args),
     ]
