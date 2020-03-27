@@ -82,6 +82,27 @@ This also applies to both reading input files, and writing output files.</p>
 </dd></dl>
 
 <dl class="data">
+<dt id="config.datetime_format">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">datetime_format</code><em class="property"> = '%Y-%m-%d %H.%M.%S'</em><a class="headerlink" href="#config.datetime_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format of datetime identifiers. See <a class="reference external" href="https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior">https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior</a> for
+more information.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.log_file_name">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">log_file_name</code><em class="property"> = '{datetime} {hostname}.log'</em><a class="headerlink" href="#config.log_file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the log file. <cite>{datetime}</cite> will be replaced with a timestamp formatted as <cite>datetime_format</cite>. {hostname}
+will be replaced with the host name.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.uncaught_exception_email">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">uncaught_exception_email</code><em class="property"> = None</em><a class="headerlink" href="#config.uncaught_exception_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the program exits due to an ungaught exception, an email will be sent to this address.
+Set <cite>uncaught_exception_email = None</cite> to disable this feature.</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="config.remote_json">
 <code class="sig-prename descclassname">config.</code><code class="sig-name descname">remote_json</code><em class="property"> = True</em><a class="headerlink" href="#config.remote_json" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the EXIF .json file to the output (remote) directory?</p>
@@ -163,16 +184,17 @@ colors. NOTE: Requires gray_blur=True</p>
 </dd></dl>
 
 <dl class="data">
+<dt id="config.weights_file">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">weights_file</code><em class="property"> = 'mask_rcnn_car_coco.h5'</em><a class="headerlink" href="#config.weights_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Masking model weights. This weights file should be a result from a training run. The file should be placed in the
+<cite>models</cite> directory.</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="config.TF_DATASET_NUM_PARALLEL_CALLS">
 <code class="sig-prename descclassname">config.</code><code class="sig-name descname">TF_DATASET_NUM_PARALLEL_CALLS</code><em class="property"> = 1</em><a class="headerlink" href="#config.TF_DATASET_NUM_PARALLEL_CALLS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of parallel calls to tf.dataset.map and tf.dataset.prefetch. Set <cite>TF_DATASET_NUM_PARALLEL_CALLS = “auto”</cite> to
 use tf.data.experimental.AUTOTUNE. This might yield a small gain in performance.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.MODEL_NAME">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">MODEL_NAME</code><em class="property"> = 'mask_rcnn_resnet101_atrous_coco_2018_01_28'</em><a class="headerlink" href="#config.MODEL_NAME" title="Permalink to this definition">¶</a></dt>
-<dd><p>Actual name of the masking model. Controlled by the value of <cite>model_type</cite></p>
 </dd></dl>
 
 <dl class="data">
@@ -182,27 +204,9 @@ use tf.data.experimental.AUTOTUNE. This might yield a small gain in performance.
 </dd></dl>
 
 <dl class="data">
-<dt id="config.GRAPH_DIRECTORY">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">GRAPH_DIRECTORY</code><em class="property"> = 'C:\\Users\\dantro\\Repos\\SVV\\image-anonymisation\\models'</em><a class="headerlink" href="#config.GRAPH_DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dt id="config.MODELS_DIRECTORY">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">MODELS_DIRECTORY</code><em class="property"> = 'C:\\Users\\dantro\\Repos\\SVV\\image-anonymisation\\models'</em><a class="headerlink" href="#config.MODELS_DIRECTORY" title="Permalink to this definition">¶</a></dt>
 <dd><p>Directory containing saved models</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.MODEL_PATH">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">MODEL_PATH</code><em class="property"> = 'C:\\Users\\dantro\\Repos\\SVV\\image-anonymisation\\models\\mask_rcnn_resnet101_atrous_coco_2018_01_28'</em><a class="headerlink" href="#config.MODEL_PATH" title="Permalink to this definition">¶</a></dt>
-<dd><p>Full path to the saved model</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.DOWNLOAD_BASE">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">DOWNLOAD_BASE</code><em class="property"> = 'http://download.tensorflow.org/models/object_detection/'</em><a class="headerlink" href="#config.DOWNLOAD_BASE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base URL for model downloading</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.PATH_TO_LABELS">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">PATH_TO_LABELS</code><em class="property"> = 'mscoco_label_map.pbtxt'</em><a class="headerlink" href="#config.PATH_TO_LABELS" title="Permalink to this definition">¶</a></dt>
-<dd><p>List of the strings that is used to add correct label for each box.</p>
 </dd></dl>
 
 <dl class="data">
@@ -453,6 +457,173 @@ elements:</p>
 
 </div>
 </div>
+<div class="section" id="train">
+<h2>train<a class="headerlink" href="#train" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-src.train.train_config">
+<span id="train-train-config"></span><h3>train.train_config<a class="headerlink" href="#module-src.train.train_config" title="Permalink to this headline">¶</a></h3>
+<dl class="data">
+<dt id="src.train.train_config.TRAIN_MODELS_DIR">
+<code class="sig-prename descclassname">src.train.train_config.</code><code class="sig-name descname">TRAIN_MODELS_DIR</code><em class="property"> = 'C:\\Users\\dantro\\Repos\\SVV\\image-anonymisation\\models\\train'</em><a class="headerlink" href="#src.train.train_config.TRAIN_MODELS_DIR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to base directory for trained models</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.train.train_config.CLASS_IDS">
+<code class="sig-prename descclassname">src.train.train_config.</code><code class="sig-name descname">CLASS_IDS</code><em class="property"> = [1, 2, 3, 4, 6, 8]</em><a class="headerlink" href="#src.train.train_config.CLASS_IDS" title="Permalink to this definition">¶</a></dt>
+<dd><p>COCO labels to use in training</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.train.train_config.EPOCHS">
+<code class="sig-prename descclassname">src.train.train_config.</code><code class="sig-name descname">EPOCHS</code><em class="property"> = (3, 3, 5, 5)</em><a class="headerlink" href="#src.train.train_config.EPOCHS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of epochs for each training stage</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="src.train.train_config.CarCocoConfig">
+<em class="property">class </em><code class="sig-prename descclassname">src.train.train_config.</code><code class="sig-name descname">CarCocoConfig</code><a class="headerlink" href="#src.train.train_config.CarCocoConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Training configuration class for the Mask R-CNN model.</p>
+<dl class="attribute">
+<dt id="src.train.train_config.CarCocoConfig.NAME">
+<code class="sig-name descname">NAME</code><em class="property"> = 'car_coco'</em><a class="headerlink" href="#src.train.train_config.CarCocoConfig.NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the model</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="src.train.train_config.CarCocoConfig.GPU_COUNT">
+<code class="sig-name descname">GPU_COUNT</code><em class="property"> = 1</em><a class="headerlink" href="#src.train.train_config.CarCocoConfig.GPU_COUNT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of GPUs to use</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="src.train.train_config.CarCocoConfig.IMAGES_PER_GPU">
+<code class="sig-name descname">IMAGES_PER_GPU</code><em class="property"> = 1</em><a class="headerlink" href="#src.train.train_config.CarCocoConfig.IMAGES_PER_GPU" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of images simultaneously processed by each GPU</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="src.train.train_config.CarCocoConfig.NUM_CLASSES">
+<code class="sig-name descname">NUM_CLASSES</code><em class="property"> = 7</em><a class="headerlink" href="#src.train.train_config.CarCocoConfig.NUM_CLASSES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of classes in the dataset</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="src.train.train_config.CarCocoConfig.STEPS_PER_EPOCH">
+<code class="sig-name descname">STEPS_PER_EPOCH</code><em class="property"> = 1000</em><a class="headerlink" href="#src.train.train_config.CarCocoConfig.STEPS_PER_EPOCH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of steps (batches) in each epoch.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="src.train.train_config.CarCocoConfig.BACKBONE">
+<code class="sig-name descname">BACKBONE</code><em class="property"> = 'resnet101'</em><a class="headerlink" href="#src.train.train_config.CarCocoConfig.BACKBONE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Backbone network. Must be either ‘resnet50’ or ‘resnet101’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="src.train.train_config.CarCocoConfigInference">
+<em class="property">class </em><code class="sig-prename descclassname">src.train.train_config.</code><code class="sig-name descname">CarCocoConfigInference</code><a class="headerlink" href="#src.train.train_config.CarCocoConfigInference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inference configuration for the Mask R-CNN model.</p>
+<dl class="attribute">
+<dt id="src.train.train_config.CarCocoConfigInference.DETECTION_MIN_CONFIDENCE">
+<code class="sig-name descname">DETECTION_MIN_CONFIDENCE</code><em class="property"> = 0.7</em><a class="headerlink" href="#src.train.train_config.CarCocoConfigInference.DETECTION_MIN_CONFIDENCE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum confidence for a detection to be included in the results.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.train.train">
+<span id="train-train"></span><h3>train.train<a class="headerlink" href="#module-src.train.train" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="src.train.train.get_args">
+<code class="sig-prename descclassname">src.train.train.</code><code class="sig-name descname">get_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.train.train.get_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the command-line arguments.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.train.train.initialize">
+<code class="sig-prename descclassname">src.train.train.</code><code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.train.train.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the training procedure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Command line arguments, masking model, and the masking model’s config.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(argparse.Namespace, MaskRcnn, <a class="reference internal" href="#src.train.train_config.CarCocoConfig" title="src.train.train_config.CarCocoConfig">train_config.CarCocoConfig</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.train.train.load_datasets">
+<code class="sig-prename descclassname">src.train.train.</code><code class="sig-name descname">load_datasets</code><span class="sig-paren">(</span><em class="sig-param">args</em><span class="sig-paren">)</span><a class="headerlink" href="#src.train.train.load_datasets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the training and validation datasets. These are represented as <a href="#id1"><span class="problematic" id="id2">`</span></a>CocoDataset`s from Mask_RCNN.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>argparse.Namespace</em>) – Command line arguments</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Training and validation datasets. If the data directory does not have a <cite>val</cite> subdirectory, the validation
+dataset will be None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(CocoDataset, CocoDataset | None)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.train.train.run_training">
+<code class="sig-prename descclassname">src.train.train.</code><code class="sig-name descname">run_training</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">coco_config</em>, <em class="sig-param">dataset_train</em>, <em class="sig-param">dataset_val</em>, <em class="sig-param">augmentation</em><span class="sig-paren">)</span><a class="headerlink" href="#src.train.train.run_training" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains <cite>model</cite> on <cite>dataset_train</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>MaskRCNN</em>) – Model to train</p></li>
+<li><p><strong>coco_config</strong> (<a class="reference internal" href="#src.train.train_config.CarCocoConfig" title="src.train.train_config.CarCocoConfig"><em>CarCocoConfig</em></a>) – The model’s config</p></li>
+<li><p><strong>dataset_train</strong> (<em>CocoDataset</em>) – Training dataset</p></li>
+<li><p><strong>dataset_val</strong> (<em>CocoDataset | None</em>) – Validation dataset. If None, the training will be performed without validation data.</p></li>
+<li><p><strong>augmentation</strong> (<em>bool</em>) – Use image augmentation in training?</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.train.train.main">
+<code class="sig-prename descclassname">src.train.train.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.train.train.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the training process and run training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Path to the resulting trained weights</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.train.augmentation">
+<span id="train-augmentation"></span><h3>train.augmentation<a class="headerlink" href="#module-src.train.augmentation" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="src.train.augmentation.get_agumentations">
+<code class="sig-prename descclassname">src.train.augmentation.</code><code class="sig-name descname">get_agumentations</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.train.augmentation.get_agumentations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get image-agumenters to use in training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Image augmenter</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>iaa.SomeOf</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="module-src.ImageProcessor">
 <span id="imageprocessor"></span><h2>ImageProcessor<a class="headerlink" href="#module-src.ImageProcessor" title="Permalink to this headline">¶</a></h2>
 <dl class="data">
@@ -547,6 +718,20 @@ directory.</p></li>
 </dd></dl>
 
 <dl class="function">
+<dt id="src.main.config_string">
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">config_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.main.config_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the config variables to a string suitable for logging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Config string</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="src.main.initialize">
 <code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.main.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get command line arguments, and initialize the TreeWalker and Masker.</p>
@@ -613,15 +798,16 @@ instance of <cite>Masker</cite> ready for masking.</p>
 configuration is done in <cite>config</cite>.</p>
 <dl class="method">
 <dt id="src.Masker.Masker.mask">
-<code class="sig-name descname">mask</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">mask_dilation_pixels=0</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.Masker.mask" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">mask</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">mask_dilation_pixels=0</em>, <em class="sig-param">return_raw_results=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.Masker.mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the masking on <cite>image</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>image</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Input image. Must be a 4D color image tensor with shape (1, height, width, 3)</p></li>
+<li><p><strong>image</strong> (<em>np.ndarray</em>) – Input image. Must be a 4D color image array with shape (1, height, width, 3)</p></li>
 <li><p><strong>mask_dilation_pixels</strong> (<em>int</em>) – Approximate number of pixels for mask dilation. This will help ensure that an
 identified object is completely covered by the corresponding mask. Set
 <cite>mask_dilation_pixels = 0</cite> to disable mask dilation.</p></li>
+<li><p><strong>return_raw_results</strong> (<em>bool</em>) – Return the masking results directly from <cite>MaskRCNN.detect</cite>?</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -636,36 +822,14 @@ identified object is completely covered by the corresponding mask. Set
 </dd></dl>
 
 <dl class="function">
-<dt id="src.Masker.tensor_dict_to_numpy">
-<code class="sig-prename descclassname">src.Masker.</code><code class="sig-name descname">tensor_dict_to_numpy</code><span class="sig-paren">(</span><em class="sig-param">input_dict</em>, <em class="sig-param">ignore_keys=()</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.tensor_dict_to_numpy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert all values of type <cite>tf.Tensor</cite> in a dictionary to <cite>np.ndarray</cite> by calling the <cite>.numpy()</cite> method.</p>
+<dt id="src.Masker.dilate_masks">
+<code class="sig-prename descclassname">src.Masker.</code><code class="sig-name descname">dilate_masks</code><span class="sig-paren">(</span><em class="sig-param">mask_results</em>, <em class="sig-param">mask_dilation_pixels</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.dilate_masks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dilate the masks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>input_dict</strong> (<em>dict</em>) – Dictionary containing tensors to convert.</p></li>
-<li><p><strong>ignore_keys</strong> (<em>tuple | list</em>) – Optional iterable with keys to ignore</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Converted dictionary containing original keys and converted tensors. Keys in <cite>ignore_keys</cite> will not be
-included.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="src.Masker.download_model">
-<code class="sig-prename descclassname">src.Masker.</code><code class="sig-name descname">download_model</code><span class="sig-paren">(</span><em class="sig-param">download_base</em>, <em class="sig-param">model_name</em>, <em class="sig-param">model_path</em>, <em class="sig-param">extract_all=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.download_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Download a pre-trained model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>download_base</strong> (<em>str</em>) – Base URL for downloading</p></li>
-<li><p><strong>model_name</strong> (<em>str</em>) – Name of model-file (without the .tar.gz extension)</p></li>
-<li><p><strong>model_path</strong> (<em>str</em>) – Directory where the downloaded model shoud be stored.</p></li>
+<li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>Masker.mask</cite></p></li>
+<li><p><strong>mask_dilation_pixels</strong> (<em>int</em>) – Approximate number of pixels to dilate</p></li>
 </ul>
 </dd>
 </dl>
@@ -690,6 +854,12 @@ included.</p>
 <li><a class="reference internal" href="#module-src.io.save">io.save</a></li>
 <li><a class="reference internal" href="#module-src.io.tf_dataset">io.tf_dataset</a></li>
 <li><a class="reference internal" href="#module-src.io.TreeWalker">io.TreeWalker</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#train">train</a><ul>
+<li><a class="reference internal" href="#module-src.train.train_config">train.train_config</a></li>
+<li><a class="reference internal" href="#module-src.train.train">train.train</a></li>
+<li><a class="reference internal" href="#module-src.train.augmentation">train.augmentation</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-src.ImageProcessor">ImageProcessor</a></li>

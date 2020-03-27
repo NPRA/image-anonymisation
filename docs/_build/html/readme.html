@@ -173,7 +173,12 @@ The latter also works when conda is not initialized in the shell, as long as the
 </div>
 <div class="section" id="documentation">
 <h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
-<p>The HTML documentation can be built from the <code class="docutils literal notranslate"><span class="pre">docs</span></code> directory by running</p>
+<p>Buidling the documentation requires <code class="docutils literal notranslate"><span class="pre">sphinx</span></code> with the <code class="docutils literal notranslate"><span class="pre">m2r</span></code> extension. These can be installed with <code class="docutils literal notranslate"><span class="pre">conda</span></code> and <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>conda install sphinx
+pip install m2r
+</pre></div>
+</div>
+<p>The HTML documentation can then be build from the <code class="docutils literal notranslate"><span class="pre">docs</span></code> directory by running</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>.\make.bat html
 </pre></div>
 </div>
@@ -197,6 +202,73 @@ optional arguments:
 </pre></div>
 </div>
 <p>Note that the annotations for the evaluation dataset must be on the <a class="reference external" href="http://cocodataset.org/#format-data">COCO format</a>.</p>
+</div>
+<div class="section" id="training-a-new-model">
+<h3>Training a new model<a class="headerlink" href="#training-a-new-model" title="Permalink to this headline">¶</a></h3>
+<p>The current implementation supports fine-tuning the COCO model from <a class="reference external" href="https://github.com/matterport/Mask_RCNN">matterport/Mask_RCNN</a> on the classes
+we are interested in.</p>
+<ol class="arabic">
+<li><p>Make sure that the weight file <a class="reference external" href="https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5">mask_rcnn_coco.h5</a> is downloaded,
+and placed in the <code class="docutils literal notranslate"><span class="pre">models</span></code> directory.</p></li>
+<li><p>Initialize the <code class="docutils literal notranslate"><span class="pre">Mask_RCNN</span></code> submodule by running</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>git submodule init
+git submodule update
+</pre></div>
+</div>
+<p>Note: This step can be skipped if you cloned the repository with the <code class="docutils literal notranslate"><span class="pre">--recursive-submodules</span></code> flag.</p>
+</li>
+<li><p>Install the <code class="docutils literal notranslate"><span class="pre">mrcnn</span></code> package:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> Mask_RCNN
+pip install -e .
+</pre></div>
+</div>
+</li>
+</ol>
+<ol class="arabic simple">
+<li><p>Download and extract <a class="reference external" href="http://images.cocodataset.org/zips/train2017.zip">train2017.zip</a> and place the images in <code class="docutils literal notranslate"><span class="pre">data\train\coco\train2017</span></code>.</p></li>
+<li><p>Download and extract <a class="reference external" href="http://images.cocodataset.org/zips/val2017.zip">val2017.zip</a> and place the images in <code class="docutils literal notranslate"><span class="pre">data\train\coco\val2017</span></code>.</p></li>
+<li><p>Download and extract <a class="reference external" href="http://images.cocodataset.org/annotations/annotations_trainval2017.zip">the annotations</a> and place the files in <code class="docutils literal notranslate"><span class="pre">data\train\coco\annotations</span></code>.</p></li>
+</ol>
+<p>After the steps above are completed, the training can be invoked by running training script:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">usage: python src.train.train [-h] [--data-folder DATA_FOLDER] [--data-year DATA_YEAR]</span>
+<span class="c">                              [--resume RESUME] [--summary-file SUMMARY_FILE]</span>
+<span class="c">                              [--enable-augmentation]</span>
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --data-folder DATA_FOLDER
+                        Path to data. The folder is expected to contain the following directories:
+                        - `train`: Contains the training images
+                        - `val`: (Optional) Contains the validation images
+                        - `annotations`: Contains COCO-formatted .json files with annotations.
+                        Training annotations should be in `annotations/instances_train.json`
+  --data-year DATA_YEAR
+                        Optional year-identifier for the data folder. The year will be appended
+                         to the folder and annotation names described above.
+  --resume RESUME       If specified, the training will be resumed from this weight file.
+  --summary-file SUMMARY_FILE
+                        Optional filename for writing the model summary.
+  --enable-augmentation
+                        Enable image augmentation during training?
+</pre></div>
+</div>
+<p>The training process will save the weights of the model after each epoch. These will be stored in <code class="docutils literal notranslate"><span class="pre">models/train/car_coco&lt;timestamp&gt;/mask_rcnn_car_coco_&lt;epoch&gt;.h5</span></code>.</p>
+<div class="section" id="resuming-a-training-session">
+<h4>Resuming a training session<a class="headerlink" href="#resuming-a-training-session" title="Permalink to this headline">¶</a></h4>
+<p>If you want to resume a previously interrupted training session, you can use the <code class="docutils literal notranslate"><span class="pre">--resume</span></code> parameter in the training script:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>python -m src.train.train --resume <span class="se">\p</span>ath<span class="se">\t</span>o<span class="se">\l</span>ast<span class="se">\s</span>aved<span class="se">\w</span>eights.h5
+</pre></div>
+</div>
+</div>
+<div class="section" id="training-configuration">
+<h4>Training configuration<a class="headerlink" href="#training-configuration" title="Permalink to this headline">¶</a></h4>
+<p>Configuration variables for training are available in <code class="docutils literal notranslate"><span class="pre">src/train/train_config.py</span></code>.</p>
+<div class="section" id="using-a-trained-model-in-the-masker">
+<h5>Using a trained model in the Masker<a class="headerlink" href="#using-a-trained-model-in-the-masker" title="Permalink to this headline">¶</a></h5>
+<p>The weights used in <code class="docutils literal notranslate"><span class="pre">src.Masker.Masker</span></code> are specified by the <code class="docutils literal notranslate"><span class="pre">weights_file</span></code> parameter in <code class="docutils literal notranslate"><span class="pre">config.py</span></code>.
+Use this parameter to change the weighs used in the masking model.</p>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -226,6 +298,14 @@ optional arguments:
 </li>
 <li><a class="reference internal" href="#documentation">Documentation</a></li>
 <li><a class="reference internal" href="#evaluating-the-current-model">Evaluating the current model</a></li>
+<li><a class="reference internal" href="#training-a-new-model">Training a new model</a><ul>
+<li><a class="reference internal" href="#resuming-a-training-session">Resuming a training session</a></li>
+<li><a class="reference internal" href="#training-configuration">Training configuration</a><ul>
+<li><a class="reference internal" href="#using-a-trained-model-in-the-masker">Using a trained model in the Masker</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
