@@ -26,6 +26,9 @@ class Logger:
         self.output_path = output_path
         self.filename = filename
 
+    def get_state(self):
+        return dict(input_path=self.input_path, output_path=self.output_path, filename=self.filename)
+
     def _get_error_output_path(self):
         error_extension = "_error"
         abs_error_path = self.base_output_dir + error_extension

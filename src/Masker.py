@@ -33,8 +33,8 @@ class Masker:
         """
         Run the masking on `image`.
         
-        :param image: Input image. Must be a 4D color image array with shape (1, height, width, 3)
-        :type image: np.ndarray
+        :param image: Input image. Must be a 4D color image tensor with shape (1, height, width, 3)
+        :type image: tf.python.framework.ops.EagerTensor
         :param mask_dilation_pixels: Approximate number of pixels for mask dilation. This will help ensure that an
                                     identified object is completely covered by the corresponding mask. Set
                                     `mask_dilation_pixels = 0` to disable mask dilation.
