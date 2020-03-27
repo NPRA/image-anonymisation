@@ -1,5 +1,7 @@
 import os
+import sys
 import time
+import pprint
 import logging
 import argparse
 from datetime import datetime, timedelta
@@ -51,6 +53,23 @@ def check_config(args):
         assert args.archive_folder, "Argument 'delete_input' requires a valid archive directory to be specified."
 
 
+def config_string():
+    """
+    Write the config variables to a string suitable for logging.
+
+    :return: Config string
+    :rtype: str
+    """
+    config_dict = {key: value for key, value in config.__dict__.items() if not key.startswith("_")}
+    config_str = pprint.pformat(config_dict)
+    config_str = config_str.replace("'", "").replace("{", " ").replace("}", " ")
+    config_str = f" Command line arguments: {' '.join(sys.argv[1:])}\n\n" + config_str
+    config_str = 40 * "#" + " CONFIG START " + 40 * "#" + \
+                 "\n" + config_str + "\n" + \
+                 40 * "#" + " CONFIG END " + 40 * "#"
+    return config_str
+
+
 def initialize():
     """
     Get command line arguments, and initialize the TreeWalker and Masker.
@@ -71,6 +90,9 @@ def initialize():
                                                     hostname=gethostname())
         log_file = os.path.join(args.log_folder, log_file_name)
         LOGGER.set_log_file(log_file)
+
+    # Log the current config.
+    LOGGER.info(__name__, "\n" + config_string())
 
     # Check that the config and command line arguments are valid
     check_config(args)
