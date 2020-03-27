@@ -6,7 +6,7 @@ import multiprocessing
 from datetime import datetime, timedelta
 from socket import gethostname
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import tensorflow as tf
 
 import config
@@ -161,7 +161,6 @@ def main():
 
         # Catch potential exceptions raised while processing the image
         try:
-            LOGGER.info(__name__, f"Processing image {image_path}.")
             # Get the image
             img = next(dataset_iterator)
             # Do the processing
