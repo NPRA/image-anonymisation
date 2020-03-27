@@ -78,14 +78,20 @@ def initialize():
     base_input_dir = os.path.abspath(args.input_folder)
     base_output_dir = os.path.abspath(args.output_folder)
     mirror_dirs = [base_output_dir]
+    # Make the output directory
+    os.makedirs(base_output_dir, exist_ok=True)
+
+    if args.archive_folder is not None:
+        base_archive_dir = os.path.abspath(args.archive_folder)
+        mirror_dirs.append(base_archive_dir)
+        # Make the archive directory
+        os.makedirs(base_archive_dir, exist_ok=True)
+    else:
+        base_archive_dir = None
 
     # Configure the logger
     LOGGER.base_input_dir = base_input_dir
     LOGGER.base_output_dir = base_output_dir
-
-    if args.archive_folder is not None:
-        # Add the archive folder to the list of mirror directories.
-        mirror_dirs.append(os.path.abspath(args.archive_folder))
 
     # Initialize the walker
     tree_walker = TreeWalker(base_input_dir, mirror_dirs, skip_webp=(not config.force_remask),
@@ -95,7 +101,8 @@ def initialize():
     # Create the TensorFlow datatset
     dataset_iterator = iter(get_tf_dataset(tree_walker))
     # Initialize the ImageProcessor
-    image_processor = ImageProcessor(masker=masker, max_num_async_workers=1)
+    image_processor = ImageProcessor(masker=masker, max_num_async_workers=1, base_input_path=base_input_dir,
+                                     base_output_path=base_output_dir, base_archive_path=base_archive_dir)
     return args, tree_walker, image_processor, dataset_iterator
 
 

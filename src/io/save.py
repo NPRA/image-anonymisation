@@ -52,8 +52,7 @@ def save_processed_img(img, mask_results, input_path, output_path, filename, dra
     :returns: 0
     :rtype: int
     """
-    # Ensure that the output directory and input file both exist
-    wait_until_path_is_found([os.path.join(input_path, filename), os.path.dirname(output_path)])
+    # Make the output directory
     os.makedirs(output_path, exist_ok=True)
 
     # Get EXIF data
@@ -115,8 +114,8 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
     :rtype: int
     """
     # Ensure that the paths can be reached.
-    wait_until_path_is_found([input_path, *mirror_paths])
-    
+    os.makedirs(mirror_paths[1], exist_ok=True)
+
     if assert_output_mask:
         output_mask = os.path.join(mirror_paths[0], os.path.splitext(filename)[0] + ".webp")
         assert os.path.isfile(output_mask), f"Archiving aborted. Output mask '{output_mask}' not found."
