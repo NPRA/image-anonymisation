@@ -7,10 +7,11 @@ import cv2
 
 import config
 from src.Logger import LOGGER
-from src.io.exif_util import write_exif
+from src.io.exif_util import write_exif, exif_from_file
+from src.io.file_access_guard import wait_until_path_is_found
 
 
-def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
+def save_processed_img(img, mask_results, input_path, output_path, filename, draw_mask=False, local_json=False,
                        remote_json=False, local_mask=False, remote_mask=False, json_objects=True, mask_color=None,
                        blur=None, gray_blur=True, normalized_gray_blur=True):
     """
@@ -20,8 +21,6 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     :type img: np.ndarray
     :param mask_results: Dictionary containing masking results. Format must be as returned by Masker.mask.
     :type mask_results: dict
-    :param exif: Exif data for input image.
-    :type exif: dict
     :param input_path: Path to input directory
     :type input_path: str
     :param output_path: Path to output directory
@@ -53,7 +52,11 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     :returns: 0
     :rtype: int
     """
+    # Make the output directory
     os.makedirs(output_path, exist_ok=True)
+
+    # Get EXIF data
+    exif = exif_from_file(os.path.join(input_path, filename))
 
     # Compute a single boolean mask from all the detection masks.
     detection_masks = mask_results["detection_masks"]
@@ -110,6 +113,9 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
     :returns: 0
     :rtype: int
     """
+    # Ensure that the paths can be reached.
+    os.makedirs(mirror_paths[1], exist_ok=True)
+
     if assert_output_mask:
         output_mask = os.path.join(mirror_paths[0], os.path.splitext(filename)[0] + ".webp")
         assert os.path.isfile(output_mask), f"Archiving aborted. Output mask '{output_mask}' not found."

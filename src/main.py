@@ -1,8 +1,9 @@
 import os
+import sys
 import time
+import pprint
 import logging
 import argparse
-import multiprocessing
 from datetime import datetime, timedelta
 from socket import gethostname
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -10,16 +11,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 
 import config
-from src.io.exif_util import exif_from_file
-from src.io.save import save_processed_img, archive
 from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
 from src.Masker import Masker
-from src.Logger import LOGGER
+from src.Logger import LOGGER, email_excepthook
+from src.ImageProcessor import ImageProcessor
 
 # Exceptions to catch when processing an image
 PROCESSING_EXCEPTIONS = (
-    AssertionError,
     tf.errors.InvalidArgumentError,
     tf.errors.UnknownError,
     tf.errors.NotFoundError,
@@ -54,6 +53,23 @@ def check_config(args):
         assert args.archive_folder, "Argument 'delete_input' requires a valid archive directory to be specified."
 
 
+def config_string():
+    """
+    Write the config variables to a string suitable for logging.
+
+    :return: Config string
+    :rtype: str
+    """
+    config_dict = {key: value for key, value in config.__dict__.items() if not key.startswith("_")}
+    config_str = pprint.pformat(config_dict)
+    config_str = config_str.replace("'", "").replace("{", " ").replace("}", " ")
+    config_str = f" Command line arguments: {' '.join(sys.argv[1:])}\n\n" + config_str
+    config_str = 40 * "#" + " CONFIG START " + 40 * "#" + \
+                 "\n" + config_str + "\n" + \
+                 40 * "#" + " CONFIG END " + 40 * "#"
+    return config_str
+
+
 def initialize():
     """
     Get command line arguments, and initialize the TreeWalker and Masker.
@@ -62,6 +78,9 @@ def initialize():
              instance of `Masker` ready for masking.
     :rtype: argparse.Namespace, TreeWalker, Masker
     """
+    # Register a custom excepthook which sends an email on uncaught exceptions.
+    sys.excepthook = email_excepthook
+
     # Configure logger
     logging.basicConfig(level=logging.INFO, format=LOGGER.fmt, datefmt=LOGGER.datefmt)
     # Get arguments
@@ -70,8 +89,13 @@ def initialize():
     # Set log file
     if args.log_folder is not None:
         os.makedirs(args.log_folder, exist_ok=True)
-        log_file = os.path.join(args.log_folder, gethostname() + ".log")
+        log_file_name = config.log_file_name.format(datetime=datetime.now().strftime(config.datetime_format),
+                                                    hostname=gethostname())
+        log_file = os.path.join(args.log_folder, log_file_name)
         LOGGER.set_log_file(log_file)
+
+    # Log the current config.
+    LOGGER.info(__name__, "\n" + config_string())
 
     # Check that the config and command line arguments are valid
     check_config(args)
@@ -80,14 +104,20 @@ def initialize():
     base_input_dir = os.path.abspath(args.input_folder)
     base_output_dir = os.path.abspath(args.output_folder)
     mirror_dirs = [base_output_dir]
+    # Make the output directory
+    os.makedirs(base_output_dir, exist_ok=True)
+
+    if args.archive_folder is not None:
+        base_archive_dir = os.path.abspath(args.archive_folder)
+        mirror_dirs.append(base_archive_dir)
+        # Make the archive directory
+        os.makedirs(base_archive_dir, exist_ok=True)
+    else:
+        base_archive_dir = None
 
     # Configure the logger
     LOGGER.base_input_dir = base_input_dir
     LOGGER.base_output_dir = base_output_dir
-
-    if args.archive_folder is not None:
-        # Add the archive folder to the list of mirror directories.
-        mirror_dirs.append(os.path.abspath(args.archive_folder))
 
     # Initialize the walker
     tree_walker = TreeWalker(base_input_dir, mirror_dirs, skip_webp=(not config.force_remask),
@@ -95,73 +125,11 @@ def initialize():
     # Initialize the masker
     masker = Masker()
     # Create the TensorFlow datatset
-    dataset = get_tf_dataset(tree_walker)
-    return args, tree_walker, masker, dataset
-
-
-def process_image(img, image_path, masker, pool, export_result, archive_result, input_path, mirror_paths, filename):
-    """
-    Complete procedure for processing a single image.
-
-    :param img: Input image
-    :type img: tf.python.framework.ops.EagerTensor
-    :param image_path: Full path to the image. Must end with '.jpg'.
-    :type image_path: str
-    :param masker: Instance of `Masker` to use for computing masks.
-    :type masker: Masker
-    :param pool: Processing pool for asynchronous export of results.
-    :type pool: multiprocessing.Pool
-    :param export_result: Result of previous export call to `pool.apply_async`. This is used to ensure that the previous
-                          export is complete before a new one is started.
-    :type export_result: multiprocessing.ApplyResult
-    :param archive_result: Result of previous archive call to `pool.apply_async`. This is used to ensure that the
-                           previous archiving is complete before a new one is started.
-    :type archive_result: multiprocessing.ApplyResult
-    :param input_path: Full path to directory of input image
-    :type input_path: str
-    :param mirror_paths: List with at least one element, containing the output path and optionally, the archive path.
-    :type mirror_paths: list of str
-    :param filename: Name of image file
-    :type filename: str
-
-    :return: Result from the current call to `pool.apply_async`
-    :rtype: multiprocessing.ApplyResult
-    """
-    # Load image
-    exif = exif_from_file(image_path)
-    # Start masking
-    mask_results = masker.mask(img, mask_dilation_pixels=config.mask_dilation_pixels)
-
-    # Convert to numpy array for exporting
-    img = img.numpy()
-    # Make sure that the previous export is done before starting a new one.
-    if export_result is not None:
-        assert export_result.get() == 0
-    # Save results
-    export_result = pool.apply_async(
-        save_processed_img,
-        args=(img, mask_results, exif),
-        kwds=dict(
-            input_path=input_path, output_path=mirror_paths[0],
-            filename=filename, draw_mask=config.draw_mask, local_json=config.local_json,
-            remote_json=config.remote_json, local_mask=config.local_mask,
-            remote_mask=config.remote_mask, mask_color=config.mask_color,
-            blur=config.blur, gray_blur=config.gray_blur, normalized_gray_blur=config.normalized_gray_blur,
-        )
-    )
-
-    if len(mirror_paths) > 1:
-        # Do async. archiving
-        os.makedirs(mirror_paths[1], exist_ok=True)
-        if archive_result is not None:
-            assert archive_result.get() == 0
-        archive_result = pool.apply_async(
-            archive,
-            args=(input_path, mirror_paths, filename),
-            kwds=dict(archive_json=config.archive_json, archive_mask=config.archive_mask,
-                      delete_input_img=config.delete_input, assert_output_mask=True)
-        )
-    return export_result, archive_result
+    dataset_iterator = iter(get_tf_dataset(tree_walker))
+    # Initialize the ImageProcessor
+    image_processor = ImageProcessor(masker=masker, max_num_async_workers=1, base_input_path=base_input_dir,
+                                     base_output_path=base_output_dir, base_archive_path=base_archive_dir)
+    return args, tree_walker, image_processor, dataset_iterator
 
 
 def get_estimated_done(time_at_iter_start, n_imgs, n_masked):
@@ -182,7 +150,7 @@ def get_estimated_done(time_at_iter_start, n_imgs, n_masked):
         return "?"
     time_since_start = time.time() - time_at_iter_start
     est_time_remaining = (time_since_start / n_masked) * (n_imgs - n_masked)
-    est_done = (datetime.now() + timedelta(seconds=est_time_remaining)).strftime("%Y-%m-%d, %H:%M:%S")
+    est_done = (datetime.now() + timedelta(seconds=est_time_remaining)).strftime(config.datetime_format)
     return est_done
 
 
@@ -210,15 +178,9 @@ def main():
     """Run the masking."""
     # Initialize
     start_datetime = datetime.now()
-    args, tree_walker, masker, dataset = initialize()
+    args, tree_walker, image_processor, dataset_iterator = initialize()
     n_imgs = "?" if config.lazy_paths else tree_walker.n_valid_images
     n_masked = 0
-
-    # multiprocessing.Pool for asynchronous result export
-    pool = multiprocessing.Pool(processes=1)
-    export_result = archive_result = None
-
-    dataset_iterator = iter(dataset)
 
     # Mask images
     time_at_iter_start = time.time()
@@ -235,31 +197,27 @@ def main():
             # Get the image
             img = next(dataset_iterator)
             # Do the processing
-            export_result, archive_result = process_image(img=img, image_path=image_path, masker=masker, pool=pool,
-                                                          export_result=export_result, archive_result=archive_result,
-                                                          input_path=input_path, mirror_paths=mirror_paths,
-                                                          filename=filename)
+            image_processor.process_image(img, input_path, mirror_paths, filename)
         except PROCESSING_EXCEPTIONS as err:
-            LOGGER.error(__name__, f"Got error '{str(err)}' while processing image {count_str}. File: "
+            LOGGER.set_state(input_path, output_path, filename)
+            LOGGER.error(__name__, f"Got error:\n'{str(err)}'\nwhile processing image {count_str}. File: "
                                    f"{image_path}.", save=True)
             continue
 
-        n_masked += 1
-        time_delta = "{:.3f}".format(time.time() - start_time)
-        est_done = get_estimated_done(time_at_iter_start, n_imgs, n_masked)
-        LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
-                              f"{image_path}.")
-
-    # Ensure that the async. jobs are completed before we exit.
-    if export_result is not None:
-        export_result.get()
-    if archive_result is not None:
-        archive_result.get()
+        # Check if the image_processor encountered a worker error. If an error was encountered, we reset the flag,
+        # and silently continue without logging the "Masked image x/y..." message.
+        if image_processor.got_worker_error:
+            image_processor.got_worker_error = False
+        else:
+            n_masked += 1
+            time_delta = "{:.3f}".format(time.time() - start_time)
+            est_done = get_estimated_done(time_at_iter_start, n_imgs, n_masked)
+            LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
+                                  f"{image_path}.")
+    image_processor.close()
 
     # Summary
     log_summary(tree_walker, n_masked, start_datetime)
-    # Close the processing pool
-    pool.close()
 
 
 if __name__ == '__main__':

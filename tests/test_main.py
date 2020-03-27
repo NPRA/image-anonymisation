@@ -38,6 +38,9 @@ CONFIG_VARS = {
     "gray_blur": True,
     "normalized_gray_blur": True,
     "weights_file": config.weights_file,
+    "datetime_format": config.datetime_format,
+    "log_file_name": config.log_file_name,
+    "TF_DATASET_NUM_PARALLEL_CALLS": 1,
     "PROJECT_ROOT": config.PROJECT_ROOT,
     "MODELS_DIRECTORY": config.MODELS_DIRECTORY,
     "MASK_LABELS": config.MASK_LABELS,
@@ -109,6 +112,21 @@ class FakeConfig:
             setattr(self, key, kwargs.get(key, CONFIG_VARS[key]))
 
 
+# The multiprocessing.Pool.apply_async call has to be mocked, since mocking does not work "inside" the call to
+# pool.apply_async. The config module is therefore not correctly mocked for asynchronously applied functions.
+def fake_apply_async(pool, func, args, kwds={}):
+    result = func(*args, **kwds)
+    return FakeAsyncResults(result)
+
+
+class FakeAsyncResults:
+    def __init__(self, result):
+        self.result = result
+
+    def get(self):
+        return self.result
+
+
 def _run_main(new_config, new_args):
     """
     Run `src.main.main` while mocking the command line arguments and the config.
@@ -121,6 +139,8 @@ def _run_main(new_config, new_args):
     tf.keras.backend.clear_session()
     mockers = [
         mock.patch("src.main.config", new=new_config),
+        mock.patch("src.ImageProcessor.config", new=new_config),
+        mock.patch("src.ImageProcessor.multiprocessing.pool.Pool.apply_async", new=fake_apply_async),
         mock.patch("src.Masker.config", new=new_config),
         mock.patch("src.main.get_args", new=new_args),
     ]
@@ -167,7 +187,7 @@ def _check_files(cfg, args):
     no_archive = args.archive_folder is None
 
     if args.log_folder is not None:
-        _check_file_exists(LOG_DIR, gethostname() + ".log")
+        assert os.listdir(LOG_DIR), f"LOG_DIR ({LOG_DIR}) is empty."
 
     for rel_path, filename in EXPECTED_PROCESSED_FILES:
         input_path = os.path.join(INPUT_DIR, rel_path)

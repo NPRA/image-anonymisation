@@ -18,7 +18,7 @@ def _check_files(tree_walker, expected_files):
 
 def test_TreeWalker_find_files():
     """
-    Check that the TreeWalker finds a;; the files it is supposed to find.
+    Check that the TreeWalker finds all the files it is supposed to find.
     """
     base_input_dir = os.path.join("tests", "data", "fake")
     base_output_dir = os.path.join("tests", "data", "out")

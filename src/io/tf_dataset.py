@@ -1,7 +1,9 @@
 import os
 import tensorflow as tf
 
+import config
 from src.io.load import check_input_img
+from src.io.file_access_guard import wait_until_path_is_found
 
 
 def prepare_img(input_dir, _, filename):
@@ -18,9 +20,12 @@ def prepare_img(input_dir, _, filename):
     :rtype: tf.python.framework.ops.EagerTensor
     """
     input_path = tf.strings.join([input_dir, filename], separator=os.sep)
+    tf.numpy_function(wait_until_path_is_found, [input_path], tf.int32)
+
     img_data = tf.io.read_file(input_path)
     img = tf.image.decode_jpeg(img_data)
     img = tf.expand_dims(img, 0)
+
     check_input_img_tf(img)
     return img
 
@@ -39,8 +44,14 @@ def get_tf_dataset(tree_walker):
         output_types=(tf.string, tf.string, tf.string),
         output_shapes=([], [None], []),
     )
-    dataset = dataset.map(prepare_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
+
+    if config.TF_DATASET_NUM_PARALLEL_CALLS == "auto":
+        num_parallel_calls = tf.data.experimental.AUTOTUNE
+    else:
+        num_parallel_calls = int(config.TF_DATASET_NUM_PARALLEL_CALLS)
+
+    dataset = dataset.map(prepare_img, num_parallel_calls=num_parallel_calls)
+    dataset = dataset.prefetch(num_parallel_calls)
     return dataset
 
 

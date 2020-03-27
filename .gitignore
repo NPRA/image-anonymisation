@@ -69,7 +69,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+# docs/_build/
 
 # PyBuilder
 target/
@@ -138,6 +138,10 @@ dmypy.json
 tmp/
 models/
 logs/
+
 data/*
 tests/data/real
 !tests/data/fake/
+
+docs/_build/*
+!docs/_build/html
