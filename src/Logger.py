@@ -2,6 +2,8 @@ import os
 import logging
 from shutil import copy2
 
+import config
+
 
 class Logger:
     def __init__(self):
@@ -13,7 +15,7 @@ class Logger:
         self.namespace = "image-anonymisation"
         self.logger = logging.getLogger(self.namespace)
         self.fmt = "%(asctime)s (%(levelname)s): %(message)s"
-        self.datefmt = "%Y-%m-%d, %H:%M:%S"
+        self.datefmt = config.datetime_format
 
     def set_log_file(self, log_file_path, level=logging.INFO):
         file_handler = logging.FileHandler(log_file_path)

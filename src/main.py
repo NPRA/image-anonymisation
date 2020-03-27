@@ -2,7 +2,6 @@ import os
 import time
 import logging
 import argparse
-import multiprocessing
 from datetime import datetime, timedelta
 from socket import gethostname
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -68,7 +67,9 @@ def initialize():
     # Set log file
     if args.log_folder is not None:
         os.makedirs(args.log_folder, exist_ok=True)
-        log_file = os.path.join(args.log_folder, gethostname() + ".log")
+        log_file_name = config.log_file_name.format(datetime=datetime.now().strftime(config.datetime_format),
+                                                    hostname=gethostname())
+        log_file = os.path.join(args.log_folder, log_file_name)
         LOGGER.set_log_file(log_file)
 
     # Check that the config and command line arguments are valid
@@ -124,7 +125,7 @@ def get_estimated_done(time_at_iter_start, n_imgs, n_masked):
         return "?"
     time_since_start = time.time() - time_at_iter_start
     est_time_remaining = (time_since_start / n_masked) * (n_imgs - n_masked)
-    est_done = (datetime.now() + timedelta(seconds=est_time_remaining)).strftime("%Y-%m-%d, %H:%M:%S")
+    est_done = (datetime.now() + timedelta(seconds=est_time_remaining)).strftime(config.datetime_format)
     return est_done
 
 

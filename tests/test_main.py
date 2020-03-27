@@ -186,7 +186,7 @@ def _check_files(cfg, args):
     no_archive = args.archive_folder is None
 
     if args.log_folder is not None:
-        _check_file_exists(LOG_DIR, gethostname() + ".log")
+        assert os.listdir(LOG_DIR), f"LOG_DIR ({LOG_DIR}) is empty."
 
     for rel_path, filename in EXPECTED_PROCESSED_FILES:
         input_path = os.path.join(INPUT_DIR, rel_path)

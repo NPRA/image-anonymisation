@@ -29,6 +29,14 @@ file_access_retry_seconds = 10
 #: This also applies to both reading input files, and writing output files.
 file_access_timeout_seconds = 60
 
+#: Format of datetime identifiers. See https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior for
+#: more information.
+datetime_format = "%Y-%m-%d %H.%M.%S"
+
+#: Name of the log file. `{datetime}` will be replaced with a timestamp formatted as `datetime_format`. {hostname}
+#: will be replaced with the host name.
+log_file_name = "{datetime} {hostname}.log"
+
 
 # ===================
 # File I/O parameters
