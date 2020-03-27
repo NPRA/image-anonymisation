@@ -1,0 +1,746 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>API Reference &#8212; Image-anonymisation 0 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="README" href="readme.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="readme.html" title="README"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Image-anonymisation 0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-config">
+<span id="config"></span><h2>config<a class="headerlink" href="#module-config" title="Permalink to this headline">¶</a></h2>
+<p>Configuration variables.</p>
+<dl class="data">
+<dt id="config.draw_mask">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">draw_mask</code><em class="property"> = True</em><a class="headerlink" href="#config.draw_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the mask to the output image?</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.delete_input">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">delete_input</code><em class="property"> = False</em><a class="headerlink" href="#config.delete_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the original image from the input directory when the masking is completed?</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.force_remask">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">force_remask</code><em class="property"> = False</em><a class="headerlink" href="#config.force_remask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recompute masks even though a .webp file exists in the input folder.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.lazy_paths">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">lazy_paths</code><em class="property"> = False</em><a class="headerlink" href="#config.lazy_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>When <cite>lazy_paths = True</cite>, traverse the file tree during the masking process.
+Otherwise, all paths will be identified and stored before the masking starts.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.file_access_retry_seconds">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">file_access_retry_seconds</code><em class="property"> = 10</em><a class="headerlink" href="#config.file_access_retry_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of seconds to wait before (re)trying to access a file/directory which cannot currently be reached. This
+applies to both reading input files, and writing output files.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.file_access_timeout_seconds">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">file_access_timeout_seconds</code><em class="property"> = 60</em><a class="headerlink" href="#config.file_access_timeout_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total number of seconds to wait before giving up on accessing a file/directory which cannot currently be reached.
+This also applies to both reading input files, and writing output files.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.remote_json">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">remote_json</code><em class="property"> = True</em><a class="headerlink" href="#config.remote_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the EXIF .json file to the output (remote) directory?</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.local_json">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">local_json</code><em class="property"> = False</em><a class="headerlink" href="#config.local_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the EXIF .json file to the input (local) directory?</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.archive_json">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">archive_json</code><em class="property"> = False</em><a class="headerlink" href="#config.archive_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the EXIF .json file to the archive directory?</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.remote_mask">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">remote_mask</code><em class="property"> = True</em><a class="headerlink" href="#config.remote_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write mask file to the output (remote) directory?</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.local_mask">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">local_mask</code><em class="property"> = False</em><a class="headerlink" href="#config.local_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the mask file to the input (local) directory?</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.archive_mask">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">archive_mask</code><em class="property"> = False</em><a class="headerlink" href="#config.archive_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write mask file to the archive directory?</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.model_type">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">model_type</code><em class="property"> = 'Medium'</em><a class="headerlink" href="#config.model_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of masking model. Currently, there are three available models with varying speed and accuracy.
+The slowest model produces the most accurate masks, while the masks from the medium model are slightly worse.
+The masks from the <cite>Fast</cite> model are currently not recommended due to poor quality. Must be either “Slow”, “Medium” or
+“Fast”. “Medium” is recommended.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.mask_dilation_pixels">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">mask_dilation_pixels</code><em class="property"> = 0</em><a class="headerlink" href="#config.mask_dilation_pixels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
+by the corresponding mask. Set <cite>mask_dilation_pixels = 0</cite> to disable mask dilation.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.mask_color">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">mask_color</code><em class="property"> = None</em><a class="headerlink" href="#config.mask_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>“RGB tuple [0-255] indicating the masking color. Setting this option will override the
+colors specified below. Example: Setting <cite>mask_color = (50, 50, 50)</cite> will make all masks
+dark gray.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.blur">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">blur</code><em class="property"> = 10</em><a class="headerlink" href="#config.blur" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blurring coefficient [1-100] which specifies the degree of blurring to apply within the
+mask. When this parameter is specified, the image will be blurred, and not masked with a
+specific color. Set <cite>blur = None</cite> to disable blurring, and use colored masks instead.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.gray_blur">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">gray_blur</code><em class="property"> = True</em><a class="headerlink" href="#config.gray_blur" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the image to grayscale before blurring? (Ignored if blurring is disabled)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.normalized_gray_blur">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">normalized_gray_blur</code><em class="property"> = True</em><a class="headerlink" href="#config.normalized_gray_blur" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark
+colors. NOTE: Requires gray_blur=True</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.TF_DATASET_NUM_PARALLEL_CALLS">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">TF_DATASET_NUM_PARALLEL_CALLS</code><em class="property"> = 1</em><a class="headerlink" href="#config.TF_DATASET_NUM_PARALLEL_CALLS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of parallel calls to tf.dataset.map and tf.dataset.prefetch. Set <cite>TF_DATASET_NUM_PARALLEL_CALLS = “auto”</cite> to
+use tf.data.experimental.AUTOTUNE. This might yield a small gain in performance.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.MODEL_NAME">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">MODEL_NAME</code><em class="property"> = 'mask_rcnn_resnet101_atrous_coco_2018_01_28'</em><a class="headerlink" href="#config.MODEL_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Actual name of the masking model. Controlled by the value of <cite>model_type</cite></p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.PROJECT_ROOT">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">PROJECT_ROOT</code><em class="property"> = 'C:\\Users\\dantro\\Repos\\SVV\\image-anonymisation'</em><a class="headerlink" href="#config.PROJECT_ROOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Root directory for the project</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.GRAPH_DIRECTORY">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">GRAPH_DIRECTORY</code><em class="property"> = 'C:\\Users\\dantro\\Repos\\SVV\\image-anonymisation\\models'</em><a class="headerlink" href="#config.GRAPH_DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directory containing saved models</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.MODEL_PATH">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">MODEL_PATH</code><em class="property"> = 'C:\\Users\\dantro\\Repos\\SVV\\image-anonymisation\\models\\mask_rcnn_resnet101_atrous_coco_2018_01_28'</em><a class="headerlink" href="#config.MODEL_PATH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Full path to the saved model</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.DOWNLOAD_BASE">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">DOWNLOAD_BASE</code><em class="property"> = 'http://download.tensorflow.org/models/object_detection/'</em><a class="headerlink" href="#config.DOWNLOAD_BASE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base URL for model downloading</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.PATH_TO_LABELS">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">PATH_TO_LABELS</code><em class="property"> = 'mscoco_label_map.pbtxt'</em><a class="headerlink" href="#config.PATH_TO_LABELS" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of the strings that is used to add correct label for each box.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.MASK_LABELS">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">MASK_LABELS</code><em class="property"> = (1, 2, 3, 4, 6, 8)</em><a class="headerlink" href="#config.MASK_LABELS" title="Permalink to this definition">¶</a></dt>
+<dd><p>COCO labels to mask in input images</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.LABEL_COLORS">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">LABEL_COLORS</code><em class="property"> = {1: (255, 255, 255), 2: (0, 0, 255), 3: (255, 0, 0), 4: (255, 255, 0), 6: (0, 255, 255), 8: (0, 255, 0)}</em><a class="headerlink" href="#config.LABEL_COLORS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Masking colors. &lt;COCO label id&gt;: &lt;RGB color&gt;</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.DEFAULT_COLOR">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">DEFAULT_COLOR</code><em class="property"> = (100, 100, 100)</em><a class="headerlink" href="#config.DEFAULT_COLOR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default color for labels not contained in <cite>LABEL_COLORS</cite></p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.LABEL_MAP">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">LABEL_MAP</code><em class="property"> = {1: 'person', 2: 'bicycle', 3: 'car', 4: 'motorcycle', 5: 'airplane', 6: 'bus', 7: 'train', 8: 'truck', 9: 'boat', 10: 'traffic light', 11: 'fire hydrant', 13: 'stop sign', 14: 'parking meter', 15: 'bench', 16: 'bird', 17: 'cat', 18: 'dog', 19: 'horse', 20: 'sheep', 21: 'cow', 22: 'elephant', 23: 'bear', 24: 'zebra', 25: 'giraffe', 27: 'backpack', 28: 'umbrella', 31: 'handbag', 32: 'tie', 33: 'suitcase', 34: 'frisbee', 35: 'skis', 36: 'snowboard', 37: 'sports ball', 38: 'kite', 39: 'baseball bat', 40: 'baseball glove', 41: 'skateboard', 42: 'surfboard', 43: 'tennis racket', 44: 'bottle', 46: 'wine glass', 47: 'cup', 48: 'fork', 49: 'knife', 50: 'spoon', 51: 'bowl', 52: 'banana', 53: 'apple', 54: 'sandwich', 55: 'orange', 56: 'broccoli', 57: 'carrot', 58: 'hot dog', 59: 'pizza', 60: 'donut', 61: 'cake', 62: 'chair', 63: 'couch', 64: 'potted plant', 65: 'bed', 67: 'dining table', 70: 'toilet', 72: 'tv', 73: 'laptop', 74: 'mouse', 75: 'remote', 76: 'keyboard', 77: 'cell phone', 78: 'microwave', 79: 'oven', 80: 'toaster', 81: 'sink', 82: 'refrigerator', 84: 'book', 85: 'clock', 86: 'vase', 87: 'scissors', 88: 'teddy bear', 89: 'hair drier', 90: 'toothbrush'}</em><a class="headerlink" href="#config.LABEL_MAP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label map for the COCO dataset.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="io">
+<h2>io<a class="headerlink" href="#io" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-src.io.exif_util">
+<span id="io-exif-util"></span><h3>io.exif_util<a class="headerlink" href="#module-src.io.exif_util" title="Permalink to this headline">¶</a></h3>
+<p>From: <a class="reference external" href="https://github.com/vegvesen/vegbilder/blob/master/trinn1_lagmetadata/vegbilder_lesexif.py">https://github.com/vegvesen/vegbilder/blob/master/trinn1_lagmetadata/vegbilder_lesexif.py</a></p>
+<dl class="function">
+<dt id="src.io.exif_util.fiksutf8">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">fiksutf8</code><span class="sig-paren">(</span><em class="sig-param">meta</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.fiksutf8" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fjerner ugyldige tegn fra datastrukturen før de får gjort mer skade</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.exif_util.fiskFraviatechXML">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">fiskFraviatechXML</code><span class="sig-paren">(</span><em class="sig-param">imagepropertiesxml</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.fiskFraviatechXML" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leser relevante data fra viatech XML header.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.exif_util.lesexif">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">lesexif</code><span class="sig-paren">(</span><em class="sig-param">filnavn</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.lesexif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Omsetter Exif-header til metadata for bruk i bildedatabase</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.exif_util.get_decimal_from_dms">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_decimal_from_dms</code><span class="sig-paren">(</span><em class="sig-param">dms</em>, <em class="sig-param">ref</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_decimal_from_dms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Konverterer EXIF-grader til desimalgrader</p>
+<p>Fra <a class="reference external" href="https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3">https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.exif_util.get_coordinates">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_coordinates</code><span class="sig-paren">(</span><em class="sig-param">geotags</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fisker koordinater ut av EXIF-taggene</p>
+<p>Fra <a class="reference external" href="https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3">https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.exif_util.pyntxml">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">pyntxml</code><span class="sig-paren">(</span><em class="sig-param">exif_labelled</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.pyntxml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fjerner litt rusk fra den XML’en som viatech legger i Exif-header. Obfuskerer fører og bilnr</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.exif_util.get_geotagging">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_geotagging</code><span class="sig-paren">(</span><em class="sig-param">exif</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_geotagging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bedre håndtering av geotag i exif-header</p>
+<p>Fra <a class="reference external" href="https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3">https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3</a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.io.load">
+<span id="io-load"></span><h3>io.load<a class="headerlink" href="#module-src.io.load" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="src.io.load.load_image">
+<code class="sig-prename descclassname">src.io.load.</code><code class="sig-name descname">load_image</code><span class="sig-paren">(</span><em class="sig-param">image_path</em>, <em class="sig-param">read_exif=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.load.load_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the image at ‘image_path’ and returns it as an array. None is returned i the image could not be loaded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_path</strong> (<em>str</em>) – Path to image. Must end with ‘.jpg’</p></li>
+<li><p><strong>read_exif</strong> (<em>bool</em>) – Read the EXIF data from the input image?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Image array</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(np.ndarray, dict | None) | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.load.check_input_img">
+<code class="sig-prename descclassname">src.io.load.</code><code class="sig-name descname">check_input_img</code><span class="sig-paren">(</span><em class="sig-param">img</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.load.check_input_img" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that the given image (represented as a numpy array) is valid for masking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.io.save">
+<span id="io-save"></span><h3>io.save<a class="headerlink" href="#module-src.io.save" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="src.io.save.save_processed_img">
+<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">save_processed_img</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">input_path</em>, <em class="sig-param">output_path</em>, <em class="sig-param">filename</em>, <em class="sig-param">draw_mask=False</em>, <em class="sig-param">local_json=False</em>, <em class="sig-param">remote_json=False</em>, <em class="sig-param">local_mask=False</em>, <em class="sig-param">remote_mask=False</em>, <em class="sig-param">json_objects=True</em>, <em class="sig-param">mask_color=None</em>, <em class="sig-param">blur=None</em>, <em class="sig-param">gray_blur=True</em>, <em class="sig-param">normalized_gray_blur=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.save_processed_img" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save an image which has been processed by the masker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p></li>
+<li><p><strong>mask_results</strong> (<em>dict</em>) – Dictionary containing masking results. Format must be as returned by Masker.mask.</p></li>
+<li><p><strong>input_path</strong> (<em>str</em>) – Path to input directory</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) – Path to output directory</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Name of image file</p></li>
+<li><p><strong>draw_mask</strong> (<em>bool</em>) – Draw the mask on the image?</p></li>
+<li><p><strong>local_json</strong> (<em>bool</em>) – Write the EXIF .json file to the input directory?</p></li>
+<li><p><strong>remote_json</strong> (<em>bool</em>) – Write the EXIF .json file to the output directory?</p></li>
+<li><p><strong>local_mask</strong> (<em>bool</em>) – Write the Mask file to the input directory?</p></li>
+<li><p><strong>remote_mask</strong> (<em>bool</em>) – Write the Mask file to the output directory?</p></li>
+<li><p><strong>json_objects</strong> (<em>bool</em>) – Add a dictionary containing the detected objects and their counts to the .json file?</p></li>
+<li><p><strong>mask_color</strong> (<em>list | None</em>) – Mask color. All masks in the output image will have this color. If <cite>mask_color</cite> is None, the
+colors in <cite>config</cite> will be used.</p></li>
+<li><p><strong>blur</strong> (<em>int | float | None</em>) – When <cite>blur</cite> is not None, the image will be blurred instead of colored at the masked locations. <cite>blur</cite>
+should be a number in [1 - 1000] indicating the size of the mask used in for blurring. Specifically,
+<cite>mask_size = (blur / 1000) * image_width</cite>.</p></li>
+<li><p><strong>gray_blur</strong> (<em>bool</em>) – Convert the image to grayscale before blurring?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>0</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.save.archive">
+<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">archive</code><span class="sig-paren">(</span><em class="sig-param">input_path</em>, <em class="sig-param">mirror_paths</em>, <em class="sig-param">filename</em>, <em class="sig-param">archive_mask=False</em>, <em class="sig-param">archive_json=False</em>, <em class="sig-param">delete_input_img=False</em>, <em class="sig-param">assert_output_mask=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy the input image file (and possibly some output files) to the archive directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_path</strong> (<em>str</em>) – Path to the directory containing the input image.</p></li>
+<li><p><strong>mirror_paths</strong> (<em>list of str</em>) – List with at least two elements, containing the output path and the archive path.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Name of image-file</p></li>
+<li><p><strong>archive_mask</strong> (<em>bool</em>) – Copy the mask file to the archive directory?</p></li>
+<li><p><strong>archive_json</strong> (<em>bool</em>) – Copy the EXIF file to the archive directory?</p></li>
+<li><p><strong>delete_input_img</strong> (<em>bool</em>) – Delete the image from the input directory?</p></li>
+<li><p><strong>assert_output_mask</strong> (<em>bool</em>) – Assert that the output mask exists before archiving?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>0</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.io.tf_dataset">
+<span id="io-tf-dataset"></span><h3>io.tf_dataset<a class="headerlink" href="#module-src.io.tf_dataset" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="src.io.tf_dataset.prepare_img">
+<code class="sig-prename descclassname">src.io.tf_dataset.</code><code class="sig-name descname">prepare_img</code><span class="sig-paren">(</span><em class="sig-param">input_dir</em>, <em class="sig-param">_</em>, <em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.tf_dataset.prepare_img" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the image named <cite>filename</cite> from <cite>input_dir</cite>, and check that is is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_dir</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Input directory. Expected to be a zero-dimensional string tensor.</p></li>
+<li><p><strong>_</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Ignored</p></li>
+<li><p><strong>filename</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Name of image file. Expected to be a zero-dimensional string tensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Loaded image</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tf.python.framework.ops.EagerTensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.tf_dataset.get_tf_dataset">
+<code class="sig-prename descclassname">src.io.tf_dataset.</code><code class="sig-name descname">get_tf_dataset</code><span class="sig-paren">(</span><em class="sig-param">tree_walker</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.tf_dataset.get_tf_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an TensorFlow dataset using the given instance of <cite>TreeWalker</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tree_walker</strong> (<a class="reference internal" href="#src.io.TreeWalker.TreeWalker" title="src.io.TreeWalker.TreeWalker"><em>src.io.TreeWalker.TreeWalker</em></a>) – TreeWalker to use to locate images.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dataset that yields properly formatted and valid image tensors.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tf.data.Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.io.TreeWalker">
+<span id="io-treewalker"></span><h3>io.TreeWalker<a class="headerlink" href="#module-src.io.TreeWalker" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="src.io.TreeWalker.TreeWalker">
+<em class="property">class </em><code class="sig-prename descclassname">src.io.TreeWalker.</code><code class="sig-name descname">TreeWalker</code><span class="sig-paren">(</span><em class="sig-param">input_folder</em>, <em class="sig-param">mirror_folders</em>, <em class="sig-param">skip_webp=True</em>, <em class="sig-param">precompute_paths=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.TreeWalker.TreeWalker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Traverses a file-tree and finds all valid .jpg images.</p>
+<dl class="method">
+<dt id="src.io.TreeWalker.TreeWalker.walk">
+<code class="sig-name descname">walk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.io.TreeWalker.TreeWalker.walk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Traverse the file tree in <cite>input_folder</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><p>If <cite>precompute_paths</cite> is True, this will simply return an iterator whose elements are tuples with
+elements:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Full path to the current directory in <cite>input_dir</cite></p></li>
+<li><p>Full path to the corresponding directory in <cite>output_dir</cite></p></li>
+<li><p>Name of .jpg-file</p></li>
+</ul>
+</div></blockquote>
+<p>Otherwise, it will call a generator returning a tuple with the same elements as above.</p>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>iterator | tuple of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-src.ImageProcessor">
+<span id="imageprocessor"></span><h2>ImageProcessor<a class="headerlink" href="#module-src.ImageProcessor" title="Permalink to this headline">¶</a></h2>
+<dl class="data">
+<dt id="src.ImageProcessor.WORKER_EXCEPTIONS">
+<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">WORKER_EXCEPTIONS</code><em class="property"> = (&lt;class 'AssertionError'&gt;, &lt;class 'FileNotFoundError'&gt;, &lt;class 'PermissionError'&gt;)</em><a class="headerlink" href="#src.ImageProcessor.WORKER_EXCEPTIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exceptions to catch when saving and archiving.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="src.ImageProcessor.ImageProcessor">
+<em class="property">class </em><code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">ImageProcessor</code><span class="sig-paren">(</span><em class="sig-param">masker</em>, <em class="sig-param">max_num_async_workers</em>, <em class="sig-param">base_input_path</em>, <em class="sig-param">base_output_path</em>, <em class="sig-param">base_archive_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.ImageProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the image processing pipeline. When an image is received, it will be masked, and the resulting output
+files will be written asynchronously.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>masker</strong> (<a class="reference internal" href="#src.Masker.Masker" title="src.Masker.Masker"><em>src.Masker.Masker</em></a>) – Masker instance. Used to compute the image masks.</p></li>
+<li><p><strong>max_num_async_workers</strong> (<em>int</em>) – Maximum number of async workers. When the number of dispatched workers exceeds
+<cite>max_num_async_workers</cite>, <cite>ImageProcessor.process_image</cite> will stop and wait for all
+dispatched workers to finish.</p></li>
+<li><p><strong>base_input_path</strong> (<em>str</em>) – Base input directory.</p></li>
+<li><p><strong>base_output_path</strong> (<em>str</em>) – Base output directory.</p></li>
+<li><p><strong>base_archive_path</strong> (<em>str | None</em>) – Base archive directory. Set <cite>base_archive_path = None</cite> when archiving is disabled.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.ImageProcessor.ImageProcessor.process_image">
+<code class="sig-name descname">process_image</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">input_path</em>, <em class="sig-param">mirror_paths</em>, <em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.ImageProcessor.process_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the processing pipeline for <cite>image</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Input image. Must be a 4D color image tensor with shape (1, height, width, 3)</p></li>
+<li><p><strong>input_path</strong> (<em>str</em>) – Path to directory containing the input image</p></li>
+<li><p><strong>mirror_paths</strong> (<em>list of str</em>) – List containing the path to the output directory, and optionally the path to the archive
+directory.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – File name of input image</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.ImageProcessor.ImageProcessor.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.ImageProcessor.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the image processing instance. Waits for all dispatched workers to finish, and then closes the
+multiprocessing pool.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="src.ImageProcessor.save_and_archive">
+<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">save_and_archive</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">input_path</em>, <em class="sig-param">mirror_paths</em>, <em class="sig-param">filename</em>, <em class="sig-param">base_output_path</em>, <em class="sig-param">base_archive_path</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.save_and_archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the result files and do archiving.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p></li>
+<li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>src.Masker.Masker.mask</cite>. applied to <cite>image</cite>.</p></li>
+<li><p><strong>input_path</strong> (<em>str</em>) – Path to directory containing the input image</p></li>
+<li><p><strong>mirror_paths</strong> (<em>list of str</em>) – List containing the path to the output directory, and optionally the path to the archive
+directory.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – File name of input image</p></li>
+<li><p><strong>base_output_path</strong> (<em>str</em>) – Base output directory.</p></li>
+<li><p><strong>base_archive_path</strong> (<em>str | None</em>) – Base archive directory. Set <cite>base_archive_path = None</cite> when archiving is disabled.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>0</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.main">
+<span id="main"></span><h2>main<a class="headerlink" href="#module-src.main" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="src.main.get_args">
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">get_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.main.get_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the command-line arguments.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.main.check_config">
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">check_config</code><span class="sig-paren">(</span><em class="sig-param">args</em><span class="sig-paren">)</span><a class="headerlink" href="#src.main.check_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that the specified configuration variables are valid.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.main.initialize">
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.main.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get command line arguments, and initialize the TreeWalker and Masker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Command line arguments, an instance of <cite>TreeWalker</cite> initialized at the specified directories, and an
+instance of <cite>Masker</cite> ready for masking.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>argparse.Namespace, <a class="reference internal" href="#src.io.TreeWalker.TreeWalker" title="src.io.TreeWalker.TreeWalker">TreeWalker</a>, <a class="reference internal" href="#src.Masker.Masker" title="src.Masker.Masker">Masker</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.main.get_estimated_done">
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">get_estimated_done</code><span class="sig-paren">(</span><em class="sig-param">time_at_iter_start</em>, <em class="sig-param">n_imgs</em>, <em class="sig-param">n_masked</em><span class="sig-paren">)</span><a class="headerlink" href="#src.main.get_estimated_done" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the estimated completion time for the program.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_at_iter_start</strong> (<em>float</em>) – Time of iteration start</p></li>
+<li><p><strong>n_imgs</strong> (<em>int | float | str</em>) – Number of total images to process. If this is not an int or a float, a “?” will be returned.</p></li>
+<li><p><strong>n_masked</strong> (<em>int</em>) – Number of completed images</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>String-formatted estimated time of completion</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.main.log_summary">
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">log_summary</code><span class="sig-paren">(</span><em class="sig-param">tree_walker</em>, <em class="sig-param">n_masked</em>, <em class="sig-param">start_datetime</em><span class="sig-paren">)</span><a class="headerlink" href="#src.main.log_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log a summary of the masking process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree_walker</strong> (<a class="reference internal" href="#src.io.TreeWalker.TreeWalker" title="src.io.TreeWalker.TreeWalker"><em>TreeWalker</em></a>) – <cite>TreeWalker</cite> instance used in masking.</p></li>
+<li><p><strong>n_masked</strong> (<em>int</em>) – Number of masked images</p></li>
+<li><p><strong>start_datetime</strong> (<em>datetime.datetime</em>) – Datetime object indicating when the program started.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.main.main">
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.main.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the masking.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.Masker">
+<span id="masker"></span><h2>Masker<a class="headerlink" href="#module-src.Masker" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="src.Masker.Masker">
+<em class="property">class </em><code class="sig-prename descclassname">src.Masker.</code><code class="sig-name descname">Masker</code><a class="headerlink" href="#src.Masker.Masker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the masking functionality. Uses a pre-trained TensorFlow model to compute masks for images. Model
+configuration is done in <cite>config</cite>.</p>
+<dl class="method">
+<dt id="src.Masker.Masker.mask">
+<code class="sig-name descname">mask</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">mask_dilation_pixels=0</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.Masker.mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the masking on <cite>image</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Input image. Must be a 4D color image tensor with shape (1, height, width, 3)</p></li>
+<li><p><strong>mask_dilation_pixels</strong> (<em>int</em>) – Approximate number of pixels for mask dilation. This will help ensure that an
+identified object is completely covered by the corresponding mask. Set
+<cite>mask_dilation_pixels = 0</cite> to disable mask dilation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary containing masking results. Content depends on the model used.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Masker.tensor_dict_to_numpy">
+<code class="sig-prename descclassname">src.Masker.</code><code class="sig-name descname">tensor_dict_to_numpy</code><span class="sig-paren">(</span><em class="sig-param">input_dict</em>, <em class="sig-param">ignore_keys=()</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.tensor_dict_to_numpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert all values of type <cite>tf.Tensor</cite> in a dictionary to <cite>np.ndarray</cite> by calling the <cite>.numpy()</cite> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_dict</strong> (<em>dict</em>) – Dictionary containing tensors to convert.</p></li>
+<li><p><strong>ignore_keys</strong> (<em>tuple | list</em>) – Optional iterable with keys to ignore</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Converted dictionary containing original keys and converted tensors. Keys in <cite>ignore_keys</cite> will not be
+included.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.Masker.download_model">
+<code class="sig-prename descclassname">src.Masker.</code><code class="sig-name descname">download_model</code><span class="sig-paren">(</span><em class="sig-param">download_base</em>, <em class="sig-param">model_name</em>, <em class="sig-param">model_path</em>, <em class="sig-param">extract_all=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.download_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download a pre-trained model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>download_base</strong> (<em>str</em>) – Base URL for downloading</p></li>
+<li><p><strong>model_name</strong> (<em>str</em>) – Name of model-file (without the .tar.gz extension)</p></li>
+<li><p><strong>model_path</strong> (<em>str</em>) – Directory where the downloaded model shoud be stored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">API Reference</a><ul>
+<li><a class="reference internal" href="#module-config">config</a></li>
+<li><a class="reference internal" href="#io">io</a><ul>
+<li><a class="reference internal" href="#module-src.io.exif_util">io.exif_util</a></li>
+<li><a class="reference internal" href="#module-src.io.load">io.load</a></li>
+<li><a class="reference internal" href="#module-src.io.save">io.save</a></li>
+<li><a class="reference internal" href="#module-src.io.tf_dataset">io.tf_dataset</a></li>
+<li><a class="reference internal" href="#module-src.io.TreeWalker">io.TreeWalker</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-src.ImageProcessor">ImageProcessor</a></li>
+<li><a class="reference internal" href="#module-src.main">main</a></li>
+<li><a class="reference internal" href="#module-src.Masker">Masker</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="readme.html"
+                        title="previous chapter">README</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api-reference.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="readme.html" title="README"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Image-anonymisation 0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Daniel Johansen Trosten, Christian Skjetne.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+    </div>
+  </body>
+</html>
