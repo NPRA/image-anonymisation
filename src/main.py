@@ -14,7 +14,7 @@ import config
 from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
 from src.Masker import Masker
-from src.Logger import LOGGER
+from src.Logger import LOGGER, email_excepthook
 from src.ImageProcessor import ImageProcessor
 
 # Exceptions to catch when processing an image
@@ -78,6 +78,9 @@ def initialize():
              instance of `Masker` ready for masking.
     :rtype: argparse.Namespace, TreeWalker, Masker
     """
+    # Register a custom excepthook which sends an email on uncaught exceptions.
+    sys.excepthook = email_excepthook
+
     # Configure logger
     logging.basicConfig(level=logging.INFO, format=LOGGER.fmt, datefmt=LOGGER.datefmt)
     # Get arguments
@@ -211,7 +214,6 @@ def main():
             est_done = get_estimated_done(time_at_iter_start, n_imgs, n_masked)
             LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
                                   f"{image_path}.")
-
     image_processor.close()
 
     # Summary

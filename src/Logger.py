@@ -1,5 +1,7 @@
 import os
+import sys
 import logging
+import traceback
 from shutil import copy2
 
 import config
@@ -86,3 +88,16 @@ class Logger:
 
 
 LOGGER = Logger()
+
+
+def email_excepthook(etype, ex, tb):
+    send_email(etype, ex, tb)
+    sys.__excepthook__(etype, ex, tb)
+
+
+def send_email(etype, ex, tb):
+    # TODO: Actually send an email.
+    print(40 * "#" + " Message starts " + 40 * "#")
+    tb_string = "".join(traceback.format_exception(etype, ex, tb))
+    print(tb_string)
+    print(40 * "#" + " Message ends " + 40 * "#")
