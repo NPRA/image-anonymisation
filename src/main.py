@@ -14,7 +14,7 @@ import config
 from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
 from src.Masker import Masker
-from src.Logger import LOGGER, email_excepthook
+from src.Logger import LOGGER, config_string, email_excepthook
 from src.ImageProcessor import ImageProcessor
 
 # Exceptions to catch when processing an image
@@ -51,23 +51,6 @@ def check_config(args):
         LOGGER.warning(__name__, "Parameter 'delete_input' is enabled. This will permanently delete the original"
                                  " image from the input directory!")
         assert args.archive_folder, "Argument 'delete_input' requires a valid archive directory to be specified."
-
-
-def config_string():
-    """
-    Write the config variables to a string suitable for logging.
-
-    :return: Config string
-    :rtype: str
-    """
-    config_dict = {key: value for key, value in config.__dict__.items() if not key.startswith("_")}
-    config_str = pprint.pformat(config_dict)
-    config_str = config_str.replace("'", "").replace("{", " ").replace("}", " ")
-    config_str = f" Command line arguments: {' '.join(sys.argv[1:])}\n\n" + config_str
-    config_str = 40 * "#" + " CONFIG START " + 40 * "#" + \
-                 "\n" + config_str + "\n" + \
-                 40 * "#" + " CONFIG END " + 40 * "#"
-    return config_str
 
 
 def initialize():
