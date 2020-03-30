@@ -12,6 +12,7 @@ WORKER_EXCEPTIONS = (
     AssertionError,
     FileNotFoundError,
     PermissionError,
+    OSError,
 )
 
 
