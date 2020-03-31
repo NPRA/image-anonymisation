@@ -6,7 +6,7 @@ import argparse
 from datetime import datetime, timedelta
 from socket import gethostname
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import tensorflow as tf
 
 import config
@@ -193,7 +193,7 @@ def main():
         else:
             n_masked += 1
             time_delta = "{:.3f}".format(time.time() - start_time)
-            est_done = get_estimated_done(time_at_iter_start, n_imgs, n_masked)
+            est_done = get_estimated_done(time_at_iter_start, n_imgs, i+1)
             LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
                                   f"{image_path}.")
     image_processor.close()
