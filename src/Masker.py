@@ -13,6 +13,7 @@ class Masker:
     Implements the masking functionality. Uses a pre-trained TensorFlow model to compute masks for images. Model
     configuration is done in `config`.
     """
+
     def __init__(self):
         self._init_model()
 
@@ -42,14 +43,22 @@ class Masker:
         :return: Dictionary containing masking results. Content depends on the model used.
         :rtype: dict
         """
+        # Get results from model
         masking_results = self.model(image)
+        # Remove "uninteresting" detections. I.e. detections which are not relevant for anonymisation.
+        masking_results = _filter_detections(masking_results)
+        # Convert the number of detections to an int
         num_detections = masking_results["num_detections"].numpy().squeeze()
-        reframed_masks = _reframe_masks(masking_results, tf.constant(image.shape, tf.int32))
-
+        # Convert masks from normalized bbox coordinates to whole-image coordinates.
+        reframed_masks = reframe_box_masks_to_image_masks(masking_results["detection_masks"][0],
+                                                          masking_results["detection_boxes"][0],
+                                                          image.shape[1], image.shape[2])
+        # Convert the tf.Tensors to numpy-arrays
         masking_results = tensor_dict_to_numpy(masking_results, ignore_keys=("detection_masks", "num_detections"))
-        masking_results["detection_masks"] = reframed_masks.numpy()[None, ...]
+        masking_results["detection_masks"] = (reframed_masks.numpy()[None, ...] > 0.5)
         masking_results["num_detections"] = num_detections
 
+        # Dilate masks?
         if mask_dilation_pixels > 0:
             dilate_masks(masking_results, mask_dilation_pixels)
 
@@ -80,16 +89,12 @@ def tensor_dict_to_numpy(input_dict, ignore_keys=tuple()):
 
 def dilate_masks(mask_results, mask_dilation_pixels):
     masks = mask_results["detection_masks"]
-    classes = mask_results["detection_classes"]
-
     kernel_size = 2 * mask_dilation_pixels + 1
     kernel = np.ones((kernel_size, kernel_size)).astype(np.uint8)
 
     for i in range(int(mask_results["num_detections"])):
         mask = (masks[0, i, :, :] > 0).astype(np.uint8)
-        dilated = cv2.dilate(mask, kernel, iterations=1)
-        dilated[dilated > 0] = classes[0, i]
-        masks[0, i, :, :] = dilated
+        masks[0, i, :, :] = cv2.dilate(mask, kernel, iterations=1).astype(bool)
 
 
 def download_model(download_base, model_name, model_path, extract_all=False):
@@ -121,56 +126,99 @@ def download_model(download_base, model_name, model_path, extract_all=False):
     tar_file.close()
 
 
-@tf.function
-def _reframe_masks(masking_results, image_shape):
-    num_detections = tf.cast(tf.squeeze(masking_results["num_detections"]), tf.int32)
-    if num_detections > 0:
-        masks = masking_results["detection_masks"][0, :num_detections]
-        boxes = masking_results["detection_boxes"][0, :num_detections]
-        reframed_masks = _reframe_box_masks_to_image_masks(masks, boxes, image_shape[1], image_shape[2])
-        reframed_masks = tf.cast(reframed_masks > 0.5, tf.int32)
-    else:
-        reframed_masks = tf.zeros((num_detections, image_shape[1], image_shape[2]), dtype=tf.int32)
-    return reframed_masks
-
-
-@tf.function
-def _reframe_box_masks_to_image_masks(box_masks, boxes, image_height, image_width):
+def _filter_detections_numpy(num_detections, classes, scores, boxes, masks):
     """
-    Convert from box-masks to image-masks. Adapted from
-    https://github.com/tensorflow/models/blob/master/research/object_detection/utils/ops.py
+    Remove detections which are not in `config.MASK_LABELS`.
 
-    :param box_masks: Masks for each box.
-    :type box_masks: tf.Tensor
-    :param boxes: Box coordinates. The coordinates should be relative to image size
-    :type boxes: tf.Tensor.
-    :param image_height: Height of image
+    :param num_detections: Number of detections from model
+    :type num_detections: int
+    :param classes: Detected classes
+    :type classes: np.ndarray
+    :param scores: Detection scores
+    :type scores: np.ndarray
+    :param boxes: Detection bounding boxes
+    :type boxes: np.ndarray
+    :param masks: Detection masks
+    :type masks: np.ndarray
+    :return: A tuple of five arrays corresponding to each element in the input arguments, where the detections whose
+             class is not in `config.MASK_LABELS` have been removed.
+    :rtype: np.ndarray
+    """
+    class_mask = np.isin(classes[0], config.MASK_LABELS)
+    class_mask[int(num_detections[0]):] = False
+    num_detections = int(class_mask.sum())
+    classes = classes[:, class_mask].astype(np.int32)
+    scores = scores[:, class_mask].astype(np.float32)
+    boxes = boxes[:, class_mask].astype(np.float32)
+    masks = masks[:, class_mask].astype(np.float32)
+    return num_detections, classes, scores, boxes, masks
+
+
+@tf.function
+def _filter_detections(masking_results):
+    """
+    TensorFlow wrapper for `_filter_detections_numpy`. Executes the function on the tensors in `masking_results`.
+
+    :param masking_results: Result from masking model.
+    :type masking_results: dict
+    :return: Filtered results. Same format as `masking_results`.
+    :rtype: dict
+    """
+    result_keys = ["num_detections", "detection_classes", "detection_scores", "detection_boxes", "detection_masks"]
+    output_types = [tf.int32, tf.int32, tf.float32, tf.float32, tf.float32]
+    input_tensors = [masking_results[k] for k in result_keys]
+    filtered_tensors = tf.numpy_function(_filter_detections_numpy, inp=input_tensors, Tout=output_types)
+    filtered_results = dict(zip(result_keys, filtered_tensors))
+    return filtered_results
+
+
+def reframe_box_masks_to_image_masks(box_masks, boxes, image_height, image_width):
+    """
+    From: https://github.com/tensorflow/models/blob/master/research/object_detection/utils/ops.py
+
+    Transforms the box masks back to full image masks.
+    Embeds masks in bounding boxes of larger masks whose shapes correspond to
+    image shape.
+
+    :param box_masks: A tf.float32 tensor of size [num_masks, mask_height, mask_width].
+    :type box_masks: tf.python.framework.ops.EagerTensor
+    :param boxes: A tf.float32 tensor of size [num_masks, 4] containing the box
+                  corners. Row i contains [ymin, xmin, ymax, xmax] of the box
+                  corresponding to mask i. Note that the box corners are in
+                  normalized coordinates.
+    :type boxes: tf.python.framework.ops.EagerTensor
+    :param image_height: Image height. The output mask will have the same height as
+                         the image height.
     :type image_height: int
-    :param image_width: Width of image
+    :param image_width: Image width. The output mask will have the same width as the
+                        image width.
     :type image_width: int
-    :return: Whole-image masks
-    :rtype: tf.Tensor
+    :return: A tf.float32 tensor of size [num_masks, image_height, image_width].
+    :rtype: tf.python.framework.ops.EagerTensor
     """
-    def transform_boxes_relative_to_boxes(boxes, reference_boxes):
-        boxes = tf.reshape(boxes, [-1, 2, 2])
-        min_corner = tf.expand_dims(reference_boxes[:, 0:2], 1)
-        max_corner = tf.expand_dims(reference_boxes[:, 2:4], 1)
-        transformed_boxes = (boxes - min_corner) / (max_corner - min_corner)
-        return tf.reshape(transformed_boxes, [-1, 4])
+    def reframe_box_masks_to_image_masks_default():
+        """The default function when there are more than 0 box masks."""
+        def transform_boxes_relative_to_boxes(boxes, reference_boxes):
+            boxes = tf.reshape(boxes, [-1, 2, 2])
+            min_corner = tf.expand_dims(reference_boxes[:, 0:2], 1)
+            max_corner = tf.expand_dims(reference_boxes[:, 2:4], 1)
+            transformed_boxes = (boxes - min_corner) / (max_corner - min_corner)
+            return tf.reshape(transformed_boxes, [-1, 4])
 
-    box_masks_expanded = tf.expand_dims(box_masks, axis=3)
-    num_boxes = tf.shape(box_masks_expanded)[0]
-    unit_boxes = tf.concat(
-        [tf.zeros([num_boxes, 2]), tf.ones([num_boxes, 2])], axis=1)
-    reverse_boxes = transform_boxes_relative_to_boxes(unit_boxes, boxes)
+        box_masks_expanded = tf.expand_dims(box_masks, axis=3)
+        num_boxes = tf.shape(box_masks_expanded)[0]
+        unit_boxes = tf.concat(
+            [tf.zeros([num_boxes, 2]), tf.ones([num_boxes, 2])], axis=1)
+        reverse_boxes = transform_boxes_relative_to_boxes(unit_boxes, boxes)
+        return tf.image.crop_and_resize(
+            image=box_masks_expanded,
+            boxes=reverse_boxes,
+            box_indices=tf.range(num_boxes),
+            crop_size=[image_height, image_width],
+            extrapolation_value=0.0)
 
-    reframed = tf.image.crop_and_resize(
-        image=box_masks_expanded,
-        boxes=reverse_boxes,
-        box_indices=tf.range(num_boxes),
-        crop_size=[image_height, image_width],
-        extrapolation_value=0.0)
-    reframed = tf.squeeze(reframed, axis=3)
-    return reframed
-
-
+    image_masks = tf.cond(
+        tf.shape(box_masks)[0] > 0,
+        reframe_box_masks_to_image_masks_default,
+        lambda: tf.zeros([0, image_height, image_width, 1], dtype=tf.float32))
+    return tf.squeeze(image_masks, axis=3)

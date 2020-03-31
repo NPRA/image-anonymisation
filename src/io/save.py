@@ -8,7 +8,6 @@ import cv2
 import config
 from src.Logger import LOGGER
 from src.io.exif_util import write_exif, exif_from_file
-from src.io.file_access_guard import wait_until_path_is_found
 
 
 def save_processed_img(img, mask_results, input_path, output_path, filename, draw_mask=False, local_json=False,
@@ -48,7 +47,9 @@ def save_processed_img(img, mask_results, input_path, output_path, filename, dra
     :type blur: int | float | None
     :param gray_blur: Convert the image to grayscale before blurring?
     :type gray_blur: bool
-
+    :param normalized_gray_blur: Normalize the gray level within each mask after blurring? This will make bright colors
+                                 indistinguishable from dark colors. NOTE: Requires gray_blur=True.
+    :type normalized_gray_blur: bool
     :returns: 0
     :rtype: int
     """
@@ -60,11 +61,9 @@ def save_processed_img(img, mask_results, input_path, output_path, filename, dra
 
     # Compute a single boolean mask from all the detection masks.
     detection_masks = mask_results["detection_masks"]
-    assert detection_masks.ndim == 4, f"Expected detection_masks to be 4D (batch, mask_index, height, width). " \
-                                      f"Got {detection_masks.ndim}."
-    agg_mask = np.isin(detection_masks, config.MASK_LABELS).any(axis=1)
+    agg_mask = (detection_masks > 0).any(axis=1)
 
-    if draw_mask:
+    if draw_mask and mask_results["num_detections"] > 0:
         if blur is not None:
             _blur_mask_on_img(img, agg_mask, blur_factor=blur, gray_blur=gray_blur,
                               normalized_gray_blur=normalized_gray_blur)
@@ -146,7 +145,7 @@ def _copy_file(source_path, destination_path, filename, ext=None):
 
 
 def _get_detected_objects_dict(mask_results):
-    objs = mask_results["detection_classes"].squeeze()[:int(mask_results["num_detections"])]
+    objs = mask_results["detection_classes"]
     if objs.size > 0:
         # Find unique objects and count them
         objs, counts = np.unique(objs, return_counts=True)
@@ -162,16 +161,14 @@ def _get_detected_objects_dict(mask_results):
 def _draw_mask_on_img(img, mask_results, mask_color=None):
     detection_masks = mask_results["detection_masks"]
     if mask_color is not None:
-        mask = np.isin(detection_masks, config.MASK_LABELS).any(axis=1)
+        mask = (detection_masks > 0).any(axis=1)
         img[mask] = np.array(mask_color)
     else:
-        detection_classes = mask_results["detection_classes"].squeeze()
-        num_detections = int(mask_results["num_detections"])
-        for i in range(num_detections):
-            detected_label = int(detection_classes[i])
-            if detected_label in config.MASK_LABELS:
-                mask = detection_masks[:, i, ...] > 0
-                img[mask] = config.LABEL_COLORS.get(detected_label, config.DEFAULT_COLOR)
+        detection_classes = mask_results["detection_classes"][0]
+        for i in range(len(detection_classes)):
+            detected_label = detection_classes[i]
+            mask = detection_masks[:, i, ...] > 0
+            img[mask] = config.LABEL_COLORS.get(detected_label, config.DEFAULT_COLOR)
 
 
 def _blur_mask_on_img(img, mask, blur_factor, gray_blur=True, normalized_gray_blur=True):

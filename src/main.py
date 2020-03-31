@@ -1,13 +1,12 @@
 import os
 import sys
 import time
-import pprint
 import logging
 import argparse
 from datetime import datetime, timedelta
 from socket import gethostname
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import tensorflow as tf
 
 import config
