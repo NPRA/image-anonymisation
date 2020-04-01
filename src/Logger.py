@@ -1,7 +1,5 @@
 import os
-import sys
 import logging
-import traceback
 from shutil import copy2
 
 import config
@@ -57,7 +55,7 @@ class Logger:
         self._save_error_img(output_path)
         self._save_error_msg(output_path, message)
 
-    def _log(self, level, namespace, msg, *args, save=False, **kwargs):
+    def _log(self, level, namespace, msg, *args, save=False, email=False, **kwargs):
         logger = self.logger
         logger.log(level, msg, *args, **kwargs)
         if save:
@@ -78,6 +76,10 @@ class Logger:
                 # Save image
                 logger.log(logging.INFO, f"Copying image file to {output_path} for manual inspection.")
                 self._save_error(output_path, msg)
+
+        if email:
+            from src.email_sender import send_mail
+            send_mail("error", msg=msg)
 
     def info(self, namespace, *args, **kwargs):
         self._log(logging.INFO, namespace, *args, **kwargs)

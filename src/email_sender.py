@@ -71,16 +71,16 @@ def create_base_message(subject):
     message["To"] = email_config.to_addresses
     message["Subject"] = subject
     message.set_content("\n".join([
-        50 * "-",
+        50 * "_",
         f"Hostname: {gethostname()}",
         f"Time: {datetime.now().strftime(config.datetime_format)}",
         f"Log file: {LOGGER.log_file_path}",
-        50 * "-",
+        50 * "_",
     ]))
     return message
 
 
-def _append_content(message, content, sep="\n\n"):
+def _append_content(message, content, sep="\n"):
     new_content = message.get_content() + sep + content
     message.set_content(new_content)
 
@@ -100,4 +100,5 @@ if __name__ == '__main__':
     
     LOGGER.set_log_file(r"logs\test.log")
     LOGGER.info(__name__, "Here is some information")
+    LOGGER.error(__name__, "Error!", email=True)
     raise ValueError("Foobar")
