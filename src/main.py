@@ -60,8 +60,9 @@ def initialize():
              instance of `Masker` ready for masking.
     :rtype: argparse.Namespace, TreeWalker, Masker
     """
-    # Register a custom excepthook which sends an email on uncaught exceptions.
-    sys.excepthook = email_excepthook
+    if config.uncaught_exception_email:
+        # Register a custom excepthook which sends an email on uncaught exceptions.
+        sys.excepthook = email_excepthook
 
     # Configure logger
     logging.basicConfig(level=logging.INFO, format=LOGGER.fmt, datefmt=LOGGER.datefmt)

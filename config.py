@@ -37,9 +37,8 @@ datetime_format = "%Y-%m-%d %H.%M.%S"
 #: will be replaced with the host name.
 log_file_name = "{datetime} {hostname}.log"
 
-#: If the program exits due to an ungaught exception, an email will be sent to this address.
-#: Set `uncaught_exception_email = None` to disable this feature.
-uncaught_exception_email = None
+#: Send an email if the program exits due to an uncaught exception.
+uncaught_exception_email = False
 
 
 # ===================

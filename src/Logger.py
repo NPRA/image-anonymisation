@@ -18,8 +18,10 @@ class Logger:
         self.logger = logging.getLogger(self.namespace)
         self.fmt = "%(asctime)s (%(levelname)s): %(message)s"
         self.datefmt = config.datetime_format
+        self.log_file_path = None
 
     def set_log_file(self, log_file_path, level=logging.INFO):
+        self.log_file_path = log_file_path
         file_handler = logging.FileHandler(log_file_path)
         file_handler.setLevel(level)
         file_handler.setFormatter(logging.Formatter(self.fmt, datefmt=self.datefmt))
@@ -116,15 +118,5 @@ def config_string():
     return config_str
 
 
-def email_excepthook(etype, ex, tb):
-    send_email(etype, ex, tb)
-    sys.__excepthook__(etype, ex, tb)
 
-
-def send_email(etype, ex, tb):
-    # TODO: Actually send an email.
-    print(40 * "#" + " Message starts " + 40 * "#")
-    tb_string = "".join(traceback.format_exception(etype, ex, tb))
-    print(tb_string)
-    print(40 * "#" + " Message ends " + 40 * "#")
 
