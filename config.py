@@ -37,8 +37,27 @@ datetime_format = "%Y-%m-%d %H.%M.%S"
 #: will be replaced with the host name.
 log_file_name = "{datetime} {hostname}.log"
 
-#: Send an email if the program exits due to an uncaught exception.
-uncaught_exception_email = False
+
+# ====================
+# E-mail configuration
+# ====================
+
+# Note: To set up email sending. Create a file named `email_config.py` in the project root. This file has to contain the
+# variables `from_address`, `to_addresses`, `smtp_host`, and `port`. E.g.
+#
+# from_address = "noreply@somedomain.com"
+# to_addresses = ["receiver1@domain.com", "receiver2@domain.com, ...]
+# smtp_host = <smtp server address>
+# port = <smtp port>
+
+#: Send an email if the program exits abnormally due to an uncaught exception.
+uncaught_exception_email = True
+
+#: Send an email if a processing error is encountered, but the program is able to continue
+processing_error_email = True
+
+#: Send an email if the anonymisation finishes normally.
+finished_email = True
 
 
 # ===================
