@@ -55,7 +55,7 @@ class Logger:
         self._save_error_img(output_path)
         self._save_error_msg(output_path, message)
 
-    def _log(self, level, namespace, msg, *args, save=False, email=False, **kwargs):
+    def _log(self, level, namespace, msg, *args, save=False, email=False, email_mode="error", **kwargs):
         logger = self.logger
         logger.log(level, msg, *args, **kwargs)
         if save:
@@ -77,9 +77,9 @@ class Logger:
                 logger.log(logging.INFO, f"Copying image file to {output_path} for manual inspection.")
                 self._save_error(output_path, msg)
 
-        if email:
+        if email and config.processing_error_email:
             from src.email_sender import send_mail
-            send_mail("error", msg=msg)
+            send_mail(email_mode, msg=msg)
 
     def info(self, namespace, *args, **kwargs):
         self._log(logging.INFO, namespace, *args, **kwargs)

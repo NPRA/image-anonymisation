@@ -13,7 +13,7 @@ import config
 from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
 from src.Masker import Masker
-from src.Logger import LOGGER, config_string, email_excepthook
+from src.Logger import LOGGER, config_string
 from src.ImageProcessor import ImageProcessor
 
 # Exceptions to catch when processing an image
@@ -51,6 +51,11 @@ def check_config(args):
                                  " image from the input directory!")
         assert args.archive_folder, "Argument 'delete_input' requires a valid archive directory to be specified."
 
+    if config.uncaught_exception_email or config.processing_error_email or config.finished_email:
+        # Try to import the email_sender module, which checks if the `email_config.py` file is present.
+        # Otherwise this will raise an exception prompting the user to create the file.
+        import src.email_sender
+
 
 def initialize():
     """
@@ -62,6 +67,7 @@ def initialize():
     """
     if config.uncaught_exception_email:
         # Register a custom excepthook which sends an email on uncaught exceptions.
+        from src.email_sender import email_excepthook
         sys.excepthook = email_excepthook
 
     # Configure logger
@@ -137,7 +143,7 @@ def get_estimated_done(time_at_iter_start, n_imgs, n_masked):
     return est_done
 
 
-def log_summary(tree_walker, n_masked, start_datetime):
+def get_summary(tree_walker, n_masked, start_datetime):
     """
     Log a summary of the masking process.
 
@@ -148,13 +154,15 @@ def log_summary(tree_walker, n_masked, start_datetime):
     :param start_datetime: Datetime object indicating when the program started.
     :type start_datetime: datetime.datetime
     """
-    LOGGER.info(__name__, "Anonymisation finished.")
-    LOGGER.info(__name__, f"Number of identified images: "
-                          f"{tree_walker.n_valid_images + tree_walker.n_skipped_images}")
-    LOGGER.info(__name__, f"Number of masked images: {n_masked}")
-    LOGGER.info(__name__, f"Number of images skipped due to existing masks: {tree_walker.n_skipped_images}")
-    LOGGER.info(__name__, f"Number of images skipped due to errors: {tree_walker.n_valid_images - n_masked}")
-    LOGGER.info(__name__, f"Total time spent: {str(datetime.now() - start_datetime)}")
+    summary = "\n".join([
+        "Anonymisation finished.",
+        f"Number of identified images: {tree_walker.n_valid_images + tree_walker.n_skipped_images}",
+        f"Number of masked images: {n_masked}",
+        f"Number of images skipped due to existing masks: {tree_walker.n_skipped_images}",
+        f"Number of images skipped due to errors: {tree_walker.n_valid_images - n_masked}",
+        f"Total time spent: {str(datetime.now() - start_datetime)}"
+    ])
+    return summary
 
 
 def main():
@@ -184,7 +192,7 @@ def main():
         except PROCESSING_EXCEPTIONS as err:
             LOGGER.set_state(input_path, output_path, filename)
             LOGGER.error(__name__, f"Got error:\n'{str(err)}'\nwhile processing image {count_str}. File: "
-                                   f"{image_path}.", save=True)
+                                   f"{image_path}.", save=True, email=True, email_mode="error")
             continue
 
         # Check if the image_processor encountered a worker error. If an error was encountered, we reset the flag,
@@ -200,7 +208,8 @@ def main():
     image_processor.close()
 
     # Summary
-    log_summary(tree_walker, n_masked, start_datetime)
+    summary_str = get_summary(tree_walker, n_masked, start_datetime)
+    LOGGER.info(__name__, summary_str, email=True, email_mode="finished")
 
 
 if __name__ == '__main__':

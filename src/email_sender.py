@@ -11,7 +11,8 @@ from src.Logger import LOGGER
 try:
     import email_config
 except ImportError:
-    raise ImportError("Could not find `email_config.py` in the project root.")
+    raise ImportError("Could not find `email_config.py` in the project root. Please create it if you want to use the "
+                      "emailing feature. See `config.py` for more details.")
 
 
 CRITICAL_SUBJECT = "[image-anonymisation]: Execution stopped due to uncaught {etype}."
@@ -26,19 +27,16 @@ def email_excepthook(etype, ex, tb):
 
 def send_mail(message_type, etype=None, ex=None, tb=None, msg=None):
     if message_type == "critical":
-        message = create_critical_message(etype, ex, tb)
+        msg = "".join(traceback.format_exception(etype, ex, tb))
+        subject = CRITICAL_SUBJECT.format(etype=etype.__name__)
     elif message_type == "error":
-        message = create_error_message(msg)
+        subject = ERROR_SUBJECT
     elif message_type == "finished":
-        message = create_finished_message(msg)
+        subject = FINISHED_SUBJECT
     else:
         raise ValueError(f"Function `email.send_mail` got invalid message type: {message_type}")
 
-    if LOGGER.log_file_path is not None:
-        _attach_log_file(message)
-
-    message = message.as_string()
-
+    message = create_base_message(subject, msg)
     try:
         with smtplib.SMTP(email_config.smtp_host, email_config.port) as smtp:
             smtp.sendmail(from_addr=email_config.from_address, to_addrs=email_config.to_addresses, msg=message)
@@ -46,26 +44,7 @@ def send_mail(message_type, etype=None, ex=None, tb=None, msg=None):
         LOGGER.error(__name__, f"Got error {str(err)} when attempting to send e-mail with contents:\n{message}")
 
 
-def create_critical_message(etype, ex, tb):
-    message = create_base_message(CRITICAL_SUBJECT.format(etype=etype.__name__))
-    tb_string = "".join(traceback.format_exception(etype, ex, tb))
-    _append_content(message, tb_string)
-    return message
-
-
-def create_error_message(msg):
-    message = create_base_message(ERROR_SUBJECT)
-    _append_content(message, msg)
-    return message
-
-
-def create_finished_message(msg):
-    message = create_base_message(FINISHED_SUBJECT)
-    _append_content(message, msg)
-    return message
-
-
-def create_base_message(subject):
+def create_base_message(subject, msg):
     message = EmailMessage()
     message["From"] = email_config.from_address
     message["To"] = email_config.to_addresses
@@ -77,7 +56,13 @@ def create_base_message(subject):
         f"Log file: {LOGGER.log_file_path}",
         50 * "_",
     ]))
-    return message
+    # Add `msg` to the contents if it is not None
+    if msg is not None:
+        _append_content(message, msg)
+    # Attach the log file if it is available
+    if LOGGER.log_file_path is not None:
+        _attach_log_file(message)
+    return message.as_string()
 
 
 def _append_content(message, content, sep="\n"):

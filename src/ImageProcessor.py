@@ -105,7 +105,8 @@ class ImageProcessor:
         current_logger_state = LOGGER.get_state()
         # Log the error
         LOGGER.set_state(input_path=input_path, output_path=mirror_paths[0], filename=filename)
-        LOGGER.error(__name__, f"Got error while saving image {input_path}\\{filename}:\n{str(err)}", save=True)
+        LOGGER.error(__name__, f"Got error while saving image {input_path}\\{filename}:\n{str(err)}",
+                     save=True, email=True, email_mode="error")
         # Reset the state
         LOGGER.set_state(**current_logger_state)
         
