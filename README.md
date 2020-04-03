@@ -123,6 +123,23 @@ The HTML documentation can be built from the `docs` directory by running
 .\make.bat html
 ```
 
+## Email notifications
+The application can send an email notification on an abnormal exit, a processing error, or on completion. These noticifations can be enabled/disabled
+with the flags `uncaught_exception_email`, `processing_error_email` and `finished_email`, available in `config.py`. The email sending feature requires a
+sender, receiver(s), and an SMTP-server in order to work. These can be specified by creating a file named `email_config.py` in the project root, which
+contains the following:
+
+```
+# Sender's address
+from_address = "noreply@somedomain.com"
+# Receiver address(es)
+to_addresses = ["receiver1@domain.com", "receiver2@domain.com, ...]
+# SMTP-server address
+smtp_host = <smtp server address>
+# SMTP-server port
+port = <smtp port>
+```
+
 ## Evaluating the current model
 The anonymisation model can be evaluated by running the evaluation script:
 ```
