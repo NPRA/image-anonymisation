@@ -51,13 +51,13 @@ log_file_name = "{datetime} {hostname}.log"
 # port = <smtp port>
 
 #: Send an email if the program exits abnormally due to an uncaught exception.
-uncaught_exception_email = True
+uncaught_exception_email = False
 
 #: Send an email if a processing error is encountered, but the program is able to continue
-processing_error_email = True
+processing_error_email = False
 
 #: Send an email if the anonymisation finishes normally.
-finished_email = True
+finished_email = False
 
 
 # ===================
@@ -95,7 +95,7 @@ model_type = "Medium"
 
 #: Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
 #: by the corresponding mask. Set `mask_dilation_pixels = 0` to disable mask dilation.
-mask_dilation_pixels = 0
+mask_dilation_pixels = 8
 
 # ===============================================================
 # Parameters controlling the appearance of the anonymised regions

@@ -1,297 +1,217 @@
 """From: https://github.com/vegvesen/vegbilder/blob/master/trinn1_lagmetadata/vegbilder_lesexif.py"""
-import xml.dom.minidom
+import re
 import uuid
 import json
-import re
-from copy import deepcopy
+import xmltodict
+import xml.dom.minidom
+from PIL import Image
+from PIL.ExifTags import TAGS
 
-from PIL import Image # Må installeres, pakken heter PILLOW
-from PIL.ExifTags import TAGS, GPSTAGS
-import xmltodict # Må installeres, rett fram
+from src.Logger import LOGGER
+
+#: Tags from Viatech
+VIATECH_TAGS = {40055: "ImageProperties", 40056: "ReflinkInfo"}
+
+# Add Viatech tags to dict of EXIF tags.
+TAGS.update(VIATECH_TAGS)
+
+#: Lovlige vegstatuser
+LOVLiG_VEGSTATUS = ["S", "H", "W", "A", "P", "E", "B", "U", "Q", "V", "X", "M", "T", "G"]
+
+#: Lovlige vegkategorier
+LOVLIG_VEGKATEGORI = ["E", "R", "F", "K", "P", "S"]
+
+#: XML tags which should be redacted in the `ImageProperties` XML.
+REDACT_XML_TAGS = ["Driver", "CarID", "Comment"]
+
+#: Regex patterns to use when redacting the `ImageProperties` XML. Precompiled for speed.
+REDACT_XML_REGEX_PATTERNS = [re.compile(f"<{tag}>.*</{tag}") for tag in REDACT_XML_TAGS]
+
+#: Placeholders for the redacted entries
+REDACT_XML_REPLACE_STRINGS = [f"<{tag}>FJERNET</{tag}" for tag in REDACT_XML_TAGS]
 
 
 def exif_from_file(image_path):
+    """
+    Retrieve the EXIF-data from the image located at `image_path`
+
+    :param image_path: Path to input image
+    :type image_path: str
+    :return: EXIF data
+    :rtype: dict
+    """
     pil_img = Image.open(image_path)
     exif = get_exif(pil_img)
     return exif
-
-
-def get_exif(img):
-    exif = img._getexif()
-    assert exif is not None, f"No EXIF data found for image."
-    labeled = get_labeled_exif(exif)
-
-    # Fisker ut XML'en som er stappet inn som ikke-standard exif element
-    xmldata = pyntxml(labeled)
-    assert xmldata is not None, f"Unable to clean XML-data for image."
-    # Fisker ut mer data fra viatech xml
-    viatekmeta = fiskFraviatechXML(xmldata)
-
-    # Bildetittel - typisk etelleranna med viatech Systems
-    XPTitle = ''
-    if 'XPTitle' in labeled.keys():
-        XPTitle = labeled['XPTitle'].decode('utf16')
-
-    viatekmeta['exif_xptitle'] = XPTitle
-    viatekmeta['bildeuiid'] = str(uuid.uuid4())
-    return viatekmeta
 
 
 def write_exif(exif, output_filepath):
     with open(output_filepath, "w") as out_file:
         json.dump(exif, out_file, indent=4, ensure_ascii=False)
 
-def fiksutf8( meta):
+
+def get_exif(img):
     """
-    Fjerner ugyldige tegn fra datastrukturen før de får gjort mer skade
+    Parse the EXIF data from `img`.
+
+    :param img: Input image
+    :type img: PIL.Image
+    :return: EXIF data
+    :rtype: dict
     """
+    exif = img._getexif()
+    assert exif is not None, f"No EXIF data found for image."
 
-    kortalfabet = 'abcdefghijklmnopqrstuvwxyz'
-    alfabet = kortalfabet + 'æøå'
-    tegn  = '0123456789.,:;-_ *+/++<>\\()#?='
-    godkjent = tegn + alfabet + alfabet.upper()
-    raretegn = False
+    # Convert the integer keys in the exif dict to text
+    labeled = label_exif(exif)
 
-    tulletegn = set( )
-    # Prøver å fikse tegnsett
-    if meta and isinstance( meta, dict):
-        old = deepcopy( meta)
-        for key, value in old.items():
-            if isinstance( value, str):
-                nystr = ''
-                rart = False
-                for bokstav in value:
-                    if bokstav in godkjent:
-                        nystr += bokstav
-                    else:
-                        tulletegn.add( bokstav)
-                        rart = True
+    # Process the `ImageProperties` XML
+    image_properties_xml = labeled.get("ImageProperties", None)
+    assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
+    exif_data = process_image_properties(image_properties_xml)
 
-                if rart:
-                    nystr = nystr.replace( 'Æ', '_')
-                    nystr = nystr.replace( 'Å', '_')
+    # Process the `ReflinkInfo` XML if it is available
+    reflink_info_xml = labeled.get("ReflinkInfo", None)
+    reflink_info = process_reflink_info(reflink_info_xml)
+    exif_data = dict(exif_data, **reflink_info)
 
-                    nystr = re.sub('_{2,}', '_', nystr )
+    # Title of image.
+    XPTitle = labeled.get("XPTitle", b"").decode("utf16")
+    exif_data['exif_xptitle'] = XPTitle
+    # Assign a unique ID to the image
+    exif_data['bildeuuid'] = str(uuid.uuid4())
+    return exif_data
 
-                    raretegn = True
-                meta[key] = nystr
 
-    # if len(tulletegn) > 0:
-    # print( "Tulletegn: ", tulletegn)
-
-    return meta
-
-def fiskFraviatechXML(imagepropertiesxml):
+def label_exif(exif):
     """
-    Leser relevante data fra viatech XML header.
+    Convert the standard integer EXIF-keys in `exif` to text keys.
+
+    :param exif: EXIF dict from `PIL.Image._getexif`.
+    :type exif: dict
+    :return: EXIF dict with text keys.
+    :rtype: dict
     """
-
-    # with open( 'imageproperties.xml') as f:
-    # imagepropertiesxml  = f.readlines()
-
-    ip = xmltodict.parse( imagepropertiesxml)
+    return {TAGS.get(key): value for key, value in exif.items()}
 
 
+def process_image_properties(contents):
+    """
+    Process the `ImageProperties` XML from the EXIF header
 
-    dLat = ip['ImageProperties']['GeoTag']['dLatitude']
-    dLon = ip['ImageProperties']['GeoTag']['dLongitude']
-    dAlt = ip['ImageProperties']['GeoTag']['dAltitude']
+    :param contents: XML-contents
+    :type contents: bytes
+    :return: Relevant information extracted from `contents`
+    :rtype: dict
+    """
+    contents = to_pretty_xml(contents)
+    contents = redact_image_properties(contents)
+    image_properties = xmltodict.parse(contents)["ImageProperties"]
 
-    try:
-        heading = ip['ImageProperties']['Heading']
-    except KeyError:
+    # Position
+    geo_tag = image_properties["GeoTag"]
+    ewkt = f"srid=4326;POINT Z( {geo_tag['dLongitude']} {geo_tag['dLatitude']} {geo_tag['dAltitude']} )"
+
+    # Speed and heading
+    heading = image_properties.get("Heading", None)
+    if heading == "NaN":
         heading = None
-
-    try:
-        speed    = ip['ImageProperties']['Speed']
-    except KeyError:
+    speed = image_properties.get("Speed", None)
+    if speed == "NaN":
         speed = None
-
-    if speed == 'NaN':
-        speed = None
-
-    if heading == 'NaN':
-        heading == None
-
-    ewkt = ' '.join( [ 'srid=4326;POINT Z(', dLon, dLat, dAlt, ')' ] )
-
-    tidsstempel = ip['ImageProperties']['@Date']
-    kortdato = tidsstempel.split('T')[0]
-    exif_veg = ip['ImageProperties']['VegComValues']['VCRoad']
 
     # Pent formatterte mappenavn
-    mappenavn = re.sub( r'\\', '/', ip['ImageProperties']['ImageName'] )
-    mapper = mappenavn.split('/')
+    mappenavn = re.sub(r"\\", "/", image_properties["ImageName"])
+    mapper = mappenavn.split("/")
 
-    if len( exif_veg) >= 3:
-        exif_vegnr   = exif_veg[2:]
+    timestamp = image_properties["@Date"]
+    date = timestamp.split("T")[0]
+    exif_veg = image_properties["VegComValues"]["VCRoad"]
+
+    if len(exif_veg) >= 3:
+        exif_vegnr = exif_veg[2:]
         exif_vegstat = exif_veg[1]
-        exif_vegkat  = exif_veg[0]
+        exif_vegkat = exif_veg[0]
     else:
-        exif_vegnr   = exif_veg
+        exif_vegnr = exif_veg
         exif_vegstat = None
-        exif_vegkat  = None
+        exif_vegkat = None
 
-    lovlig_vegstatus = ["S", "H", "W", "A", "P", "E", "B", "U", "Q", "V", "X", "M", "T", "G" ]
-    lovlig_vegkat = ["E", "R", "F", "K", "P", "S" ]
+    if exif_vegstat not in LOVLiG_VEGSTATUS or exif_vegkat not in LOVLIG_VEGKATEGORI:
+        LOGGER.info(__name__, f"VCRoad={exif_veg} følger ikke KAT+STAT+vegnr syntaks: {mappenavn}")
 
-    if exif_vegstat not in lovlig_vegstatus or exif_vegkat not in lovlig_vegkat:
-        # logging.info( ' '.join( [ 'VCRoad=', exif_veg, 'følger ikke KAT+STAT+vegnr syntaks:', mappenavn ] ) )
-        print( 'VCRoad=', exif_veg, 'følger ikke KAT+STAT+vegnr syntaks:', mappenavn )
-
-
-    retval =  {
-        'exif_tid' : tidsstempel,
-        'exif_dato' : kortdato,
-        'exif_speed' : speed,
-        'exif_heading' : heading,
-        'exif_gpsposisjon' : ewkt,
-        'exif_strekningsnavn' : ip['ImageProperties']['VegComValues']['VCArea'],
-        'exif_fylke'          : ip['ImageProperties']['VegComValues']['VCCountyNo'],
-        'exif_vegkat'        : exif_vegkat,
-        'exif_vegstat'       : exif_vegstat,
-        'exif_vegnr'         : exif_vegnr,
-        'exif_hp'            : ip['ImageProperties']['VegComValues']['VCHP'],
-        'exif_meter'            : ip['ImageProperties']['VegComValues']['VCMeter'],
-        'exif_feltkode'            : ip['ImageProperties']['VegComValues']['VCLane'],
-        'exif_mappenavn'    :  '/'.join( mapper[0:-1] ),
-        'exif_filnavn'      : mapper[-1],
-        'exif_strekningreferanse' : '/'.join( mapper[-4:-2]),
-        'exif_imageproperties'    : imagepropertiesxml
-
+    out = {
+        "exif_tid": timestamp,
+        "exif_dato": date,
+        "exif_speed": speed,
+        "exif_heading": heading,
+        "exif_gpsposisjon": ewkt,
+        "exif_strekningsnavn": image_properties["VegComValues"]["VCArea"],
+        "exif_fylke": image_properties["VegComValues"]["VCCountyNo"],
+        "exif_vegkat": exif_vegkat,
+        "exif_vegstat": exif_vegstat,
+        "exif_vegnr": exif_vegnr,
+        "exif_hp": image_properties["VegComValues"]["VCHP"],
+        "exif_meter": image_properties["VegComValues"]["VCMeter"],
+        "exif_feltkode": image_properties["VegComValues"]["VCLane"],
+        "exif_mappenavn": "/".join(mapper[0:-1]),
+        "exif_filnavn": mapper[-1],
+        "exif_strekningreferanse": "/".join(mapper[-4:-2]),
+        "exif_imageproperties": contents
     }
-
-    return retval
-
+    return out
 
 
-def lesexif( filnavn):
+def to_pretty_xml(contents_bytes):
     """
-    Omsetter Exif-header til metadata for bruk i bildedatabase
+    Convert bytes-encoded XML to a prettified string.
 
+    :param contents_bytes: Bytes-encoded XML contents
+    :type contents_bytes: bytes
+    :return: Prettified contents
+    :rtype: str
     """
-    exif = get_exif( filnavn)
+    xmlstr = contents_bytes.decode("utf8")[1:]
+    plain_xml = xml.dom.minidom.parseString(xmlstr)
+    pretty_xml = plain_xml.toprettyxml()
+    return pretty_xml
 
-    labeled = get_labeled_exif( exif)
 
-    # Fisker ut XML'en som er stappet inn som ikke-standard exif element
-    xmldata = pyntxml( labeled)
-
-    # Fisker ut mer data fra viatech xml
-    viatekmeta = fiskFraviatechXML( xmldata)
-
-    ## Omsetter Exif GPSInfo => lat, lon desimalgrader, formatterer som EWKT
-    ## Overflødig - bruker (lat,lon,z) fra viatech xml
-    # try:
-    # geotags = get_geotagging(exif)
-    # except ValueError:
-    # ewkt = ''
-    # print( 'kan ikke lese geotag', filnavn)
-    # else:
-    # (lat, lon) = get_coordinates( geotags)
-    # ewkt = 'srid=4326;POINT(' + str(lon) + ' ' + str(lat) + ')'
-
-    # Bildetittel - typisk etelleranna med viatech Systems
-    XPTitle = ''
-    if 'XPTitle' in labeled.keys():
-        XPTitle = labeled['XPTitle'].decode('utf16')
-
-    viatekmeta['exif_xptitle'] = XPTitle
-
-    return viatekmeta
-
-#% -------------------------------------------------------
-#
-# Hjelpefunksjoner for diverse exif-manipulering
-#
-# ---------------------------------------------------
-def get_decimal_from_dms(dms, ref):
+def redact_image_properties(contents):
     """
-    Konverterer EXIF-grader til desimalgrader
+    Redact entries in `contents`. See `REDACT_XML_TAGS` for the list of tags to be redacted.
 
-    Fra https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3
+    :param contents: XML containing tags to be redacted.
+    :type contents: str
+    :return: Redacted contents
+    :rtype: str
     """
+    for pattern, replace_str in zip(REDACT_XML_REGEX_PATTERNS, REDACT_XML_REPLACE_STRINGS):
+        contents = re.sub(pattern, replace_str, contents)
+    return contents
 
 
-    degrees = dms[0][0] / dms[0][1]
-    minutes = dms[1][0] / dms[1][1] / 60.0
-    seconds = dms[2][0] / dms[2][1] / 3600.0
-
-    if ref in ['S', 'W']:
-        degrees = -degrees
-        minutes = -minutes
-        seconds = -seconds
-
-    return round(degrees + minutes + seconds, 6)
-
-def get_coordinates(geotags):
+def process_reflink_info(contents):
     """
-    Fisker koordinater ut av EXIF-taggene
+    Process the `ReflinkInfo` XML from the EXIF header.
 
-    Fra https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3
+    :param contents: XML-contents. If `contents` is `None`, a dict with the required keys and None values, will be
+                     returned.
+    :type contents: bytes | None
+    :return: Relevant information extracted from `contents`
+    :rtype: dict
     """
+    if contents is None:
+        # If we got None, it means that the EXIF header did not contain  the `ReflinkInfo` XML.
+        # So just return a dict with the required keys with None values.
+        out = {"exif_reflinkid": None, "exif_reflinkposisjon": None, "exif_reflinkinfo": None}
+        return out
 
-    lat = get_decimal_from_dms(geotags['GPSLatitude'], geotags['GPSLatitudeRef'])
-
-    lon = get_decimal_from_dms(geotags['GPSLongitude'], geotags['GPSLongitudeRef'])
-
-    return (lat,lon)
-
-def pyntxml( exif_labelled):
-    """
-    Fjerner litt rusk fra den XML'en som viatech legger i Exif-header. Obfuskerer fører og bilnr
-    """
-
-    try:
-        raw = exif_labelled[None]
-    except KeyError:
-        return None
-    else:
-        # fjerner '\ufeff' - tegnet aller først i teksten
-        xmlstr = raw.decode('utf8')[1:]
-        plainxml = xml.dom.minidom.parseString(xmlstr)
-        prettyxml = plainxml.toprettyxml()
-
-        # Obfuskerer
-        prettyxml = re.sub(r'Driver>.*<', 'Driver>FJERNET<', prettyxml)
-        prettyxml = re.sub(r'CarID>.*<', 'CarID>FJERNET<', prettyxml)
-        prettyxml = re.sub(r'Comment>.*<', 'Comment>FJERNET<', prettyxml)
-
-        return prettyxml
-
-
-
-def get_geotagging(exif):
-    """
-    Bedre håndtering av geotag i exif-header
-
-    Fra https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3
-    """
-    if not exif:
-        raise ValueError("No EXIF metadata found")
-
-    geotagging = {}
-    for (idx, tag) in TAGS.items():
-        if tag == 'GPSInfo':
-            if idx not in exif:
-                raise ValueError("No EXIF geotagging found")
-
-            for (key, val) in GPSTAGS.items():
-                if key in exif[idx]:
-                    geotagging[val] = exif[idx][key]
-
-    return geotagging
-
-
-# def get_exif(filename):
-#     image = Image.open(filename)
-#     image.verify()
-#     return image._getexif()
-
-def get_labeled_exif(exif):
-
-    labeled = {}
-    for (key, val) in exif.items():
-        labeled[TAGS.get(key)] = val
-
-    return labeled
+    contents = to_pretty_xml(contents)
+    info = xmltodict.parse(contents)["ReflinkInfo"]
+    out = {
+        "exif_reflinkid": info["ReflinkId"],
+        "exif_reflinkposisjon": info["ReflinkPosition"],
+        "exif_reflinkinfo": contents
+    }
+    return out
