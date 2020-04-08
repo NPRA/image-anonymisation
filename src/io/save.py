@@ -172,27 +172,36 @@ def _draw_mask_on_img(img, mask_results, mask_color=None):
 
 
 def _blur_mask_on_img(img, mask, blur_factor, gray_blur=True, normalized_gray_blur=True):
-    if blur_factor < 1:
-        return
     ksize = int((blur_factor / 1000) * img.shape[2])
-    if gray_blur:
-        gray = cv2.cvtColor(img[0], cv2.COLOR_RGB2GRAY)
-        blurred = cv2.blur(gray, (ksize, ksize))
-        if normalized_gray_blur:
-            blurred = _local_gray_normalization(blurred, ksize)
-        blurred = blurred[None, :, :, None]
+    if ksize < 3:
+        # Return if the kernel size is very small. Filtering with this kernel size would have no effect.
+        return
+    if gray_blur and normalized_gray_blur:
+        _apply_normalized_gray_blur(img, mask, ksize)
+    elif gray_blur:
+        _apply_gray_blur(img, mask, ksize)
     else:
-        blurred = cv2.blur(img[0], (ksize, ksize))[None, ...]
+        _apply_color_blur(img, mask, ksize)
+
+
+def _apply_color_blur(img, mask, ksize):
+    blurred = cv2.blur(img[0], (ksize, ksize))[None, ...]
     img[mask] = blurred[mask]
 
 
-def _local_gray_normalization(blurred, ksize):
-    blurred = blurred.astype(np.float32)
-    blurred_again = cv2.blur(blurred, (ksize, ksize))
-    blurred_again[blurred_again < 0.1] = 0.1
-    blurred /= blurred_again
-    blurred *= 100
-    return blurred.astype(np.uint8)
+def _apply_gray_blur(img, mask, ksize):
+    gray = cv2.cvtColor(img[0], cv2.COLOR_RGB2GRAY)
+    blurred = cv2.blur(gray, (ksize, ksize))[None, :, :, None]
+    img[mask] = blurred[mask]
+
+
+def _apply_normalized_gray_blur(img, mask, ksize):
+    large_ksize = int(1.2 * ksize)
+    default_gray_value = 100
+    gray = cv2.cvtColor(img[0], cv2.COLOR_RGB2GRAY)
+    blurred = cv2.blur(gray, (ksize, ksize))[None, :, :, None]
+    blurred_large = cv2.blur(gray, (large_ksize, large_ksize))[None, :, :, None]
+    img[mask] = blurred[mask] - blurred_large[mask] + default_gray_value
 
 
 def _save_mask(mask, output_filepath):
