@@ -75,7 +75,7 @@ def save_processed_img(img, mask_results, input_path, output_path, filename, dra
     output_image_path = os.path.join(output_path, filename)
     pil_img.save(output_image_path)
     # Add the path to the output image to the json dict.
-    exif["anonymisert_bildefil"] = os.path.join(output_path.replace(os.sep, "/"))
+    exif["anonymisert_bildefil"] = os.path.join(output_path, filename).replace(os.sep, "/")
 
     # Save metadata and .webp mask
     json_filename = os.path.splitext(filename)[0] + ".json"
