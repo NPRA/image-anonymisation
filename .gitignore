@@ -141,6 +141,7 @@ tmp/
 models/
 logs/
 email_config.py
+src/db/db_config.py
 
 data/*
 tests/data/real
