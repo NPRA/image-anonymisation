@@ -72,13 +72,16 @@ def save_processed_img(img, mask_results, input_path, output_path, filename, dra
 
     # Save masked image
     pil_img = Image.fromarray(img[0].astype(np.uint8))
-    pil_img.save(os.path.join(output_path, filename))
+    output_image_path = os.path.join(output_path, filename)
+    pil_img.save(output_image_path)
+    # Add the path to the output image to the json dict.
+    exif["anonymisert_bildefil"] = os.path.join(output_path.replace(os.sep, "/"))
 
     # Save metadata and .webp mask
     json_filename = os.path.splitext(filename)[0] + ".json"
     webp_filename = os.path.splitext(filename)[0] + ".webp"
     if json_objects:
-        exif["detected_objects"] = _get_detected_objects_dict(mask_results)
+        exif["detekterte_objekter"] = _get_detected_objects_dict(mask_results)
     if local_json:
         write_exif(exif, os.path.join(input_path, json_filename))
     if remote_json:
