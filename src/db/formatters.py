@@ -1,14 +1,15 @@
 import json
 import iso8601
 
-from src.db.setup_table import TABLE_NAME, COLUMNS
+from src.db import db_config
+from src.db.setup_table import COLUMNS
 from src.Logger import LOGGER
 
 
 def get_insert_sql():
     col_names = ", ".join([c.col_name for c in COLUMNS])
     values = ", ".join([":" + c.col_name for c in COLUMNS])
-    insert_sql = f"INSERT INTO {TABLE_NAME}({col_names}) VALUES ({values})"
+    insert_sql = f"INSERT INTO {db_config.table_name}({col_names}) VALUES ({values})"
     return insert_sql
 
 

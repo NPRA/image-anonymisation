@@ -4,8 +4,6 @@ from collections import namedtuple
 
 from src.db import db_config
 
-
-TABLE_NAME = "test_anonymisering_vegbilder"
 COL = namedtuple("column", ["col_name", "col_dtype", "json_key"])
 COLUMNS = [
     COL(col_name="bildeuuid",            col_dtype="VARCHAR2(255)", json_key="bildeuuid"),
@@ -21,7 +19,7 @@ COLUMNS = [
 
 if __name__ == '__main__':
     cols = [f"{c.col_name} {c.col_dtype}" for c in COLUMNS]
-    create_table_sql = f"CREATE TABLE {TABLE_NAME}({', '.join(cols)})"
+    create_table_sql = f"CREATE TABLE {db_config.table_name}({', '.join(cols)})"
 
     with cxo.connect(db_config.user, db_config.pwd, db_config.dsn) as connection:
         if db_config.schema is not None:
@@ -30,9 +28,9 @@ if __name__ == '__main__':
         cursor = connection.cursor()
 
         if "--drop" in sys.argv:
-            cursor.execute(f"DROP TABLE {TABLE_NAME}")
-            print(f"Deleted table {TABLE_NAME}")
+            cursor.execute(f"DROP TABLE {db_config.table_name}")
+            print(f"Deleted table {db_config.table_name}")
 
         cursor.execute(create_table_sql)
 
-    print(f"Table {TABLE_NAME} created successfully with command:\n{create_table_sql}")
+    print(f"Table {db_config.table_name} created successfully with command:\n{create_table_sql}")

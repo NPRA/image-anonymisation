@@ -4,8 +4,9 @@ from pprint import pprint, pformat
 from datetime import datetime
 
 import config
+from src.db import db_config
 from src.db.DatabaseClient import DatabaseClient
-from src.db.setup_table import COLUMNS, TABLE_NAME
+from src.db.setup_table import COLUMNS
 
 
 def output_type_handler(cursor, name, defaultType, size, precision, scale):
@@ -41,6 +42,6 @@ if __name__ == '__main__':
         with cli.connect() as connection:
             connection.outputtypehandler = output_type_handler
             cursor = connection.cursor()
-            cursor.execute(f"SELECT * FROM {TABLE_NAME}")
+            cursor.execute(f"SELECT * FROM {db_config.table_name}")
             for res in cursor:
                 print_result(res)
