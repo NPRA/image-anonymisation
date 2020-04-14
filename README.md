@@ -140,6 +140,31 @@ smtp_host = <smtp server address>
 port = <smtp port>
 ```
 
+## EXIF data to database
+The `src.db` module can write the EXIF data extracted by the application, to an Oracle database. The username, password and dsn used to access the database
+must be specified in `src/db/db_config.py`:
+
+```
+user = <username> 
+pwd = <password>
+dsn = <dsn>
+# Set this parameter if you want to use a table within a specific schema.
+schema = None 
+# Name of the table
+table_name = <table name>
+```
+
+When the parameters above have been configured correctly, the EXIF data can be written to the database by using the `json_to_db` script:
+```
+python -m src.db.json_to_db -i <base input folder>
+```
+This will recursively traverse `<base input folder>`, read all .json files, and write the contents to the specified database.
+
+Database writing can also be done automatically during anonymisation. This is enabled by setting `write_exif_to_db = True` in `config.py`.
+
+WARNING: Currently, the EXIF header will be written to the database even if image postprocessing failed. It is therefore recommended to use
+the `json_to_db` script instead.
+
 ## Evaluating the current model
 The anonymisation model can be evaluated by running the evaluation script:
 ```
