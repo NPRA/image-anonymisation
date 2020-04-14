@@ -7,6 +7,12 @@ from src.Logger import LOGGER
 
 
 def get_insert_sql():
+    """
+    Get the SQL expression used to insert a row into the database
+
+    :return: `INSERT` SQL expression
+    :rtype: string
+    """
     col_names = ", ".join([c.col_name for c in COLUMNS])
     values = ", ".join([":" + c.col_name for c in COLUMNS])
     insert_sql = f"INSERT INTO {db_config.table_name}({col_names}) VALUES ({values})"
@@ -37,6 +43,14 @@ FORMAT_FUNCS = {
 
 
 def create_row(json_dict):
+    """
+    Create a database row from the given `json_dict`. See `src.db.setup_table` for the list of columns.
+
+    :param json_dict: EXIF data
+    :type json_dict: dict
+    :return: Dict representing the database row.
+    :rtype: dict
+    """
     out = {}
     for col in COLUMNS:
         if col.json_key == "self":

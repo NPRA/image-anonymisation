@@ -82,6 +82,38 @@ This also applies to both reading input files, and writing output files.</p>
 </dd></dl>
 
 <dl class="data">
+<dt id="config.datetime_format">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">datetime_format</code><em class="property"> = '%Y-%m-%d %H.%M.%S'</em><a class="headerlink" href="#config.datetime_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format of datetime identifiers. See <a class="reference external" href="https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior">https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior</a> for
+more information.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.log_file_name">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">log_file_name</code><em class="property"> = '{datetime} {hostname}.log'</em><a class="headerlink" href="#config.log_file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the log file. <cite>{datetime}</cite> will be replaced with a timestamp formatted as <cite>datetime_format</cite>. {hostname}
+will be replaced with the host name.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.uncaught_exception_email">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">uncaught_exception_email</code><em class="property"> = False</em><a class="headerlink" href="#config.uncaught_exception_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an email if the program exits abnormally due to an uncaught exception.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.processing_error_email">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">processing_error_email</code><em class="property"> = False</em><a class="headerlink" href="#config.processing_error_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an email if a processing error is encountered, but the program is able to continue</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.finished_email">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">finished_email</code><em class="property"> = False</em><a class="headerlink" href="#config.finished_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an email if the anonymisation finishes normally.</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="config.remote_json">
 <code class="sig-prename descclassname">config.</code><code class="sig-name descname">remote_json</code><em class="property"> = True</em><a class="headerlink" href="#config.remote_json" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the EXIF .json file to the output (remote) directory?</p>
@@ -128,7 +160,7 @@ The masks from the <cite>Fast</cite> model are currently not recommended due to 
 
 <dl class="data">
 <dt id="config.mask_dilation_pixels">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">mask_dilation_pixels</code><em class="property"> = 0</em><a class="headerlink" href="#config.mask_dilation_pixels" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">mask_dilation_pixels</code><em class="property"> = 8</em><a class="headerlink" href="#config.mask_dilation_pixels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
 by the corresponding mask. Set <cite>mask_dilation_pixels = 0</cite> to disable mask dilation.</p>
 </dd></dl>
@@ -160,6 +192,18 @@ specific color. Set <cite>blur = None</cite> to disable blurring, and use colore
 <code class="sig-prename descclassname">config.</code><code class="sig-name descname">normalized_gray_blur</code><em class="property"> = True</em><a class="headerlink" href="#config.normalized_gray_blur" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark
 colors. NOTE: Requires gray_blur=True</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.write_exif_to_db">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">write_exif_to_db</code><em class="property"> = False</em><a class="headerlink" href="#config.write_exif_to_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the EXIF data to the database?</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="config.db_max_n_accumulated_rows">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">db_max_n_accumulated_rows</code><em class="property"> = 8</em><a class="headerlink" href="#config.db_max_n_accumulated_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum number of rows to accumulate locally before writing all accumulated rows to the database.</p>
 </dd></dl>
 
 <dl class="data">
@@ -230,54 +274,257 @@ use tf.data.experimental.AUTOTUNE. This might yield a small gain in performance.
 </dd></dl>
 
 </div>
+<div class="section" id="db">
+<h2>db<a class="headerlink" href="#db" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-src.db.DatabaseClient">
+<span id="db-databaseclient"></span><h3>db.DatabaseClient<a class="headerlink" href="#module-src.db.DatabaseClient" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="src.db.DatabaseClient.DatabaseClient">
+<em class="property">class </em><code class="sig-prename descclassname">src.db.DatabaseClient.</code><code class="sig-name descname">DatabaseClient</code><span class="sig-paren">(</span><em class="sig-param">max_n_accumulated_rows=8</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class used to handle database writes. Connection parameters are specified in <cite>src.db.db_config</cite>. This class can also
+be instantiated as a context manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>max_n_accumulated_rows</strong> (<em>int</em>) – Maximum number of rows to accumulate before actually writing them to the remote
+database.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.db.DatabaseClient.DatabaseClient.connect">
+<em class="property">static </em><code class="sig-name descname">connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to the database, and set the schema if it is specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Database connection object</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>cxo.Connection</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.db.DatabaseClient.DatabaseClient.add_row">
+<code class="sig-name descname">add_row</code><span class="sig-paren">(</span><em class="sig-param">json_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.add_row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the contents of <cite>json_dict</cite> to the buffer, which will eventually be written to the remote database. When the
+buffer size (number of accumulated rows) exceeds <cite>self.max_n_accumulated_rows</cite>, all the accumulated rows will be
+written to the database. The buffer will then be cleared.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>json_dict</strong> (<em>dict</em>) – EXIF data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.db.DatabaseClient.DatabaseClient.insert_accumulated_rows">
+<code class="sig-name descname">insert_accumulated_rows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.insert_accumulated_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert all accumulated rows into the database</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.db.DatabaseClient.DatabaseClient.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert the remaining accumulated rows into the database</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.db.formatters">
+<span id="db-formatters"></span><h3>db.formatters<a class="headerlink" href="#module-src.db.formatters" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="src.db.formatters.get_insert_sql">
+<code class="sig-prename descclassname">src.db.formatters.</code><code class="sig-name descname">get_insert_sql</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.formatters.get_insert_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the SQL expression used to insert a row into the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><cite>INSERT</cite> SQL expression</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.db.formatters.create_row">
+<code class="sig-prename descclassname">src.db.formatters.</code><code class="sig-name descname">create_row</code><span class="sig-paren">(</span><em class="sig-param">json_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.formatters.create_row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a database row from the given <cite>json_dict</cite>. See <cite>src.db.setup_table</cite> for the list of columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>json_dict</strong> (<em>dict</em>) – EXIF data</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict representing the database row.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="io">
 <h2>io<a class="headerlink" href="#io" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="module-src.io.exif_util">
 <span id="io-exif-util"></span><h3>io.exif_util<a class="headerlink" href="#module-src.io.exif_util" title="Permalink to this headline">¶</a></h3>
 <p>From: <a class="reference external" href="https://github.com/vegvesen/vegbilder/blob/master/trinn1_lagmetadata/vegbilder_lesexif.py">https://github.com/vegvesen/vegbilder/blob/master/trinn1_lagmetadata/vegbilder_lesexif.py</a></p>
-<dl class="function">
-<dt id="src.io.exif_util.fiksutf8">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">fiksutf8</code><span class="sig-paren">(</span><em class="sig-param">meta</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.fiksutf8" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fjerner ugyldige tegn fra datastrukturen før de får gjort mer skade</p>
+<dl class="data">
+<dt id="src.io.exif_util.VIATECH_TAGS">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">VIATECH_TAGS</code><em class="property"> = {40055: 'ImageProperties', 40056: 'ReflinkInfo'}</em><a class="headerlink" href="#src.io.exif_util.VIATECH_TAGS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tags from Viatech</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.io.exif_util.LOVLIG_VEGSTATUS">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">LOVLIG_VEGSTATUS</code><em class="property"> = ['S', 'H', 'W', 'A', 'P', 'E', 'B', 'U', 'Q', 'V', 'X', 'M', 'T', 'G']</em><a class="headerlink" href="#src.io.exif_util.LOVLIG_VEGSTATUS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lovlige vegstatuser</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.io.exif_util.LOVLIG_VEGKATEGORI">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">LOVLIG_VEGKATEGORI</code><em class="property"> = ['E', 'R', 'F', 'K', 'P', 'S']</em><a class="headerlink" href="#src.io.exif_util.LOVLIG_VEGKATEGORI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lovlige vegkategorier</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.io.exif_util.REDACT_XML_TAGS">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">REDACT_XML_TAGS</code><em class="property"> = ['Driver', 'CarID', 'Comment']</em><a class="headerlink" href="#src.io.exif_util.REDACT_XML_TAGS" title="Permalink to this definition">¶</a></dt>
+<dd><p>XML tags which should be redacted in the <cite>ImageProperties</cite> XML.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.io.exif_util.REDACT_XML_REGEX_PATTERNS">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">REDACT_XML_REGEX_PATTERNS</code><em class="property"> = [re.compile('&lt;Driver&gt;.*&lt;/Driver'), re.compile('&lt;CarID&gt;.*&lt;/CarID'), re.compile('&lt;Comment&gt;.*&lt;/Comment')]</em><a class="headerlink" href="#src.io.exif_util.REDACT_XML_REGEX_PATTERNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regex patterns to use when redacting the <cite>ImageProperties</cite> XML. Precompiled for speed.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.io.exif_util.REDACT_XML_REPLACE_STRINGS">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">REDACT_XML_REPLACE_STRINGS</code><em class="property"> = ['&lt;Driver&gt;FJERNET&lt;/Driver', '&lt;CarID&gt;FJERNET&lt;/CarID', '&lt;Comment&gt;FJERNET&lt;/Comment']</em><a class="headerlink" href="#src.io.exif_util.REDACT_XML_REPLACE_STRINGS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Placeholders for the redacted entries</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="src.io.exif_util.fiskFraviatechXML">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">fiskFraviatechXML</code><span class="sig-paren">(</span><em class="sig-param">imagepropertiesxml</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.fiskFraviatechXML" title="Permalink to this definition">¶</a></dt>
-<dd><p>Leser relevante data fra viatech XML header.</p>
+<dt id="src.io.exif_util.exif_from_file">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">exif_from_file</code><span class="sig-paren">(</span><em class="sig-param">image_path</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.exif_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the EXIF-data from the image located at <cite>image_path</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image_path</strong> (<em>str</em>) – Path to input image</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>EXIF data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="src.io.exif_util.lesexif">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">lesexif</code><span class="sig-paren">(</span><em class="sig-param">filnavn</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.lesexif" title="Permalink to this definition">¶</a></dt>
-<dd><p>Omsetter Exif-header til metadata for bruk i bildedatabase</p>
+<dt id="src.io.exif_util.get_exif">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_exif</code><span class="sig-paren">(</span><em class="sig-param">img</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_exif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the EXIF data from <cite>img</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>PIL.Image</em>) – Input image</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>EXIF data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="src.io.exif_util.get_decimal_from_dms">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_decimal_from_dms</code><span class="sig-paren">(</span><em class="sig-param">dms</em>, <em class="sig-param">ref</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_decimal_from_dms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Konverterer EXIF-grader til desimalgrader</p>
-<p>Fra <a class="reference external" href="https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3">https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3</a></p>
+<dt id="src.io.exif_util.label_exif">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">label_exif</code><span class="sig-paren">(</span><em class="sig-param">exif</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.label_exif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the standard integer EXIF-keys in <cite>exif</cite> to text keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>exif</strong> (<em>dict</em>) – EXIF dict from <cite>PIL.Image._getexif</cite>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>EXIF dict with text keys.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="src.io.exif_util.get_coordinates">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_coordinates</code><span class="sig-paren">(</span><em class="sig-param">geotags</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_coordinates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fisker koordinater ut av EXIF-taggene</p>
-<p>Fra <a class="reference external" href="https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3">https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3</a></p>
+<dt id="src.io.exif_util.process_image_properties">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">process_image_properties</code><span class="sig-paren">(</span><em class="sig-param">contents</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.process_image_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process the <cite>ImageProperties</cite> XML from the EXIF header</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>contents</strong> (<em>bytes</em>) – XML-contents</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Relevant information extracted from <cite>contents</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="src.io.exif_util.pyntxml">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">pyntxml</code><span class="sig-paren">(</span><em class="sig-param">exif_labelled</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.pyntxml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fjerner litt rusk fra den XML’en som viatech legger i Exif-header. Obfuskerer fører og bilnr</p>
+<dt id="src.io.exif_util.to_pretty_xml">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">to_pretty_xml</code><span class="sig-paren">(</span><em class="sig-param">contents_bytes</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.to_pretty_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert bytes-encoded XML to a prettified string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>contents_bytes</strong> (<em>bytes</em>) – Bytes-encoded XML contents</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Prettified contents</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="src.io.exif_util.get_geotagging">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_geotagging</code><span class="sig-paren">(</span><em class="sig-param">exif</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_geotagging" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bedre håndtering av geotag i exif-header</p>
-<p>Fra <a class="reference external" href="https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3">https://developer.here.com/blog/getting-started-with-geocoding-exif-image-metadata-in-python3</a></p>
+<dt id="src.io.exif_util.redact_image_properties">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">redact_image_properties</code><span class="sig-paren">(</span><em class="sig-param">contents</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.redact_image_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redact entries in <cite>contents</cite>. See <cite>REDACT_XML_TAGS</cite> for the list of tags to be redacted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>contents</strong> (<em>str</em>) – XML containing tags to be redacted.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Redacted contents</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.exif_util.process_reflink_info">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">process_reflink_info</code><span class="sig-paren">(</span><em class="sig-param">contents</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.process_reflink_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process the <cite>ReflinkInfo</cite> XML from the EXIF header.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>contents</strong> (<em>bytes | None</em>) – XML-contents. If <cite>contents</cite> is <cite>None</cite>, a dict with the required keys and None values, will be
+returned.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Relevant information extracted from <cite>contents</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -319,13 +566,14 @@ use tf.data.experimental.AUTOTUNE. This might yield a small gain in performance.
 <span id="io-save"></span><h3>io.save<a class="headerlink" href="#module-src.io.save" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="src.io.save.save_processed_img">
-<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">save_processed_img</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">input_path</em>, <em class="sig-param">output_path</em>, <em class="sig-param">filename</em>, <em class="sig-param">draw_mask=False</em>, <em class="sig-param">local_json=False</em>, <em class="sig-param">remote_json=False</em>, <em class="sig-param">local_mask=False</em>, <em class="sig-param">remote_mask=False</em>, <em class="sig-param">json_objects=True</em>, <em class="sig-param">mask_color=None</em>, <em class="sig-param">blur=None</em>, <em class="sig-param">gray_blur=True</em>, <em class="sig-param">normalized_gray_blur=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.save_processed_img" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">save_processed_img</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">exif</em>, <em class="sig-param">input_path</em>, <em class="sig-param">output_path</em>, <em class="sig-param">filename</em>, <em class="sig-param">draw_mask=False</em>, <em class="sig-param">local_json=False</em>, <em class="sig-param">remote_json=False</em>, <em class="sig-param">local_mask=False</em>, <em class="sig-param">remote_mask=False</em>, <em class="sig-param">json_objects=True</em>, <em class="sig-param">mask_color=None</em>, <em class="sig-param">blur=None</em>, <em class="sig-param">gray_blur=True</em>, <em class="sig-param">normalized_gray_blur=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.save_processed_img" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an image which has been processed by the masker.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p></li>
 <li><p><strong>mask_results</strong> (<em>dict</em>) – Dictionary containing masking results. Format must be as returned by Masker.mask.</p></li>
+<li><p><strong>exif</strong> (<em>dict</em>) – EXIF data for <cite>img</cite>.</p></li>
 <li><p><strong>input_path</strong> (<em>str</em>) – Path to input directory</p></li>
 <li><p><strong>output_path</strong> (<em>str</em>) – Path to output directory</p></li>
 <li><p><strong>filename</strong> (<em>str</em>) – Name of image file</p></li>
@@ -341,6 +589,8 @@ colors in <cite>config</cite> will be used.</p></li>
 should be a number in [1 - 1000] indicating the size of the mask used in for blurring. Specifically,
 <cite>mask_size = (blur / 1000) * image_width</cite>.</p></li>
 <li><p><strong>gray_blur</strong> (<em>bool</em>) – Convert the image to grayscale before blurring?</p></li>
+<li><p><strong>normalized_gray_blur</strong> (<em>bool</em>) – Normalize the gray level within each mask after blurring? This will make bright colors
+indistinguishable from dark colors. NOTE: Requires gray_blur=True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -423,8 +673,8 @@ should be a number in [1 - 1000] indicating the size of the mask used in for blu
 <span id="io-treewalker"></span><h3>io.TreeWalker<a class="headerlink" href="#module-src.io.TreeWalker" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="src.io.TreeWalker.TreeWalker">
-<em class="property">class </em><code class="sig-prename descclassname">src.io.TreeWalker.</code><code class="sig-name descname">TreeWalker</code><span class="sig-paren">(</span><em class="sig-param">input_folder</em>, <em class="sig-param">mirror_folders</em>, <em class="sig-param">skip_webp=True</em>, <em class="sig-param">precompute_paths=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.TreeWalker.TreeWalker" title="Permalink to this definition">¶</a></dt>
-<dd><p>Traverses a file-tree and finds all valid .jpg images.</p>
+<em class="property">class </em><code class="sig-prename descclassname">src.io.TreeWalker.</code><code class="sig-name descname">TreeWalker</code><span class="sig-paren">(</span><em class="sig-param">input_folder</em>, <em class="sig-param">mirror_folders</em>, <em class="sig-param">skip_webp=True</em>, <em class="sig-param">precompute_paths=True</em>, <em class="sig-param">ext='jpg'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.TreeWalker.TreeWalker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Traverses a file-tree and finds all valid files with extension <cite>ext</cite>.</p>
 <dl class="method">
 <dt id="src.io.TreeWalker.TreeWalker.walk">
 <code class="sig-name descname">walk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.io.TreeWalker.TreeWalker.walk" title="Permalink to this definition">¶</a></dt>
@@ -436,8 +686,8 @@ elements:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Full path to the current directory in <cite>input_dir</cite></p></li>
-<li><p>Full path to the corresponding directory in <cite>output_dir</cite></p></li>
-<li><p>Name of .jpg-file</p></li>
+<li><p>Full path to the corresponding directories in <cite>mirror_dirs</cite></p></li>
+<li><p>Name of current <cite>ext</cite>-file</p></li>
 </ul>
 </div></blockquote>
 <p>Otherwise, it will call a generator returning a tuple with the same elements as above.</p>
@@ -457,7 +707,7 @@ elements:</p>
 <span id="imageprocessor"></span><h2>ImageProcessor<a class="headerlink" href="#module-src.ImageProcessor" title="Permalink to this headline">¶</a></h2>
 <dl class="data">
 <dt id="src.ImageProcessor.WORKER_EXCEPTIONS">
-<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">WORKER_EXCEPTIONS</code><em class="property"> = (&lt;class 'AssertionError'&gt;, &lt;class 'FileNotFoundError'&gt;, &lt;class 'PermissionError'&gt;)</em><a class="headerlink" href="#src.ImageProcessor.WORKER_EXCEPTIONS" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">WORKER_EXCEPTIONS</code><em class="property"> = (&lt;class 'AssertionError'&gt;, &lt;class 'FileNotFoundError'&gt;, &lt;class 'PermissionError'&gt;, &lt;class 'OSError'&gt;)</em><a class="headerlink" href="#src.ImageProcessor.WORKER_EXCEPTIONS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exceptions to catch when saving and archiving.</p>
 </dd></dl>
 
@@ -507,13 +757,14 @@ multiprocessing pool.</p>
 
 <dl class="function">
 <dt id="src.ImageProcessor.save_and_archive">
-<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">save_and_archive</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">input_path</em>, <em class="sig-param">mirror_paths</em>, <em class="sig-param">filename</em>, <em class="sig-param">base_output_path</em>, <em class="sig-param">base_archive_path</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.save_and_archive" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">save_and_archive</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">exif</em>, <em class="sig-param">input_path</em>, <em class="sig-param">mirror_paths</em>, <em class="sig-param">filename</em>, <em class="sig-param">base_output_path</em>, <em class="sig-param">base_archive_path</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.save_and_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the result files and do archiving.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p></li>
 <li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>src.Masker.Masker.mask</cite>. applied to <cite>image</cite>.</p></li>
+<li><p><strong>exif</strong> (<em>dict</em>) – EXIF data for <cite>img</cite>.</p></li>
 <li><p><strong>input_path</strong> (<em>str</em>) – Path to directory containing the input image</p></li>
 <li><p><strong>mirror_paths</strong> (<em>list of str</em>) – List containing the path to the output directory, and optionally the path to the archive
 directory.</p></li>
@@ -583,8 +834,8 @@ instance of <cite>Masker</cite> ready for masking.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="src.main.log_summary">
-<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">log_summary</code><span class="sig-paren">(</span><em class="sig-param">tree_walker</em>, <em class="sig-param">n_masked</em>, <em class="sig-param">start_datetime</em><span class="sig-paren">)</span><a class="headerlink" href="#src.main.log_summary" title="Permalink to this definition">¶</a></dt>
+<dt id="src.main.get_summary">
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">get_summary</code><span class="sig-paren">(</span><em class="sig-param">tree_walker</em>, <em class="sig-param">n_masked</em>, <em class="sig-param">start_datetime</em><span class="sig-paren">)</span><a class="headerlink" href="#src.main.get_summary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log a summary of the masking process.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -671,6 +922,36 @@ included.</p>
 </dl>
 </dd></dl>
 
+<dl class="function">
+<dt id="src.Masker.reframe_box_masks_to_image_masks">
+<code class="sig-prename descclassname">src.Masker.</code><code class="sig-name descname">reframe_box_masks_to_image_masks</code><span class="sig-paren">(</span><em class="sig-param">box_masks</em>, <em class="sig-param">boxes</em>, <em class="sig-param">image_height</em>, <em class="sig-param">image_width</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.reframe_box_masks_to_image_masks" title="Permalink to this definition">¶</a></dt>
+<dd><p>From: <a class="reference external" href="https://github.com/tensorflow/models/blob/master/research/object_detection/utils/ops.py">https://github.com/tensorflow/models/blob/master/research/object_detection/utils/ops.py</a></p>
+<p>Transforms the box masks back to full image masks.
+Embeds masks in bounding boxes of larger masks whose shapes correspond to
+image shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>box_masks</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – A tf.float32 tensor of size [num_masks, mask_height, mask_width].</p></li>
+<li><p><strong>boxes</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – A tf.float32 tensor of size [num_masks, 4] containing the box
+corners. Row i contains [ymin, xmin, ymax, xmax] of the box
+corresponding to mask i. Note that the box corners are in
+normalized coordinates.</p></li>
+<li><p><strong>image_height</strong> (<em>int</em>) – Image height. The output mask will have the same height as
+the image height.</p></li>
+<li><p><strong>image_width</strong> (<em>int</em>) – Image width. The output mask will have the same width as the
+image width.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tf.float32 tensor of size [num_masks, image_height, image_width].</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tf.python.framework.ops.EagerTensor</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 </div>
 
@@ -684,6 +965,11 @@ included.</p>
   <ul>
 <li><a class="reference internal" href="#">API Reference</a><ul>
 <li><a class="reference internal" href="#module-config">config</a></li>
+<li><a class="reference internal" href="#db">db</a><ul>
+<li><a class="reference internal" href="#module-src.db.DatabaseClient">db.DatabaseClient</a></li>
+<li><a class="reference internal" href="#module-src.db.formatters">db.formatters</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#io">io</a><ul>
 <li><a class="reference internal" href="#module-src.io.exif_util">io.exif_util</a></li>
 <li><a class="reference internal" href="#module-src.io.load">io.load</a></li>

@@ -178,6 +178,45 @@ The latter also works when conda is not initialized in the shell, as long as the
 </pre></div>
 </div>
 </div>
+<div class="section" id="email-notifications">
+<h3>Email notifications<a class="headerlink" href="#email-notifications" title="Permalink to this headline">¶</a></h3>
+<p>The application can send an email notification on an abnormal exit, a processing error, or on completion. These noticifations can be enabled/disabled
+with the flags <code class="docutils literal notranslate"><span class="pre">uncaught_exception_email</span></code>, <code class="docutils literal notranslate"><span class="pre">processing_error_email</span></code> and <code class="docutils literal notranslate"><span class="pre">finished_email</span></code>, available in <code class="docutils literal notranslate"><span class="pre">config.py</span></code>. The email sending feature requires a
+sender, receiver(s), and an SMTP-server in order to work. These can be specified by creating a file named <code class="docutils literal notranslate"><span class="pre">email_config.py</span></code> in the project root, which
+contains the following:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># Sender&#39;s address
+from_address = &quot;noreply@somedomain.com&quot;
+# Receiver address(es)
+to_addresses = [&quot;receiver1@domain.com&quot;, &quot;receiver2@domain.com, ...]
+# SMTP-server address
+smtp_host = &lt;smtp server address&gt;
+# SMTP-server port
+port = &lt;smtp port&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="exif-data-to-database">
+<h3>EXIF data to database<a class="headerlink" href="#exif-data-to-database" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">src.db</span></code> module can write the EXIF data extracted by the application, to an Oracle database. The username, password and dsn used to access the database
+must be specified in <code class="docutils literal notranslate"><span class="pre">src/db/db_config.py</span></code>:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>user = &lt;username&gt;
+pwd = &lt;password&gt;
+dsn = &lt;dsn&gt;
+# Set this parameter if you want to use a table within a specific schema.
+schema = None
+# Name of the table
+table_name = &lt;table name&gt;
+</pre></div>
+</div>
+<p>When the parameters above have been configured correctly, the EXIF data can be written to the database by using the <code class="docutils literal notranslate"><span class="pre">json_to_db</span></code> script:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>python -m src.db.json_to_db -i &lt;base input folder&gt;
+</pre></div>
+</div>
+<p>This will recursively traverse <code class="docutils literal notranslate"><span class="pre">&lt;base</span> <span class="pre">input</span> <span class="pre">folder&gt;</span></code>, read all .json files, and write the contents to the specified database.</p>
+<p>Database writing can also be done automatically during anonymisation. This is enabled by setting <code class="docutils literal notranslate"><span class="pre">write_exif_to_db</span> <span class="pre">=</span> <span class="pre">True</span></code> in <code class="docutils literal notranslate"><span class="pre">config.py</span></code>.</p>
+<p>WARNING: Currently, the EXIF header will be written to the database even if image postprocessing failed. It is therefore recommended to use
+the <code class="docutils literal notranslate"><span class="pre">json_to_db</span></code> script instead.</p>
+</div>
 <div class="section" id="evaluating-the-current-model">
 <h3>Evaluating the current model<a class="headerlink" href="#evaluating-the-current-model" title="Permalink to this headline">¶</a></h3>
 <p>The anonymisation model can be evaluated by running the evaluation script:</p>
@@ -225,6 +264,8 @@ optional arguments:
 </ul>
 </li>
 <li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#email-notifications">Email notifications</a></li>
+<li><a class="reference internal" href="#exif-data-to-database">EXIF data to database</a></li>
 <li><a class="reference internal" href="#evaluating-the-current-model">Evaluating the current model</a></li>
 </ul>
 </li>

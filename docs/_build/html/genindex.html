@@ -42,6 +42,7 @@
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
@@ -52,12 +53,16 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.db.DatabaseClient.DatabaseClient.add_row">add_row() (src.db.DatabaseClient.DatabaseClient method)</a>
+</li>
       <li><a href="api-reference.html#src.io.save.archive">archive() (in module src.io.save)</a>
 </li>
   </ul></td>
@@ -84,11 +89,19 @@
 </li>
       <li><a href="api-reference.html#src.io.load.check_input_img">check_input_img() (in module src.io.load)</a>
 </li>
+      <li><a href="api-reference.html#src.db.DatabaseClient.DatabaseClient.close">close() (src.db.DatabaseClient.DatabaseClient method)</a>
+
+      <ul>
+        <li><a href="api-reference.html#src.ImageProcessor.ImageProcessor.close">(src.ImageProcessor.ImageProcessor method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference.html#src.ImageProcessor.ImageProcessor.close">close() (src.ImageProcessor.ImageProcessor method)</a>
-</li>
       <li><a href="api-reference.html#module-config">config (module)</a>
+</li>
+      <li><a href="api-reference.html#src.db.DatabaseClient.DatabaseClient.connect">connect() (src.db.DatabaseClient.DatabaseClient static method)</a>
+</li>
+      <li><a href="api-reference.html#src.db.formatters.create_row">create_row() (in module src.db.formatters)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -96,12 +109,18 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference.html#config.DEFAULT_COLOR">DEFAULT_COLOR (in module config)</a>
+      <li><a href="api-reference.html#src.db.DatabaseClient.DatabaseClient">DatabaseClient (class in src.db.DatabaseClient)</a>
 </li>
-      <li><a href="api-reference.html#config.delete_input">delete_input (in module config)</a>
+      <li><a href="api-reference.html#config.datetime_format">datetime_format (in module config)</a>
+</li>
+      <li><a href="api-reference.html#config.db_max_n_accumulated_rows">db_max_n_accumulated_rows (in module config)</a>
+</li>
+      <li><a href="api-reference.html#config.DEFAULT_COLOR">DEFAULT_COLOR (in module config)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#config.delete_input">delete_input (in module config)</a>
+</li>
       <li><a href="api-reference.html#config.DOWNLOAD_BASE">DOWNLOAD_BASE (in module config)</a>
 </li>
       <li><a href="api-reference.html#src.Masker.download_model">download_model() (in module src.Masker)</a>
@@ -111,18 +130,24 @@
   </ul></td>
 </tr></table>
 
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.io.exif_util.exif_from_file">exif_from_file() (in module src.io.exif_util)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference.html#src.io.exif_util.fiksutf8">fiksutf8() (in module src.io.exif_util)</a>
-</li>
       <li><a href="api-reference.html#config.file_access_retry_seconds">file_access_retry_seconds (in module config)</a>
+</li>
+      <li><a href="api-reference.html#config.file_access_timeout_seconds">file_access_timeout_seconds (in module config)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference.html#config.file_access_timeout_seconds">file_access_timeout_seconds (in module config)</a>
-</li>
-      <li><a href="api-reference.html#src.io.exif_util.fiskFraviatechXML">fiskFraviatechXML() (in module src.io.exif_util)</a>
+      <li><a href="api-reference.html#config.finished_email">finished_email (in module config)</a>
 </li>
       <li><a href="api-reference.html#config.force_remask">force_remask (in module config)</a>
 </li>
@@ -134,15 +159,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#src.main.get_args">get_args() (in module src.main)</a>
 </li>
-      <li><a href="api-reference.html#src.io.exif_util.get_coordinates">get_coordinates() (in module src.io.exif_util)</a>
-</li>
-      <li><a href="api-reference.html#src.io.exif_util.get_decimal_from_dms">get_decimal_from_dms() (in module src.io.exif_util)</a>
-</li>
       <li><a href="api-reference.html#src.main.get_estimated_done">get_estimated_done() (in module src.main)</a>
+</li>
+      <li><a href="api-reference.html#src.io.exif_util.get_exif">get_exif() (in module src.io.exif_util)</a>
+</li>
+      <li><a href="api-reference.html#src.db.formatters.get_insert_sql">get_insert_sql() (in module src.db.formatters)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference.html#src.io.exif_util.get_geotagging">get_geotagging() (in module src.io.exif_util)</a>
+      <li><a href="api-reference.html#src.main.get_summary">get_summary() (in module src.main)</a>
 </li>
       <li><a href="api-reference.html#src.io.tf_dataset.get_tf_dataset">get_tf_dataset() (in module src.io.tf_dataset)</a>
 </li>
@@ -162,6 +187,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#src.main.initialize">initialize() (in module src.main)</a>
 </li>
+      <li><a href="api-reference.html#src.db.DatabaseClient.DatabaseClient.insert_accumulated_rows">insert_accumulated_rows() (src.db.DatabaseClient.DatabaseClient method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -170,21 +197,25 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#config.LABEL_COLORS">LABEL_COLORS (in module config)</a>
 </li>
+      <li><a href="api-reference.html#src.io.exif_util.label_exif">label_exif() (in module src.io.exif_util)</a>
+</li>
       <li><a href="api-reference.html#config.LABEL_MAP">LABEL_MAP (in module config)</a>
 </li>
       <li><a href="api-reference.html#config.lazy_paths">lazy_paths (in module config)</a>
 </li>
-      <li><a href="api-reference.html#src.io.exif_util.lesexif">lesexif() (in module src.io.exif_util)</a>
+      <li><a href="api-reference.html#src.io.load.load_image">load_image() (in module src.io.load)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference.html#src.io.load.load_image">load_image() (in module src.io.load)</a>
-</li>
       <li><a href="api-reference.html#config.local_json">local_json (in module config)</a>
 </li>
       <li><a href="api-reference.html#config.local_mask">local_mask (in module config)</a>
 </li>
-      <li><a href="api-reference.html#src.main.log_summary">log_summary() (in module src.main)</a>
+      <li><a href="api-reference.html#config.log_file_name">log_file_name (in module config)</a>
+</li>
+      <li><a href="api-reference.html#src.io.exif_util.LOVLIG_VEGKATEGORI">LOVLIG_VEGKATEGORI (in module src.io.exif_util)</a>
+</li>
+      <li><a href="api-reference.html#src.io.exif_util.LOVLIG_VEGSTATUS">LOVLIG_VEGSTATUS (in module src.io.exif_util)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -230,13 +261,17 @@
 </li>
       <li><a href="api-reference.html#src.io.tf_dataset.prepare_img">prepare_img() (in module src.io.tf_dataset)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#src.ImageProcessor.ImageProcessor.process_image">process_image() (src.ImageProcessor.ImageProcessor method)</a>
 </li>
-      <li><a href="api-reference.html#config.PROJECT_ROOT">PROJECT_ROOT (in module config)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.io.exif_util.process_image_properties">process_image_properties() (in module src.io.exif_util)</a>
 </li>
-      <li><a href="api-reference.html#src.io.exif_util.pyntxml">pyntxml() (in module src.io.exif_util)</a>
+      <li><a href="api-reference.html#src.io.exif_util.process_reflink_info">process_reflink_info() (in module src.io.exif_util)</a>
+</li>
+      <li><a href="api-reference.html#config.processing_error_email">processing_error_email (in module config)</a>
+</li>
+      <li><a href="api-reference.html#config.PROJECT_ROOT">PROJECT_ROOT (in module config)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -244,10 +279,20 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference.html#config.remote_json">remote_json (in module config)</a>
+      <li><a href="api-reference.html#src.io.exif_util.redact_image_properties">redact_image_properties() (in module src.io.exif_util)</a>
+</li>
+      <li><a href="api-reference.html#src.io.exif_util.REDACT_XML_REGEX_PATTERNS">REDACT_XML_REGEX_PATTERNS (in module src.io.exif_util)</a>
+</li>
+      <li><a href="api-reference.html#src.io.exif_util.REDACT_XML_REPLACE_STRINGS">REDACT_XML_REPLACE_STRINGS (in module src.io.exif_util)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.io.exif_util.REDACT_XML_TAGS">REDACT_XML_TAGS (in module src.io.exif_util)</a>
+</li>
+      <li><a href="api-reference.html#src.Masker.reframe_box_masks_to_image_masks">reframe_box_masks_to_image_masks() (in module src.Masker)</a>
+</li>
+      <li><a href="api-reference.html#config.remote_json">remote_json (in module config)</a>
+</li>
       <li><a href="api-reference.html#config.remote_mask">remote_mask (in module config)</a>
 </li>
   </ul></td>
@@ -260,14 +305,18 @@
 </li>
       <li><a href="api-reference.html#src.io.save.save_processed_img">save_processed_img() (in module src.io.save)</a>
 </li>
+      <li><a href="api-reference.html#module-src.db.DatabaseClient">src.db.DatabaseClient (module)</a>
+</li>
+      <li><a href="api-reference.html#module-src.db.formatters">src.db.formatters (module)</a>
+</li>
       <li><a href="api-reference.html#module-src.ImageProcessor">src.ImageProcessor (module)</a>
 </li>
       <li><a href="api-reference.html#module-src.io.exif_util">src.io.exif_util (module)</a>
 </li>
-      <li><a href="api-reference.html#module-src.io.load">src.io.load (module)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#module-src.io.load">src.io.load (module)</a>
+</li>
       <li><a href="api-reference.html#module-src.io.save">src.io.save (module)</a>
 </li>
       <li><a href="api-reference.html#module-src.io.tf_dataset">src.io.tf_dataset (module)</a>
@@ -286,11 +335,29 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#src.Masker.tensor_dict_to_numpy">tensor_dict_to_numpy() (in module src.Masker)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#config.TF_DATASET_NUM_PARALLEL_CALLS">TF_DATASET_NUM_PARALLEL_CALLS (in module config)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.io.exif_util.to_pretty_xml">to_pretty_xml() (in module src.io.exif_util)</a>
+</li>
       <li><a href="api-reference.html#src.io.TreeWalker.TreeWalker">TreeWalker (class in src.io.TreeWalker)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#config.uncaught_exception_email">uncaught_exception_email (in module config)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.io.exif_util.VIATECH_TAGS">VIATECH_TAGS (in module src.io.exif_util)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -303,6 +370,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#src.ImageProcessor.WORKER_EXCEPTIONS">WORKER_EXCEPTIONS (in module src.ImageProcessor)</a>
+</li>
+      <li><a href="api-reference.html#config.write_exif_to_db">write_exif_to_db (in module config)</a>
 </li>
   </ul></td>
 </tr></table>

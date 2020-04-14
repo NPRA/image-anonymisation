@@ -7,6 +7,18 @@ config
 .. automodule:: config
    :members:
 
+db
+=========================
+db.DatabaseClient
+-------------------------
+.. automodule:: src.db.DatabaseClient
+   :members:
+
+db.formatters
+-------------------------
+.. automodule:: src.db.formatters
+   :members:
+
 io
 =========================
 io.exif_util

@@ -17,7 +17,7 @@ VIATECH_TAGS = {40055: "ImageProperties", 40056: "ReflinkInfo"}
 TAGS.update(VIATECH_TAGS)
 
 #: Lovlige vegstatuser
-LOVLiG_VEGSTATUS = ["S", "H", "W", "A", "P", "E", "B", "U", "Q", "V", "X", "M", "T", "G"]
+LOVLIG_VEGSTATUS = ["S", "H", "W", "A", "P", "E", "B", "U", "Q", "V", "X", "M", "T", "G"]
 
 #: Lovlige vegkategorier
 LOVLIG_VEGKATEGORI = ["E", "R", "F", "K", "P", "S"]
@@ -139,7 +139,7 @@ def process_image_properties(contents):
         exif_vegstat = None
         exif_vegkat = None
 
-    if exif_vegstat not in LOVLiG_VEGSTATUS or exif_vegkat not in LOVLIG_VEGKATEGORI:
+    if exif_vegstat not in LOVLIG_VEGSTATUS or exif_vegkat not in LOVLIG_VEGKATEGORI:
         LOGGER.info(__name__, f"VCRoad={exif_veg} følger ikke KAT+STAT+vegnr syntaks: {mappenavn}")
 
     out = {
