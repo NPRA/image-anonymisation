@@ -8,6 +8,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 
 from src.Logger import LOGGER
+from src.io.file_access_guard import wait_until_path_is_found
 
 #: Tags from Viatech
 VIATECH_TAGS = {40055: "ImageProperties", 40056: "ReflinkInfo"}
@@ -40,6 +41,7 @@ def exif_from_file(image_path):
     :return: EXIF data
     :rtype: dict
     """
+    wait_until_path_is_found([image_path])
     pil_img = Image.open(image_path)
     exif = get_exif(pil_img)
     return exif

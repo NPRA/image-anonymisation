@@ -119,6 +119,20 @@ gray_blur = True
 normalized_gray_blur = True
 
 
+# ======================
+# Database configuration
+# ======================
+
+# When `write_exif_to_db = True`, the EXIF data will be written as a row to an Oracle database. The `src.db` module is
+# responsible for the database writing.
+
+#: Write the EXIF data to the database?
+write_exif_to_db = False
+
+#: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
+db_max_n_accumulated_rows = 8
+
+
 # =============================================================
 # Configuration constants below. Change these at your own risk!
 # =============================================================

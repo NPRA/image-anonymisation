@@ -27,12 +27,10 @@ def test_save_processed_img():
         mask_results = pickle.load(f)
 
     exif = {"Foo": "Bar"}
-
     # Test with all file-writes enabled
-    with mock.patch("src.io.save.exif_from_file", new=lambda _: exif):
-        save_processed_img(img, mask_results, input_path=tmp_in, output_path=tmp_out, filename="test_2.jpg",
-                           draw_mask=True, local_json=True, remote_json=True, local_mask=True, remote_mask=True,
-                           json_objects=True, mask_color=None, blur=None)
+    save_processed_img(img, mask_results, exif, input_path=tmp_in, output_path=tmp_out, filename="test_2.jpg",
+                       draw_mask=True, local_json=True, remote_json=True, local_mask=True, remote_mask=True,
+                       json_objects=True, mask_color=None, blur=None)
 
     # Check that all expected files exist
     assert os.path.isfile(os.path.join(tmp_in, "test_2.json"))
@@ -42,16 +40,14 @@ def test_save_processed_img():
     assert os.path.isfile(os.path.join(tmp_out, "test_2.webp"))
 
     # Test with mask_color enabled
-    with mock.patch("src.io.save.exif_from_file", new=lambda _: exif):
-        save_processed_img(img, mask_results, input_path=tmp_in, output_path=tmp_out, filename="test_2.jpg",
-                           draw_mask=True, local_json=False, remote_json=False, local_mask=False, remote_mask=False,
-                           json_objects=False, mask_color=[100, 100, 100], blur=None)
+    save_processed_img(img, mask_results, exif, input_path=tmp_in, output_path=tmp_out, filename="test_2.jpg",
+                       draw_mask=True, local_json=False, remote_json=False, local_mask=False, remote_mask=False,
+                       json_objects=False, mask_color=[100, 100, 100], blur=None)
 
     # Test with blur enabled
-    with mock.patch("src.io.save.exif_from_file", new=lambda _: exif):
-        save_processed_img(img, mask_results, input_path=tmp_in, output_path=tmp_out, filename="test_2.jpg",
-                           draw_mask=True, local_json=False, remote_json=False, local_mask=False, remote_mask=False,
-                           json_objects=False, mask_color=None, blur=50)
+    save_processed_img(img, mask_results, exif, input_path=tmp_in, output_path=tmp_out, filename="test_2.jpg",
+                       draw_mask=True, local_json=False, remote_json=False, local_mask=False, remote_mask=False,
+                       json_objects=False, mask_color=None, blur=50)
 
     # Test archiving
     archive(tmp_in, [tmp_out, tmp_archive], "test_2.jpg", archive_mask=True, archive_json=True, delete_input_img=True)

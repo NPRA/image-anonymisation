@@ -29,10 +29,13 @@ class DatabaseClient:
             self.accumulated_rows = []
 
     def insert_accumulated_rows(self):
-        with self.connect() as connection:
-            cursor = connection.cursor()
-            cursor.executemany(INSERT_SQL, self.accumulated_rows)
-            connection.commit()
+        try:
+            with self.connect() as connection:
+                cursor = connection.cursor()
+                cursor.executemany(INSERT_SQL, self.accumulated_rows)
+                connection.commit()
+        except cxo.DatabaseError as err:
+            raise AssertionError(f"cx_Oracle.DatabaseError: {str(err)}")
 
     def close(self):
         if self.accumulated_rows:

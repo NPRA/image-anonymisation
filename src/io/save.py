@@ -10,7 +10,7 @@ from src.Logger import LOGGER
 from src.io.exif_util import write_exif, exif_from_file
 
 
-def save_processed_img(img, mask_results, input_path, output_path, filename, draw_mask=False, local_json=False,
+def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
                        remote_json=False, local_mask=False, remote_mask=False, json_objects=True, mask_color=None,
                        blur=None, gray_blur=True, normalized_gray_blur=True):
     """
@@ -20,6 +20,8 @@ def save_processed_img(img, mask_results, input_path, output_path, filename, dra
     :type img: np.ndarray
     :param mask_results: Dictionary containing masking results. Format must be as returned by Masker.mask.
     :type mask_results: dict
+    :param exif: EXIF data for `img`.
+    :type exif: dict
     :param input_path: Path to input directory
     :type input_path: str
     :param output_path: Path to output directory
@@ -56,9 +58,6 @@ def save_processed_img(img, mask_results, input_path, output_path, filename, dra
     # Make the output directory
     os.makedirs(output_path, exist_ok=True)
 
-    # Get EXIF data
-    exif = exif_from_file(os.path.join(input_path, filename))
-
     # Compute a single boolean mask from all the detection masks.
     detection_masks = mask_results["detection_masks"]
     agg_mask = (detection_masks > 0).any(axis=1)
@@ -74,8 +73,6 @@ def save_processed_img(img, mask_results, input_path, output_path, filename, dra
     pil_img = Image.fromarray(img[0].astype(np.uint8))
     output_image_path = os.path.join(output_path, filename)
     pil_img.save(output_image_path)
-    # Add the path to the output image to the json dict.
-    exif["anonymisert_bildefil"] = os.path.join(output_path, filename).replace(os.sep, "/")
 
     # Save metadata and .webp mask
     json_filename = os.path.splitext(filename)[0] + ".json"

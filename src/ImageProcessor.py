@@ -6,6 +6,7 @@ import config
 from src.io import save
 from src.Logger import LOGGER
 from src.io.file_access_guard import wait_until_path_is_found
+from src.io.exif_util import exif_from_file
 
 #: Exceptions to catch when saving and archiving.
 WORKER_EXCEPTIONS = (
@@ -46,7 +47,13 @@ class ImageProcessor:
         self.max_num_async_workers = max_num_async_workers
         self.got_worker_error = False
 
-    def _create_worker(self, image, mask_results, input_path, mirror_paths, filename):
+        if config.write_exif_to_db:
+            from src.db.DatabaseClient import DatabaseClient
+            self.database_client = DatabaseClient(config.db_max_n_accumulated_rows)
+        else:
+            self.database_client = None
+
+    def _create_worker(self, image, mask_results, exif, input_path, mirror_paths, filename):
         """
         Create an async. worker, which handles result-saving for the given image.
 
@@ -54,6 +61,8 @@ class ImageProcessor:
         :type image: np.ndarray
         :param mask_results: Results from `src.Masker.Masker.mask`. applied to `image`.
         :type mask_results: dict
+        :param exif: EXIF data for `img`.
+        :type exif: dict
         :param input_path: Path to directory containing the input image
         :type input_path: str
         :param mirror_paths: List containing the path to the output directory, and optionally the path to the archive
@@ -62,12 +71,17 @@ class ImageProcessor:
         :param filename: File name of input image
         :type filename: str
         """
+        # Wait for previous workers if we have reached the maximum number of workers
+        if len(self.async_workers) >= self.max_num_async_workers:
+            self._wait_for_workers()
+
+        # Create a new worker
         worker = {
             "input_path": input_path,
             "mirror_paths": mirror_paths,
             "filename": filename,
             "result": self.pool.apply_async(save_and_archive,
-                                            args=(image, mask_results, input_path, mirror_paths, filename,
+                                            args=(image, mask_results, exif, input_path, mirror_paths, filename,
                                                   self.base_output_path, self.base_archive_path))
         }
         self.async_workers.append(worker)
@@ -124,16 +138,24 @@ class ImageProcessor:
         :param filename: File name of input image
         :type filename: str
         """
+        # Compute the detected objects and their masks.
         mask_results = self.masker.mask(image, mask_dilation_pixels=config.mask_dilation_pixels)
 
+        # Get EXIF data
+        exif = exif_from_file(os.path.join(input_path, filename))
+        # Add the path to the output image to the json dict.
+        exif["anonymisert_bildefil"] = os.path.join(mirror_paths[0], filename).replace(os.sep, "/")
+
+        # Convert the image to a numpy array
         if not isinstance(image, np.ndarray):
             image = image.numpy()
 
-        # Wait for previous workers if we have reached the maximum number of workers
-        if len(self.async_workers) >= self.max_num_async_workers:
-            self._wait_for_workers()
         # Add a worker for the current image
-        self._create_worker(image, mask_results, input_path, mirror_paths, filename)
+        self._create_worker(image, mask_results, exif, input_path, mirror_paths, filename)
+
+        # Add the EXIF data to the database if database writing is enabled.
+        if self.database_client is not None:
+            self.database_client.add_row(exif)
 
     def close(self):
         """
@@ -142,9 +164,11 @@ class ImageProcessor:
         """
         self._wait_for_workers()
         self.pool.close()
+        if self.database_client is not None:
+            self.database_client.close()
 
 
-def save_and_archive(img, mask_results, input_path, mirror_paths, filename, base_output_path, base_archive_path):
+def save_and_archive(img, mask_results, exif, input_path, mirror_paths, filename, base_output_path, base_archive_path):
     """
     Save the result files and do archiving.
 
@@ -152,6 +176,8 @@ def save_and_archive(img, mask_results, input_path, mirror_paths, filename, base
     :type img: np.ndarray
     :param mask_results: Results from `src.Masker.Masker.mask`. applied to `image`.
     :type mask_results: dict
+    :param exif: EXIF data for `img`.
+    :type exif: dict
     :param input_path: Path to directory containing the input image
     :type input_path: str
     :param mirror_paths: List containing the path to the output directory, and optionally the path to the archive
@@ -171,7 +197,7 @@ def save_and_archive(img, mask_results, input_path, mirror_paths, filename, base
     image_path = os.path.join(input_path, filename)
     wait_until_path_is_found([image_path, base_output_path])
     # Save
-    save.save_processed_img(img, mask_results, input_path=input_path, output_path=mirror_paths[0],
+    save.save_processed_img(img, mask_results, exif, input_path=input_path, output_path=mirror_paths[0],
                             filename=filename, draw_mask=config.draw_mask, local_json=config.local_json,
                             remote_json=config.remote_json, local_mask=config.local_mask,
                             remote_mask=config.remote_mask, mask_color=config.mask_color, blur=config.blur,

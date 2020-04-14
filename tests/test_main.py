@@ -44,6 +44,8 @@ CONFIG_VARS = {
     "uncaught_exception_email": False,
     "processing_error_email": False,
     "finished_email": False,
+    "write_exif_to_db": False,
+    "db_max_n_accumulated_rows": 1,
     "TF_DATASET_NUM_PARALLEL_CALLS": 1,
     "MODEL_NAME": config.MODEL_NAME,
     "PROJECT_ROOT": config.PROJECT_ROOT,

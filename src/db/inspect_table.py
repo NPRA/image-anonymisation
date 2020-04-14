@@ -14,6 +14,8 @@ def output_type_handler(cursor, name, defaultType, size, precision, scale):
 
 
 def lob_to_dict(lob):
+    if lob is None:
+        return {}
     return json.loads(lob)
 
 
