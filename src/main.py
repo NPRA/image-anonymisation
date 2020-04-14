@@ -116,8 +116,7 @@ def initialize():
     # Create the TensorFlow datatset
     dataset_iterator = iter(get_tf_dataset(tree_walker))
     # Initialize the ImageProcessor
-    image_processor = ImageProcessor(masker=masker, max_num_async_workers=1, base_input_path=base_input_dir,
-                                     base_output_path=base_output_dir, base_archive_path=base_archive_dir)
+    image_processor = ImageProcessor(masker=masker, max_num_async_workers=1)
     return args, tree_walker, image_processor, dataset_iterator
 
 
@@ -175,12 +174,10 @@ def main():
 
     # Mask images
     time_at_iter_start = time.time()
-    for i, (input_path, mirror_paths, filename) in enumerate(tree_walker.walk()):
+    for i, paths in enumerate(tree_walker.walk()):
         count_str = f"{i+1} of {n_imgs}"
 
-        output_path = mirror_paths[0]
-        image_path = os.path.join(input_path, filename)
-        LOGGER.set_state(input_path, output_path, filename)
+        LOGGER.set_state(paths)
         start_time = time.time()
 
         # Catch potential exceptions raised while processing the image
@@ -188,11 +185,10 @@ def main():
             # Get the image
             img = next(dataset_iterator)
             # Do the processing
-            image_processor.process_image(img, input_path, mirror_paths, filename)
+            image_processor.process_image(img, paths)
         except PROCESSING_EXCEPTIONS as err:
-            LOGGER.set_state(input_path, output_path, filename)
             LOGGER.error(__name__, f"Got error:\n'{str(err)}'\nwhile processing image {count_str}. File: "
-                                   f"{image_path}.", save=True, email=True, email_mode="error")
+                                   f"{paths.input_file}.", save=True, email=True, email_mode="error")
             continue
 
         # Check if the image_processor encountered a worker error. If an error was encountered, we reset the flag,
@@ -204,7 +200,7 @@ def main():
             time_delta = "{:.3f}".format(time.time() - start_time)
             est_done = get_estimated_done(time_at_iter_start, n_imgs, i+1)
             LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
-                                  f"{image_path}.")
+                                  f"{paths.input_file}.")
     image_processor.close()
 
     # Summary

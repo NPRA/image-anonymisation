@@ -7,12 +7,12 @@ import cv2
 
 import config
 from src.Logger import LOGGER
-from src.io.exif_util import write_exif, exif_from_file
+from src.io.exif_util import write_exif
 
 
-def save_processed_img(img, mask_results, exif, input_path, output_path, filename, draw_mask=False, local_json=False,
-                       remote_json=False, local_mask=False, remote_mask=False, json_objects=True, mask_color=None,
-                       blur=None, gray_blur=True, normalized_gray_blur=True):
+def save_processed_img(img, mask_results, exif, paths, draw_mask=False, local_json=False, remote_json=False,
+                       local_mask=False, remote_mask=False, json_objects=True, mask_color=None, blur=None,
+                       gray_blur=True, normalized_gray_blur=True):
     """
     Save an image which has been processed by the masker.
 
@@ -22,12 +22,6 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     :type mask_results: dict
     :param exif: EXIF data for `img`.
     :type exif: dict
-    :param input_path: Path to input directory
-    :type input_path: str
-    :param output_path: Path to output directory
-    :type output_path: str
-    :param filename: Name of image file
-    :type filename: str
     :param draw_mask: Draw the mask on the image?
     :type draw_mask: bool
     :param local_json: Write the EXIF .json file to the input directory?
@@ -56,7 +50,7 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
     :rtype: int
     """
     # Make the output directory
-    os.makedirs(output_path, exist_ok=True)
+    os.makedirs(paths.output_dir, exist_ok=True)
 
     # Compute a single boolean mask from all the detection masks.
     detection_masks = mask_results["detection_masks"]
@@ -71,36 +65,27 @@ def save_processed_img(img, mask_results, exif, input_path, output_path, filenam
 
     # Save masked image
     pil_img = Image.fromarray(img[0].astype(np.uint8))
-    output_image_path = os.path.join(output_path, filename)
-    pil_img.save(output_image_path)
+    pil_img.save(paths.output_file)
 
     # Save metadata and .webp mask
-    json_filename = os.path.splitext(filename)[0] + ".json"
-    webp_filename = os.path.splitext(filename)[0] + ".webp"
     if json_objects:
         exif["detekterte_objekter"] = _get_detected_objects_dict(mask_results)
     if local_json:
-        write_exif(exif, os.path.join(input_path, json_filename))
+        write_exif(exif, paths.input_json)
     if remote_json:
-        write_exif(exif, os.path.join(output_path, json_filename))
+        write_exif(exif, paths.output_json)
     if local_mask:
-        _save_mask(agg_mask, os.path.join(input_path, webp_filename))
+        _save_mask(agg_mask, paths.input_webp)
     if remote_mask:
-        _save_mask(agg_mask, os.path.join(output_path, webp_filename))
+        _save_mask(agg_mask, paths.output_webp)
     return 0
 
 
-def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json=False, delete_input_img=False,
+def archive(paths, archive_mask=False, archive_json=False, delete_input_img=False,
             assert_output_mask=True):
     """
     Copy the input image file (and possibly some output files) to the archive directory.
 
-    :param input_path: Path to the directory containing the input image.
-    :type input_path: str
-    :param mirror_paths: List with at least two elements, containing the output path and the archive path.
-    :type mirror_paths: list of str
-    :param filename: Name of image-file
-    :type filename: str
     :param archive_mask: Copy the mask file to the archive directory?
     :type archive_mask: bool
     :param archive_json: Copy the EXIF file to the archive directory?
@@ -112,36 +97,26 @@ def archive(input_path, mirror_paths, filename, archive_mask=False, archive_json
     :returns: 0
     :rtype: int
     """
-    # Ensure that the paths can be reached.
-    os.makedirs(mirror_paths[1], exist_ok=True)
+    os.makedirs(paths.archive_dir, exist_ok=True)
 
     if assert_output_mask:
-        output_mask = os.path.join(mirror_paths[0], os.path.splitext(filename)[0] + ".webp")
-        assert os.path.isfile(output_mask), f"Archiving aborted. Output mask '{output_mask}' not found."
+        assert os.path.isfile(paths.output_webp), f"Archiving aborted. Output mask '{paths.output_webp}' not found."
 
-    input_jpg = _copy_file(input_path, mirror_paths[1], filename, ext=None)
+    _copy_file(paths.input_file, paths.archive_file)
     if archive_mask:
-        _copy_file(mirror_paths[0], mirror_paths[1], filename, ext=".webp")
+        _copy_file(paths.output_webp, paths.archive_webp)
     if archive_json:
-        _copy_file(mirror_paths[0], mirror_paths[1], filename, ext=".json")
+        _copy_file(paths.output_json, paths.archive_json)
     if delete_input_img:
-        os.remove(input_jpg)
+        os.remove(paths.input_file)
     return 0
 
 
-def _copy_file(source_path, destination_path, filename, ext=None):
-    if ext is not None:
-        filename = os.path.splitext(filename)[0] + ext
-
-    source_file = os.path.join(source_path, filename)
-    destination_file = os.path.join(destination_path, filename)
-
+def _copy_file(source_file, destination_file):
     if os.path.exists(destination_file):
         LOGGER.warning(__name__, f"Archive file {destination_file} already exists. The existing file will be "
                                  f"overwritten.")
-
     copy2(source_file, destination_file)
-    return source_file
 
 
 def _get_detected_objects_dict(mask_results):
@@ -204,6 +179,6 @@ def _apply_normalized_gray_blur(img, mask, ksize):
     img[mask] = blurred[mask] - blurred_large[mask] + default_gray_value
 
 
-def _save_mask(mask, output_filepath):
+def _save_mask(mask, output_webp):
     mask = np.tile(mask[0, :, :, None], (1, 1, 3)).astype(np.uint8)
-    webp.imwrite(output_filepath, mask, pilmode="RGB")
+    webp.imwrite(output_webp, mask, pilmode="RGB")

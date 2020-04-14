@@ -3,6 +3,7 @@ import pytest
 from unittest import mock
 import tensorflow as tf
 import numpy as np
+from collections import namedtuple
 
 from src.io.tf_dataset import get_tf_dataset, prepare_img
 from config import PROJECT_ROOT
@@ -14,10 +15,11 @@ class FakeTreeWalker:
     def __init__(self, input_paths, filenames):
         self.input_paths = input_paths
         self.filenames = filenames
+        self.paths_namedtuple = namedtuple("paths", ["input_file"])
 
     def walk(self):
         for input_path, filename in zip(self.input_paths, self.filenames):
-            yield input_path, ["", ""], filename
+            yield self.paths_namedtuple(input_file=os.path.join(input_path, filename))
 
 
 def test_get_tf_dataset():
@@ -27,12 +29,13 @@ def test_get_tf_dataset():
     files = [str(i) for i in range(10)]
     tree_walker = FakeTreeWalker(files, files)
 
-    with mock.patch("src.io.tf_dataset.prepare_img", new=lambda x, *_: x):
+    with mock.patch("src.io.tf_dataset.prepare_img", new=lambda x: x):
         dataset = get_tf_dataset(tree_walker)
         dataset_files = [f.numpy().decode("utf-8") for f in dataset]
 
-    assert len(files) == len(dataset_files)
-    for f1, f2 in zip(files, dataset_files):
+    expected_files = [os.path.join(f, f) for f  in files]
+    assert len(expected_files) == len(dataset_files)
+    for f1, f2 in zip(expected_files, dataset_files):
         assert f1 == f2
 
 
@@ -83,19 +86,17 @@ def test_prepare_imgs_bad_image_tensor():
             with mock.patch("tensorflow.image.decode_jpeg", new=lambda *_: tf.constant(img_array)):
                 with mock.patch("src.io.tf_dataset.wait_until_path_is_found", new=lambda *_, **__: None):
                     with pytest.raises(tf.errors.UnknownError):
-                        prepare_img("", "", "")
+                        prepare_img(tf.constant("", dtype=tf.string))
 
 
 def test_prepare_imgs_bad_image_file():
     """
     Check that `prepare_img` raises the proper exceptions on corrupted and missing files.
     """
-    img_dir = tf.constant(IMG_DIR, tf.string)
-
-    corrupted_filename = tf.constant("corrupted.jpg", tf.string)
+    corrupted_filename = tf.constant(os.path.join(IMG_DIR, "corrupted.jpg"), tf.string)
     with pytest.raises(tf.errors.InvalidArgumentError):
-        prepare_img(img_dir, "", corrupted_filename)
+        prepare_img(corrupted_filename)
 
-    non_existing_filename = tf.constant("foobar.jpg", tf.string)
+    non_existing_filename = tf.constant(os.path.join(IMG_DIR, "foobar.jpg"), tf.string)
     with pytest.raises(FileNotFoundError):
-        prepare_img(img_dir, "", non_existing_filename)
+        prepare_img(non_existing_filename)

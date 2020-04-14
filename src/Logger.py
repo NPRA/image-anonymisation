@@ -7,11 +7,7 @@ import config
 
 class Logger:
     def __init__(self):
-        self.base_input_dir = None
-        self.base_output_dir = None
-        self.input_path = None
-        self.output_path = None
-        self.filename = None
+        self.paths = None
         self.namespace = "image-anonymisation"
         self.logger = logging.getLogger(self.namespace)
         self.fmt = "%(asctime)s (%(levelname)s): %(message)s"
@@ -25,57 +21,46 @@ class Logger:
         file_handler.setFormatter(logging.Formatter(self.fmt, datefmt=self.datefmt))
         self.logger.addHandler(file_handler)
 
-    def set_state(self, input_path, output_path, filename):
-        self.input_path = input_path
-        self.output_path = output_path
-        self.filename = filename
+    def set_state(self, paths):
+        self.paths = paths
 
     def get_state(self):
-        return dict(input_path=self.input_path, output_path=self.output_path, filename=self.filename)
+        return self.paths
 
-    def _get_error_output_path(self):
-        error_extension = "_error"
-        abs_error_path = self.base_output_dir + error_extension
+    def _save_error_img(self):
+        # copy2(os.path.join(self.input_path, self.filename), os.path.join(output_path, self.filename))
+        copy2(self.paths.input_file, self.paths.error_output_file)
 
-        if self.output_path != self.base_output_dir:
-            rel_path = self.output_path.replace(self.base_output_dir + os.sep, "", 1)
-            rel_error_path = os.path.join(*[d + error_extension for d in rel_path.split(os.sep)])
-            abs_error_path = os.path.join(abs_error_path, rel_error_path)
-        return abs_error_path
+    def _save_error_msg(self, msg):
+        msg_filename = os.path.splitext(self.paths.filename)[0] + "_error.txt"
+        msg_file = os.path.join(self.paths.error_output_dir, msg_filename)
 
-    def _save_error_img(self, output_path):
-        copy2(os.path.join(self.input_path, self.filename), os.path.join(output_path, self.filename))
-
-    def _save_error_msg(self, output_path, msg):
-        msg_filename = os.path.join(output_path, self.filename[:-4] + "_error.txt")
-        with open(msg_filename, "w") as error_file:
+        with open(msg_file, "w") as error_file:
             error_file.write(msg)
 
-    def _save_error(self, output_path, message):
-        self._save_error_img(output_path)
-        self._save_error_msg(output_path, message)
+    def _save_error(self, message):
+        self._save_error_img()
+        self._save_error_msg(message)
 
     def _log(self, level, namespace, msg, *args, save=False, email=False, email_mode="error", **kwargs):
         logger = self.logger
         logger.log(level, msg, *args, **kwargs)
         if save:
             # Try to create the error directory. Abort saving if it fails.
-            output_path = self._get_error_output_path()
             try:
-                os.makedirs(output_path, exist_ok=True)
+                os.makedirs(self.paths.error_output_dir, exist_ok=True)
             except FileNotFoundError as err:
                 logger.log(logging.ERROR, f"Got error '{str(err)}' while trying to save error image.")
                 return
             
-            image_path = os.path.join(self.input_path, self.filename)
             # Can we reach the input image?
-            if not os.path.exists(image_path):
-                logger.log(logging.ERROR, f"Could not copy image to error directory: Input image '{image_path}' not "
-                                          f"found.")
+            if not os.path.exists(self.paths.input_file):
+                logger.log(logging.ERROR, f"Could not copy image to error directory: Input image "
+                                          f"'{self.paths.input_file}' not found.")
             else:
                 # Save image
-                logger.log(logging.INFO, f"Copying image file to {output_path} for manual inspection.")
-                self._save_error(output_path, msg)
+                logger.log(logging.INFO, f"Copying image file to {self.paths.error_output_dir} for manual inspection.")
+                self._save_error(msg)
 
         if email and config.processing_error_email:
             from src.email_sender import send_mail

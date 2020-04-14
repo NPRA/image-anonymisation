@@ -6,23 +6,17 @@ from src.io.load import check_input_img
 from src.io.file_access_guard import wait_until_path_is_found
 
 
-def prepare_img(input_dir, _, filename):
+def prepare_img(input_file):
     """
     Load the image named `filename` from `input_dir`, and check that is is valid.
 
-    :param input_dir: Input directory. Expected to be a zero-dimensional string tensor.
-    :type input_dir: tf.python.framework.ops.EagerTensor
-    :param _: Ignored
-    :type _: tf.python.framework.ops.EagerTensor
-    :param filename: Name of image file. Expected to be a zero-dimensional string tensor.
-    :type filename: tf.python.framework.ops.EagerTensor
+    :param input_file: Path to input image
+    :type input_file: tf.string
     :return: Loaded image
     :rtype: tf.python.framework.ops.EagerTensor
     """
-    input_path = tf.strings.join([input_dir, filename], separator=os.sep)
-    tf.numpy_function(wait_until_path_is_found, [input_path], tf.int32)
-
-    img_data = tf.io.read_file(input_path)
+    tf.numpy_function(wait_until_path_is_found, [input_file], tf.int32)
+    img_data = tf.io.read_file(input_file)
     img = tf.image.decode_jpeg(img_data)
     img = tf.expand_dims(img, 0)
 
@@ -39,10 +33,15 @@ def get_tf_dataset(tree_walker):
     :return: A dataset that yields properly formatted and valid image tensors.
     :rtype: tf.data.Dataset
     """
+    # Generator which picks out the input file from the `src.io.TreeWalker.Paths` object
+    def input_file_generator():
+        for paths in tree_walker.walk():
+            yield paths.input_file
+
     dataset = tf.data.Dataset.from_generator(
-        tree_walker.walk,
-        output_types=(tf.string, tf.string, tf.string),
-        output_shapes=([], [None], []),
+        input_file_generator,
+        output_types=tf.string,
+        output_shapes=[],
     )
 
     if config.TF_DATASET_NUM_PARALLEL_CALLS == "auto":
