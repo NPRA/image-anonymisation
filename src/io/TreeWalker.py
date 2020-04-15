@@ -3,7 +3,24 @@ from src.Logger import LOGGER
 
 
 class Paths:
+    """
+    Object which holds the path-information about an image. `src.io.TreeWalker.TreeWalker.walk` returns instances of
+    this class. Input directories and mirror directories and files are all available through dot-syntax.
+
+    :param base_input_dir: Base directory for input files.
+    :type base_input_dir: str
+    :param base_mirror_dirs: Base directories for mirror files. The first element is assumed to be the output directory.
+                             The second element is assumed to be the archive directory.
+    :type base_mirror_dirs: list of str
+    :param input_dir: Directory containing the file represented by the object.
+    :type input_dir: str
+    :param mirror_dirs: Mirror directories for the file represented by the object.
+    :type mirror_dirs: list of str
+    :param filename: Name of file represented by the object
+    :type filename: str
+    """
     def __init__(self, base_input_dir, base_mirror_dirs, input_dir, mirror_dirs, filename):
+
         self.base_input_dir = base_input_dir
         self.base_mirror_dirs = base_mirror_dirs
 
@@ -137,14 +154,10 @@ class TreeWalker:
         """
         Traverse the file tree in `input_folder`.
 
-        :return: If `precompute_paths` is True, this will simply return an iterator whose elements are tuples with
-                 elements:
+        :return: If `precompute_paths` is True, this will simply return an iterator where each element is an instance of
+                 `src.io.TreeWalker.Paths`.
 
-                     - Full path to the current directory in `input_dir`
-                     - Full path to the corresponding directories in `mirror_dirs`
-                     - Name of current `ext`-file
-
-                 Otherwise, it will call a generator returning a tuple with the same elements as above.
+                 Otherwise, it will call a generator returning the objects described above.
         :rtype: iterator | tuple of str
         """
         if not self.precompute_paths:

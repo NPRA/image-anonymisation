@@ -4,11 +4,13 @@ import uuid
 import json
 import xmltodict
 import xml.dom.minidom
+import numpy as np
 from PIL import Image
 from PIL.ExifTags import TAGS
 
+import config
 from src.Logger import LOGGER
-from src.io.file_access_guard import wait_until_path_is_found
+
 
 #: Tags from Viatech
 VIATECH_TAGS = {40055: "ImageProperties", 40056: "ReflinkInfo"}
@@ -41,7 +43,6 @@ def exif_from_file(image_path):
     :return: EXIF data
     :rtype: dict
     """
-    wait_until_path_is_found([image_path])
     pil_img = Image.open(image_path)
     exif = get_exif(pil_img)
     return exif
@@ -50,6 +51,20 @@ def exif_from_file(image_path):
 def write_exif(exif, output_filepath):
     with open(output_filepath, "w") as out_file:
         json.dump(exif, out_file, indent=4, ensure_ascii=False)
+
+
+def get_detected_objects_dict(mask_results):
+    objs = mask_results["detection_classes"]
+    if objs.size > 0:
+        # Find unique objects and count them
+        objs, counts = np.unique(objs, return_counts=True)
+        # Convert object from id to string
+        objs = [config.LABEL_MAP[int(obj_id)] for obj_id in objs]
+        # Create dict
+        objs = dict(zip(objs, counts.astype(str)))
+    else:
+        objs = {}
+    return objs
 
 
 def get_exif(img):

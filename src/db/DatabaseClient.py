@@ -1,5 +1,6 @@
 import cx_Oracle as cxo
 
+from src.Logger import LOGGER
 from src.db import db_config
 from src.db.formatters import create_row, get_insert_sql
 
@@ -57,6 +58,7 @@ class DatabaseClient:
                 cursor = connection.cursor()
                 cursor.executemany(INSERT_SQL, self.accumulated_rows)
                 connection.commit()
+            LOGGER.info(__name__, f"Successfully inserted {len(self.accumulated_rows)} rows into the database.")
         except cxo.DatabaseError as err:
             raise AssertionError(f"cx_Oracle.DatabaseError: {str(err)}")
 

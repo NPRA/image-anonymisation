@@ -65,3 +65,8 @@ Masker
 =========================
 .. automodule:: src.Masker
    :members:
+
+Workers
+=========================
+.. automodule:: src.Workers
+   :members:

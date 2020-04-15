@@ -46,6 +46,8 @@ CONFIG_VARS = {
     "finished_email": False,
     "write_exif_to_db": False,
     "db_max_n_accumulated_rows": 1,
+    # Disable async since we cannot mock the config inside an asynchronous process.
+    "enable_async": False,
     "TF_DATASET_NUM_PARALLEL_CALLS": 1,
     "MODEL_NAME": config.MODEL_NAME,
     "PROJECT_ROOT": config.PROJECT_ROOT,
@@ -121,21 +123,6 @@ class FakeConfig:
             setattr(self, key, kwargs.get(key, CONFIG_VARS[key]))
 
 
-# The multiprocessing.Pool.apply_async call has to be mocked, since mocking does not work "inside" the call to
-# pool.apply_async. The config module is therefore not correctly mocked for asynchronously applied functions.
-def fake_apply_async(pool, func, args, kwds={}):
-    result = func(*args, **kwds)
-    return FakeAsyncResults(result)
-
-
-class FakeAsyncResults:
-    def __init__(self, result):
-        self.result = result
-
-    def get(self):
-        return self.result
-
-
 def _run_main(new_config, new_args):
     """
     Run `src.main.main` while mocking the command line arguments and the config.
@@ -149,9 +136,9 @@ def _run_main(new_config, new_args):
     mockers = [
         mock.patch("src.main.config", new=new_config),
         mock.patch("src.ImageProcessor.config", new=new_config),
-        mock.patch("src.ImageProcessor.multiprocessing.pool.Pool.apply_async", new=fake_apply_async),
         mock.patch("src.Masker.config", new=new_config),
         mock.patch("src.main.get_args", new=new_args),
+        mock.patch("src.Workers.config", new=new_config)
     ]
     for m in mockers:
         m.start()

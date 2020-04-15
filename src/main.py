@@ -116,7 +116,7 @@ def initialize():
     # Create the TensorFlow datatset
     dataset_iterator = iter(get_tf_dataset(tree_walker))
     # Initialize the ImageProcessor
-    image_processor = ImageProcessor(masker=masker, max_num_async_workers=1)
+    image_processor = ImageProcessor(masker=masker)
     return args, tree_walker, image_processor, dataset_iterator
 
 

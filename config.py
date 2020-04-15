@@ -37,6 +37,10 @@ datetime_format = "%Y-%m-%d %H.%M.%S"
 #: will be replaced with the host name.
 log_file_name = "{datetime} {hostname}.log"
 
+#: Enable asynchronous post-processing? When True, the file exports (anonymised image, mask file and JSON file) will be
+#: executed asynchronously in order to increase processing speed
+enable_async = True
+
 
 # ====================
 # E-mail configuration
@@ -95,7 +99,7 @@ model_type = "Medium"
 
 #: Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
 #: by the corresponding mask. Set `mask_dilation_pixels = 0` to disable mask dilation.
-mask_dilation_pixels = 8
+mask_dilation_pixels = 4
 
 # ===============================================================
 # Parameters controlling the appearance of the anonymised regions
@@ -109,7 +113,7 @@ mask_color = None
 #: Blurring coefficient [1-100] which specifies the degree of blurring to apply within the
 #: mask. When this parameter is specified, the image will be blurred, and not masked with a
 #: specific color. Set `blur = None` to disable blurring, and use colored masks instead.
-blur = 10
+blur = 15
 
 #: Convert the image to grayscale before blurring? (Ignored if blurring is disabled)
 gray_blur = True

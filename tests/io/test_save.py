@@ -38,31 +38,27 @@ def test_save_processed_img():
     with open(os.path.join(PROJECT_ROOT, "tests", "data", "fake", "test_2_mask_results.pkl"), "rb") as f:
         mask_results = pickle.load(f)
 
-    exif = {"Foo": "Bar"}
     # Test with all file-writes enabled
-    save_processed_img(img, mask_results, exif, paths, draw_mask=True, local_json=True, remote_json=True,
-                       local_mask=True, remote_mask=True, json_objects=True, mask_color=None, blur=None)
+    save_processed_img(img, mask_results, paths, draw_mask=True, local_mask=True, remote_mask=True, mask_color=None,
+                       blur=None)
 
     # Check that all expected files exist
-    assert os.path.isfile(os.path.join(tmp_in, "test_2.json"))
     assert os.path.isfile(os.path.join(tmp_in, "test_2.webp"))
     assert os.path.isfile(os.path.join(tmp_out, "test_2.jpg"))
-    assert os.path.isfile(os.path.join(tmp_out, "test_2.json"))
     assert os.path.isfile(os.path.join(tmp_out, "test_2.webp"))
 
     # Test with mask_color enabled
-    save_processed_img(img, mask_results, exif, paths, draw_mask=True, local_json=False, remote_json=False,
-                       local_mask=False, remote_mask=False, json_objects=False, mask_color=[100, 100, 100], blur=None)
+    save_processed_img(img, mask_results, paths, draw_mask=True, local_mask=False, remote_mask=False,
+                       mask_color=[100, 100, 100], blur=None)
 
     # Test with blur enabled
-    save_processed_img(img, mask_results, exif, paths, draw_mask=True, local_json=False, remote_json=False,
-                       local_mask=False, remote_mask=False, json_objects=False, mask_color=None, blur=50)
+    save_processed_img(img, mask_results, paths, draw_mask=True, local_mask=False, remote_mask=False, mask_color=None,
+                       blur=50)
 
     # Test archiving
-    archive(paths, archive_mask=True, archive_json=True, delete_input_img=True)
+    archive(paths, archive_mask=True, archive_json=False, delete_input_img=True)
     assert not os.path.exists(os.path.join(tmp_in, "test_2.jpg"))
     assert os.path.isfile(os.path.join(tmp_archive, "test_2.jpg"))
-    assert os.path.isfile(os.path.join(tmp_archive, "test_2.json"))
     assert os.path.isfile(os.path.join(tmp_archive, "test_2.webp"))
 
     rmtree(tmp_dir)

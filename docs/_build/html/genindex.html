@@ -45,6 +45,7 @@
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -65,17 +66,29 @@
 </li>
       <li><a href="api-reference.html#src.io.save.archive">archive() (in module src.io.save)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#config.archive_json">archive_json (in module config)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#config.archive_mask">archive_mask (in module config)</a>
 </li>
+      <li><a href="api-reference.html#src.Workers.BaseWorker.async_func">async_func() (src.Workers.BaseWorker static method)</a>
+
+      <ul>
+        <li><a href="api-reference.html#src.Workers.EXIFWorker.async_func">(src.Workers.EXIFWorker static method)</a>
+</li>
+        <li><a href="api-reference.html#src.Workers.SaveWorker.async_func">(src.Workers.SaveWorker static method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.Workers.BaseWorker">BaseWorker (class in src.Workers)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#config.blur">blur (in module config)</a>
 </li>
@@ -137,9 +150,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#src.email_sender.email_excepthook">email_excepthook() (in module src.email_sender)</a>
 </li>
+      <li><a href="api-reference.html#config.enable_async">enable_async (in module config)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#src.io.exif_util.exif_from_file">exif_from_file() (in module src.io.exif_util)</a>
+</li>
+      <li><a href="api-reference.html#src.Workers.EXIFWorker">EXIFWorker (class in src.Workers)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -163,16 +180,18 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.Workers.BaseWorker.get">get() (src.Workers.BaseWorker method)</a>
+</li>
       <li><a href="api-reference.html#src.main.get_args">get_args() (in module src.main)</a>
 </li>
       <li><a href="api-reference.html#src.main.get_estimated_done">get_estimated_done() (in module src.main)</a>
 </li>
       <li><a href="api-reference.html#src.io.exif_util.get_exif">get_exif() (in module src.io.exif_util)</a>
 </li>
-      <li><a href="api-reference.html#src.db.formatters.get_insert_sql">get_insert_sql() (in module src.db.formatters)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.db.formatters.get_insert_sql">get_insert_sql() (in module src.db.formatters)</a>
+</li>
       <li><a href="api-reference.html#src.main.get_summary">get_summary() (in module src.main)</a>
 </li>
       <li><a href="api-reference.html#src.io.tf_dataset.get_tf_dataset">get_tf_dataset() (in module src.io.tf_dataset)</a>
@@ -180,6 +199,14 @@
       <li><a href="api-reference.html#config.GRAPH_DIRECTORY">GRAPH_DIRECTORY (in module config)</a>
 </li>
       <li><a href="api-reference.html#config.gray_blur">gray_blur (in module config)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api-reference.html#src.Workers.BaseWorker.handle_error">handle_error() (src.Workers.BaseWorker method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -265,6 +292,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#config.PATH_TO_LABELS">PATH_TO_LABELS (in module config)</a>
 </li>
+      <li><a href="api-reference.html#src.io.TreeWalker.Paths">Paths (class in src.io.TreeWalker)</a>
+</li>
       <li><a href="api-reference.html#src.io.tf_dataset.prepare_img">prepare_img() (in module src.io.tf_dataset)</a>
 </li>
       <li><a href="api-reference.html#src.ImageProcessor.ImageProcessor.process_image">process_image() (src.ImageProcessor.ImageProcessor method)</a>
@@ -291,25 +320,33 @@
 </li>
       <li><a href="api-reference.html#src.io.exif_util.REDACT_XML_REPLACE_STRINGS">REDACT_XML_REPLACE_STRINGS (in module src.io.exif_util)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#src.io.exif_util.REDACT_XML_TAGS">REDACT_XML_TAGS (in module src.io.exif_util)</a>
 </li>
       <li><a href="api-reference.html#src.Masker.reframe_box_masks_to_image_masks">reframe_box_masks_to_image_masks() (in module src.Masker)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#config.remote_json">remote_json (in module config)</a>
 </li>
       <li><a href="api-reference.html#config.remote_mask">remote_mask (in module config)</a>
 </li>
+      <li><a href="api-reference.html#src.Workers.BaseWorker.result_is_valid">result_is_valid() (src.Workers.BaseWorker method)</a>
+
+      <ul>
+        <li><a href="api-reference.html#src.Workers.EXIFWorker.result_is_valid">(src.Workers.EXIFWorker method)</a>
+</li>
+        <li><a href="api-reference.html#src.Workers.SaveWorker.result_is_valid">(src.Workers.SaveWorker method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api-reference.html#src.ImageProcessor.save_and_archive">save_and_archive() (in module src.ImageProcessor)</a>
-</li>
       <li><a href="api-reference.html#src.io.save.save_processed_img">save_processed_img() (in module src.io.save)</a>
+</li>
+      <li><a href="api-reference.html#src.Workers.SaveWorker">SaveWorker (class in src.Workers)</a>
 </li>
       <li><a href="api-reference.html#src.email_sender.send_mail">send_mail() (in module src.email_sender)</a>
 </li>
@@ -321,10 +358,10 @@
 </li>
       <li><a href="api-reference.html#module-src.ImageProcessor">src.ImageProcessor (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#module-src.io.exif_util">src.io.exif_util (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api-reference.html#module-src.io.load">src.io.load (module)</a>
 </li>
       <li><a href="api-reference.html#module-src.io.save">src.io.save (module)</a>
@@ -336,6 +373,10 @@
       <li><a href="api-reference.html#module-src.main">src.main (module)</a>
 </li>
       <li><a href="api-reference.html#module-src.Masker">src.Masker (module)</a>
+</li>
+      <li><a href="api-reference.html#module-src.Workers">src.Workers (module)</a>
+</li>
+      <li><a href="api-reference.html#src.Workers.BaseWorker.start">start() (src.Workers.BaseWorker method)</a>
 </li>
   </ul></td>
 </tr></table>

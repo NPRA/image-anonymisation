@@ -6,7 +6,7 @@ import config
 from src.io import save
 from src.Logger import LOGGER
 from src.io.file_access_guard import wait_until_path_is_found
-from src.io.exif_util import exif_from_file
+from src.Workers import SaveWorker, EXIFWorker
 
 #: Exceptions to catch when saving and archiving.
 WORKER_EXCEPTIONS = (
@@ -29,13 +29,19 @@ class ImageProcessor:
                                   dispatched workers to finish.
     :type max_num_async_workers: int
     """
-    def __init__(self, masker, max_num_async_workers):
+
+    def __init__(self, masker, max_num_async_workers=4):
         self.masker = masker
 
-        self.async_workers = []
-        self.pool = multiprocessing.Pool(processes=max_num_async_workers)
-        self.max_num_async_workers = max_num_async_workers
+        self.workers = []
         self.got_worker_error = False
+
+        if config.enable_async:
+            self.max_num_async_workers = max_num_async_workers
+            self.pool = multiprocessing.Pool(processes=max_num_async_workers)
+        else:
+            self.pool = None
+            self.max_num_async_workers = 1
 
         if config.write_exif_to_db:
             from src.db.DatabaseClient import DatabaseClient
@@ -43,83 +49,52 @@ class ImageProcessor:
         else:
             self.database_client = None
 
-    def _create_worker(self, image, mask_results, exif, paths):
+    def _spawn_workers(self, paths, image, mask_results):
         """
-        Create an async. worker, which handles result-saving for the given image.
+        Create workers for saving/archiving and EXIF export. The workers will work asynchronously if
+        `config.enable_async = True`.
 
-        :param image: Input image
-        :type image: np.ndarray
-        :param mask_results: Results from `src.Masker.Masker.mask`. applied to `image`.
-        :type mask_results: dict
-        :param exif: EXIF data for `img`.
-        :type exif: dict
+        :param paths: Paths object representing the image file.
+        :type paths: src.io.TreeWalker.Paths
+        :param image:
+        :type image:
+        :param mask_results:
+        :type mask_results:
         """
-        # Wait for previous workers if we have reached the maximum number of workers
-        if len(self.async_workers) >= self.max_num_async_workers:
-            self._wait_for_workers()
-
-        # Create a new worker
-        worker = {
-            "paths": paths,
-            "result": self.pool.apply_async(save_and_archive, args=(image, mask_results, exif, paths))
-        }
-        self.async_workers.append(worker)
+        self.workers.append(SaveWorker(self.pool, paths, image, mask_results))
+        self.workers.append(EXIFWorker(self.pool, paths, mask_results))
 
     def _wait_for_workers(self):
-        """
-        Wait for all dispatched workers to finish. If any of the workers fail, this will be handled by
-        `ImageProcessor._handle_worker_error`.
-        """
-        for worker in self.async_workers:
-            try:
-                assert worker["result"].get() == 0
-            except WORKER_EXCEPTIONS as err:
-                self._handle_worker_error(err, worker["paths"])
-        self.async_workers = []
+        while self.workers:
+            worker = self.workers.pop(0)
+            result = worker.get()
 
-    def _handle_worker_error(self, err, paths):
-        """
-        Handle an exception raised by an async. worker. This method logs the received error, and copies the image file
-        to the error directory. The latter will only be done if the image file is reachable.
+            if isinstance(worker, EXIFWorker) and self.database_client is not None:
+                # If `worker` is an `EXIFWorker`, then `result` is the EXIF dict for the
+                # worker's image. If we also have an active database_client, add the EXIF data
+                # to the database client.
+                self.database_client.add_row(result)
 
-        :param err: Exception raised by worker
-        :type err: BaseException
-        """
-        self.got_worker_error = True
-        # Get the current state of the logger
-        current_logger_state = LOGGER.get_state()
-        # Log the error
-        LOGGER.set_state(paths)
-        LOGGER.error(__name__, f"Got error while saving image {paths.input_file}:\n{str(err)}",
-                     save=True, email=True, email_mode="error")
-        # Reset the state
-        LOGGER.set_state(current_logger_state)
-        
     def process_image(self, image, paths):
         """
         Run the processing pipeline for `image`.
 
         :param image: Input image. Must be a 4D color image tensor with shape (1, height, width, 3)
         :type image: tf.python.framework.ops.EagerTensor
+        :param paths: Paths object representing the image file.
+        :type paths: src.io.TreeWalker.Paths
         """
         # Compute the detected objects and their masks.
         mask_results = self.masker.mask(image, mask_dilation_pixels=config.mask_dilation_pixels)
-
-        # Get EXIF data
-        exif = exif_from_file(paths.input_file)
-        # Add the path to the output image to the json dict.
-        exif["anonymisert_bildefil"] = paths.output_file.replace(os.sep, "/")
 
         # Convert the image to a numpy array
         if not isinstance(image, np.ndarray):
             image = image.numpy()
 
-        # Add a worker for the current image
-        self._create_worker(image, mask_results, exif, paths)
+        self._spawn_workers(paths, image, mask_results)
 
-        # Add the EXIF data to the database if database writing is enabled.
-        if self.database_client is not None:
-            self.database_client.add_row(exif)
+        if len(self.workers) >= self.max_num_async_workers:
+            self._wait_for_workers()
 
     def close(self):
         """
@@ -127,38 +102,7 @@ class ImageProcessor:
         multiprocessing pool.
         """
         self._wait_for_workers()
-        self.pool.close()
+        if self.pool is not None:
+            self.pool.close()
         if self.database_client is not None:
             self.database_client.close()
-
-
-def save_and_archive(img, mask_results, exif, paths):
-    """
-    Save the result files and do archiving.
-
-    :param img: Input image
-    :type img: np.ndarray
-    :param mask_results: Results from `src.Masker.Masker.mask`. applied to `image`.
-    :type mask_results: dict
-    :param exif: EXIF data for `img`.
-    :type exif: dict
-    :return: 0
-    :rtype: int
-    """
-    # Wait if we can't find the input image or the output path. Here we wait for the base output directory, since
-    # `output_path` might be a folder which does not yet exist.
-    wait_until_path_is_found([paths.input_file, paths.base_output_dir])
-    # Save
-    save.save_processed_img(img, mask_results, exif, paths, draw_mask=config.draw_mask, local_json=config.local_json,
-                            remote_json=config.remote_json, local_mask=config.local_mask,
-                            remote_mask=config.remote_mask, mask_color=config.mask_color, blur=config.blur,
-                            gray_blur=config.gray_blur, normalized_gray_blur=config.normalized_gray_blur)
-
-    if paths.archive_dir is not None:
-        # Wait if we can't find the input image, the output path or the archive path
-        wait_until_path_is_found([paths.input_file, paths.base_output_dir, paths.base_archive_dir])
-        # Archive
-        save.archive(paths, archive_json=config.archive_json, archive_mask=config.archive_mask,
-                     delete_input_img=config.delete_input, assert_output_mask=True)
-
-    return 0

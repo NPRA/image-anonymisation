@@ -96,6 +96,13 @@ will be replaced with the host name.</p>
 </dd></dl>
 
 <dl class="data">
+<dt id="config.enable_async">
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">enable_async</code><em class="property"> = True</em><a class="headerlink" href="#config.enable_async" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable asynchronous post-processing? When True, the file exports (anonymised image, mask file and JSON file) will be
+executed asynchronously in order to increase processing speed</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="config.uncaught_exception_email">
 <code class="sig-prename descclassname">config.</code><code class="sig-name descname">uncaught_exception_email</code><em class="property"> = False</em><a class="headerlink" href="#config.uncaught_exception_email" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send an email if the program exits abnormally due to an uncaught exception.</p>
@@ -160,7 +167,7 @@ The masks from the <cite>Fast</cite> model are currently not recommended due to 
 
 <dl class="data">
 <dt id="config.mask_dilation_pixels">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">mask_dilation_pixels</code><em class="property"> = 8</em><a class="headerlink" href="#config.mask_dilation_pixels" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">mask_dilation_pixels</code><em class="property"> = 4</em><a class="headerlink" href="#config.mask_dilation_pixels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
 by the corresponding mask. Set <cite>mask_dilation_pixels = 0</cite> to disable mask dilation.</p>
 </dd></dl>
@@ -175,7 +182,7 @@ dark gray.</p>
 
 <dl class="data">
 <dt id="config.blur">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">blur</code><em class="property"> = 10</em><a class="headerlink" href="#config.blur" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">blur</code><em class="property"> = 15</em><a class="headerlink" href="#config.blur" title="Permalink to this definition">¶</a></dt>
 <dd><p>Blurring coefficient [1-100] which specifies the degree of blurring to apply within the
 mask. When this parameter is specified, the image will be blurred, and not masked with a
 specific color. Set <cite>blur = None</cite> to disable blurring, and use colored masks instead.</p>
@@ -566,20 +573,17 @@ returned.</p>
 <span id="io-save"></span><h3>io.save<a class="headerlink" href="#module-src.io.save" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="src.io.save.save_processed_img">
-<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">save_processed_img</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">exif</em>, <em class="sig-param">paths</em>, <em class="sig-param">draw_mask=False</em>, <em class="sig-param">local_json=False</em>, <em class="sig-param">remote_json=False</em>, <em class="sig-param">local_mask=False</em>, <em class="sig-param">remote_mask=False</em>, <em class="sig-param">json_objects=True</em>, <em class="sig-param">mask_color=None</em>, <em class="sig-param">blur=None</em>, <em class="sig-param">gray_blur=True</em>, <em class="sig-param">normalized_gray_blur=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.save_processed_img" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">save_processed_img</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">paths</em>, <em class="sig-param">draw_mask=False</em>, <em class="sig-param">local_mask=False</em>, <em class="sig-param">remote_mask=False</em>, <em class="sig-param">mask_color=None</em>, <em class="sig-param">blur=None</em>, <em class="sig-param">gray_blur=True</em>, <em class="sig-param">normalized_gray_blur=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.save_processed_img" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an image which has been processed by the masker.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p></li>
 <li><p><strong>mask_results</strong> (<em>dict</em>) – Dictionary containing masking results. Format must be as returned by Masker.mask.</p></li>
-<li><p><strong>exif</strong> (<em>dict</em>) – EXIF data for <cite>img</cite>.</p></li>
+<li><p><strong>paths</strong> (<a class="reference internal" href="#src.io.TreeWalker.Paths" title="src.io.TreeWalker.Paths"><em>src.io.TreeWalker.Paths</em></a>) – Paths object representing the image file.</p></li>
 <li><p><strong>draw_mask</strong> (<em>bool</em>) – Draw the mask on the image?</p></li>
-<li><p><strong>local_json</strong> (<em>bool</em>) – Write the EXIF .json file to the input directory?</p></li>
-<li><p><strong>remote_json</strong> (<em>bool</em>) – Write the EXIF .json file to the output directory?</p></li>
 <li><p><strong>local_mask</strong> (<em>bool</em>) – Write the Mask file to the input directory?</p></li>
 <li><p><strong>remote_mask</strong> (<em>bool</em>) – Write the Mask file to the output directory?</p></li>
-<li><p><strong>json_objects</strong> (<em>bool</em>) – Add a dictionary containing the detected objects and their counts to the .json file?</p></li>
 <li><p><strong>mask_color</strong> (<em>list | None</em>) – Mask color. All masks in the output image will have this color. If <cite>mask_color</cite> is None, the
 colors in <cite>config</cite> will be used.</p></li>
 <li><p><strong>blur</strong> (<em>int | float | None</em>) – When <cite>blur</cite> is not None, the image will be blurred instead of colored at the masked locations. <cite>blur</cite>
@@ -606,6 +610,7 @@ indistinguishable from dark colors. NOTE: Requires gray_blur=True.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<a class="reference internal" href="#src.io.TreeWalker.Paths" title="src.io.TreeWalker.Paths"><em>src.io.TreeWalker.Paths</em></a>) – Paths object representing the image file.</p></li>
 <li><p><strong>archive_mask</strong> (<em>bool</em>) – Copy the mask file to the archive directory?</p></li>
 <li><p><strong>archive_json</strong> (<em>bool</em>) – Copy the EXIF file to the archive directory?</p></li>
 <li><p><strong>delete_input_img</strong> (<em>bool</em>) – Delete the image from the input directory?</p></li>
@@ -662,6 +667,25 @@ indistinguishable from dark colors. NOTE: Requires gray_blur=True.</p></li>
 <div class="section" id="module-src.io.TreeWalker">
 <span id="io-treewalker"></span><h3>io.TreeWalker<a class="headerlink" href="#module-src.io.TreeWalker" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
+<dt id="src.io.TreeWalker.Paths">
+<em class="property">class </em><code class="sig-prename descclassname">src.io.TreeWalker.</code><code class="sig-name descname">Paths</code><span class="sig-paren">(</span><em class="sig-param">base_input_dir</em>, <em class="sig-param">base_mirror_dirs</em>, <em class="sig-param">input_dir</em>, <em class="sig-param">mirror_dirs</em>, <em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.TreeWalker.Paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object which holds the path-information about an image. <cite>src.io.TreeWalker.TreeWalker.walk</cite> returns instances of
+this class. Input directories and mirror directories and files are all available through dot-syntax.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_input_dir</strong> (<em>str</em>) – Base directory for input files.</p></li>
+<li><p><strong>base_mirror_dirs</strong> (<em>list of str</em>) – Base directories for mirror files. The first element is assumed to be the output directory.
+The second element is assumed to be the archive directory.</p></li>
+<li><p><strong>input_dir</strong> (<em>str</em>) – Directory containing the file represented by the object.</p></li>
+<li><p><strong>mirror_dirs</strong> (<em>list of str</em>) – Mirror directories for the file represented by the object.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Name of file represented by the object</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
 <dt id="src.io.TreeWalker.TreeWalker">
 <em class="property">class </em><code class="sig-prename descclassname">src.io.TreeWalker.</code><code class="sig-name descname">TreeWalker</code><span class="sig-paren">(</span><em class="sig-param">input_folder</em>, <em class="sig-param">mirror_folders</em>, <em class="sig-param">skip_webp=True</em>, <em class="sig-param">precompute_paths=True</em>, <em class="sig-param">ext='jpg'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.TreeWalker.TreeWalker" title="Permalink to this definition">¶</a></dt>
 <dd><p>Traverses a file-tree and finds all valid files with extension <cite>ext</cite>.</p>
@@ -671,16 +695,9 @@ indistinguishable from dark colors. NOTE: Requires gray_blur=True.</p></li>
 <dd><p>Traverse the file tree in <cite>input_folder</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><p>If <cite>precompute_paths</cite> is True, this will simply return an iterator whose elements are tuples with
-elements:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>Full path to the current directory in <cite>input_dir</cite></p></li>
-<li><p>Full path to the corresponding directories in <cite>mirror_dirs</cite></p></li>
-<li><p>Name of current <cite>ext</cite>-file</p></li>
-</ul>
-</div></blockquote>
-<p>Otherwise, it will call a generator returning a tuple with the same elements as above.</p>
+<dd class="field-odd"><p><p>If <cite>precompute_paths</cite> is True, this will simply return an iterator where each element is an instance of
+<cite>src.io.TreeWalker.Paths</cite>.</p>
+<p>Otherwise, it will call a generator returning the objects described above.</p>
 </p>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -775,7 +792,7 @@ include the exception type in the subject, and the traceback in the contents.</p
 
 <dl class="class">
 <dt id="src.ImageProcessor.ImageProcessor">
-<em class="property">class </em><code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">ImageProcessor</code><span class="sig-paren">(</span><em class="sig-param">masker</em>, <em class="sig-param">max_num_async_workers</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.ImageProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">ImageProcessor</code><span class="sig-paren">(</span><em class="sig-param">masker</em>, <em class="sig-param">max_num_async_workers=4</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.ImageProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the image processing pipeline. When an image is received, it will be masked, and the resulting output
 files will be written asynchronously.</p>
 <dl class="field-list simple">
@@ -794,7 +811,10 @@ dispatched workers to finish.</p></li>
 <dd><p>Run the processing pipeline for <cite>image</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>image</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Input image. Must be a 4D color image tensor with shape (1, height, width, 3)</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Input image. Must be a 4D color image tensor with shape (1, height, width, 3)</p></li>
+<li><p><strong>paths</strong> (<a class="reference internal" href="#src.io.TreeWalker.Paths" title="src.io.TreeWalker.Paths"><em>src.io.TreeWalker.Paths</em></a>) – Paths object representing the image file.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -806,27 +826,6 @@ dispatched workers to finish.</p></li>
 multiprocessing pool.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="function">
-<dt id="src.ImageProcessor.save_and_archive">
-<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">save_and_archive</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">exif</em>, <em class="sig-param">paths</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.save_and_archive" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the result files and do archiving.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p></li>
-<li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>src.Masker.Masker.mask</cite>. applied to <cite>image</cite>.</p></li>
-<li><p><strong>exif</strong> (<em>dict</em>) – EXIF data for <cite>img</cite>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>0</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 </div>
@@ -1000,6 +999,175 @@ image width.</p></li>
 </dd></dl>
 
 </div>
+<div class="section" id="module-src.Workers">
+<span id="workers"></span><h2>Workers<a class="headerlink" href="#module-src.Workers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="src.Workers.BaseWorker">
+<em class="property">class </em><code class="sig-prename descclassname">src.Workers.</code><code class="sig-name descname">BaseWorker</code><span class="sig-paren">(</span><em class="sig-param">pool</em>, <em class="sig-param">paths</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.BaseWorker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for asynchronous workers. Should be subclassed, and not used as-is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pool</strong> (<em>multiprocessing.Pool | None</em>) – multiprocessing.Pool to apply async workers in. Can be None if <cite>config.enable_async = False</cite>.</p></li>
+<li><p><strong>paths</strong> (<a class="reference internal" href="#src.io.TreeWalker.Paths" title="src.io.TreeWalker.Paths"><em>src.io.TreeWalker.Paths</em></a>) – Paths object representing the image file.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.Workers.BaseWorker.async_func">
+<em class="property">static </em><code class="sig-name descname">async_func</code><span class="sig-paren">(</span><em class="sig-param">*args</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.BaseWorker.async_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to apply asynchronously. Implement this in subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>list</em>) – Function arguments</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.Workers.BaseWorker.result_is_valid">
+<code class="sig-name descname">result_is_valid</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.BaseWorker.result_is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that <cite>result</cite> is a valid result from <cite>self.async_func</cite>. Implement this in subclasses. Should return a
+boolean.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>result</strong> – Result from <cite>async_func</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.Workers.BaseWorker.start">
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.BaseWorker.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the async worker. If <cite>config.enable_async = False</cite>, <cite>self.async_func</cite> will be called directly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.Workers.BaseWorker.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.BaseWorker.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the result from the worker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Return value from <cite>self.async_func</cite>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.Workers.BaseWorker.handle_error">
+<code class="sig-name descname">handle_error</code><span class="sig-paren">(</span><em class="sig-param">err</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.BaseWorker.handle_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle an exception raised by an async worker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>err</strong> (<em>BaseException</em>) – Exception raised by the worker</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="src.Workers.SaveWorker">
+<em class="property">class </em><code class="sig-prename descclassname">src.Workers.</code><code class="sig-name descname">SaveWorker</code><span class="sig-paren">(</span><em class="sig-param">pool</em>, <em class="sig-param">paths</em>, <em class="sig-param">img</em>, <em class="sig-param">mask_results</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.SaveWorker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Worker which saves the masked image, and archives it if archiving is enabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pool</strong> (<em>multiprocessing.Pool | None</em>) – multiprocessing.Pool to apply async workers in. Can be None if <cite>config.enable_async = False</cite>.</p></li>
+<li><p><strong>paths</strong> (<a class="reference internal" href="#src.io.TreeWalker.Paths" title="src.io.TreeWalker.Paths"><em>src.io.TreeWalker.Paths</em></a>) – Paths object representing the image file.</p></li>
+<li><p><strong>img</strong> (<em>np.ndarray</em>) – Image to mask</p></li>
+<li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>src.Masker.Masker.mask</cite></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.Workers.SaveWorker.result_is_valid">
+<code class="sig-name descname">result_is_valid</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.SaveWorker.result_is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that <cite>result</cite> is a valid result from <cite>self.async_func</cite>. Implement this in subclasses. Should return a
+boolean.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>result</strong> – Result from <cite>async_func</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.Workers.SaveWorker.async_func">
+<em class="property">static </em><code class="sig-name descname">async_func</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">paths</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.SaveWorker.async_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the result files and do archiving.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p></li>
+<li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>src.Masker.Masker.mask</cite>. applied to <cite>image</cite>.</p></li>
+<li><p><strong>paths</strong> (<a class="reference internal" href="#src.io.TreeWalker.Paths" title="src.io.TreeWalker.Paths"><em>src.io.TreeWalker.Paths</em></a>) – Paths object representing the image file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>0</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="src.Workers.EXIFWorker">
+<em class="property">class </em><code class="sig-prename descclassname">src.Workers.</code><code class="sig-name descname">EXIFWorker</code><span class="sig-paren">(</span><em class="sig-param">pool</em>, <em class="sig-param">paths</em>, <em class="sig-param">mask_results</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.EXIFWorker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Worker which reads the EXIF data from the input image using <cite>src.io.exif_util</cite>. The EXIF dict will then be written
+to the specified location(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pool</strong> (<em>multiprocessing.Pool | None</em>) – multiprocessing.Pool to apply async workers in. Can be None if <cite>config.enable_async = False</cite>.</p></li>
+<li><p><strong>paths</strong> (<a class="reference internal" href="#src.io.TreeWalker.Paths" title="src.io.TreeWalker.Paths"><em>src.io.TreeWalker.Paths</em></a>) – Paths object representing the image file.</p></li>
+<li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>src.Masker.Masker.mask</cite></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.Workers.EXIFWorker.result_is_valid">
+<code class="sig-name descname">result_is_valid</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.EXIFWorker.result_is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that <cite>result</cite> is a valid result from <cite>self.async_func</cite>. Implement this in subclasses. Should return a
+boolean.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>result</strong> – Result from <cite>async_func</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.Workers.EXIFWorker.async_func">
+<em class="property">static </em><code class="sig-name descname">async_func</code><span class="sig-paren">(</span><em class="sig-param">paths</em>, <em class="sig-param">mask_results</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.EXIFWorker.async_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the EXIF processing: Read the EXIF data, add the required fields, and save it. File exports are controlled
+in <cite>config</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<a class="reference internal" href="#src.io.TreeWalker.Paths" title="src.io.TreeWalker.Paths"><em>src.io.TreeWalker.Paths</em></a>) – Paths object representing the image file.</p></li>
+<li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>src.Masker.Masker.mask</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>EXIF dict written to the specified locations</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -1029,6 +1197,7 @@ image width.</p></li>
 <li><a class="reference internal" href="#module-src.ImageProcessor">ImageProcessor</a></li>
 <li><a class="reference internal" href="#module-src.main">main</a></li>
 <li><a class="reference internal" href="#module-src.Masker">Masker</a></li>
+<li><a class="reference internal" href="#module-src.Workers">Workers</a></li>
 </ul>
 </li>
 </ul>

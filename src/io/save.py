@@ -10,9 +10,8 @@ from src.Logger import LOGGER
 from src.io.exif_util import write_exif
 
 
-def save_processed_img(img, mask_results, exif, paths, draw_mask=False, local_json=False, remote_json=False,
-                       local_mask=False, remote_mask=False, json_objects=True, mask_color=None, blur=None,
-                       gray_blur=True, normalized_gray_blur=True):
+def save_processed_img(img, mask_results, paths, draw_mask=False, local_mask=False, remote_mask=False, mask_color=None,
+                       blur=None, gray_blur=True, normalized_gray_blur=True):
     """
     Save an image which has been processed by the masker.
 
@@ -20,20 +19,14 @@ def save_processed_img(img, mask_results, exif, paths, draw_mask=False, local_js
     :type img: np.ndarray
     :param mask_results: Dictionary containing masking results. Format must be as returned by Masker.mask.
     :type mask_results: dict
-    :param exif: EXIF data for `img`.
-    :type exif: dict
+    :param paths: Paths object representing the image file.
+    :type paths: src.io.TreeWalker.Paths
     :param draw_mask: Draw the mask on the image?
     :type draw_mask: bool
-    :param local_json: Write the EXIF .json file to the input directory?
-    :type local_json: bool
-    :param remote_json: Write the EXIF .json file to the output directory?
-    :type remote_json: bool
     :param local_mask: Write the Mask file to the input directory?
     :type local_mask: bool
     :param remote_mask: Write the Mask file to the output directory?
     :type remote_mask: bool
-    :param json_objects: Add a dictionary containing the detected objects and their counts to the .json file?
-    :type json_objects: bool
     :param mask_color: Mask color. All masks in the output image will have this color. If `mask_color` is None, the
                        colors in `config` will be used.
     :type mask_color: list | None
@@ -67,13 +60,6 @@ def save_processed_img(img, mask_results, exif, paths, draw_mask=False, local_js
     pil_img = Image.fromarray(img[0].astype(np.uint8))
     pil_img.save(paths.output_file)
 
-    # Save metadata and .webp mask
-    if json_objects:
-        exif["detekterte_objekter"] = _get_detected_objects_dict(mask_results)
-    if local_json:
-        write_exif(exif, paths.input_json)
-    if remote_json:
-        write_exif(exif, paths.output_json)
     if local_mask:
         _save_mask(agg_mask, paths.input_webp)
     if remote_mask:
@@ -86,6 +72,8 @@ def archive(paths, archive_mask=False, archive_json=False, delete_input_img=Fals
     """
     Copy the input image file (and possibly some output files) to the archive directory.
 
+    :param paths: Paths object representing the image file.
+    :type paths: src.io.TreeWalker.Paths
     :param archive_mask: Copy the mask file to the archive directory?
     :type archive_mask: bool
     :param archive_json: Copy the EXIF file to the archive directory?
@@ -117,20 +105,6 @@ def _copy_file(source_file, destination_file):
         LOGGER.warning(__name__, f"Archive file {destination_file} already exists. The existing file will be "
                                  f"overwritten.")
     copy2(source_file, destination_file)
-
-
-def _get_detected_objects_dict(mask_results):
-    objs = mask_results["detection_classes"]
-    if objs.size > 0:
-        # Find unique objects and count them
-        objs, counts = np.unique(objs, return_counts=True)
-        # Convert object from id to string
-        objs = [config.LABEL_MAP[int(obj_id)] for obj_id in objs]
-        # Create dict
-        objs = dict(zip(objs, counts.astype(str)))
-    else:
-        objs = {}
-    return objs
 
 
 def _draw_mask_on_img(img, mask_results, mask_color=None):
