@@ -12,9 +12,20 @@ class Masker:
     """
     Implements the masking functionality. Uses a pre-trained TensorFlow model to compute masks for images. Model
     configuration is done in `config`.
+
+    :param mask_dilation_pixels: Approximate number of pixels for mask dilation. This will help ensure that an
+                                 identified object is completely covered by the corresponding mask. Set
+                                 `mask_dilation_pixels = 0` to disable mask dilation.
+    :type mask_dilation_pixels: int
+    :param max_image_height: Maximum height of images to be processed by the masking model. If the height of an image
+                             exceeds this value, it will be resized before the masker is applied. This will NOT change
+                             the resolution of the output image.
+    :type max_image_height: int
     """
 
-    def __init__(self):
+    def __init__(self, mask_dilation_pixels=0, max_image_height=10000):
+        self.mask_dilation_pixels = mask_dilation_pixels
+        self.max_image_height = max_image_height
         self._init_model()
 
     def _init_model(self):
@@ -30,19 +41,19 @@ class Masker:
         model = tf.saved_model.load(os.path.join(config.MODEL_PATH, "saved_model"))
         self.model = model.signatures["serving_default"]
 
-    def mask(self, image, mask_dilation_pixels=0):
+    def mask(self, image):
         """
         Run the masking on `image`.
         
         :param image: Input image. Must be a 4D color image tensor with shape (1, height, width, 3)
         :type image: tf.python.framework.ops.EagerTensor
-        :param mask_dilation_pixels: Approximate number of pixels for mask dilation. This will help ensure that an
-                                    identified object is completely covered by the corresponding mask. Set
-                                    `mask_dilation_pixels = 0` to disable mask dilation.
-        :type mask_dilation_pixels: int
         :return: Dictionary containing masking results. Content depends on the model used.
         :rtype: dict
         """
+        # Original image shape
+        image_shape = image.shape
+        # Resize the image if it is too large
+        image = _maybe_resize_image(image, self.max_image_height)
         # Get results from model
         masking_results = self.model(image)
         # Remove "uninteresting" detections. I.e. detections which are not relevant for anonymisation.
@@ -52,15 +63,15 @@ class Masker:
         # Convert masks from normalized bbox coordinates to whole-image coordinates.
         reframed_masks = reframe_box_masks_to_image_masks(masking_results["detection_masks"][0],
                                                           masking_results["detection_boxes"][0],
-                                                          image.shape[1], image.shape[2])
+                                                          image_shape[1], image_shape[2])
         # Convert the tf.Tensors to numpy-arrays
         masking_results = tensor_dict_to_numpy(masking_results, ignore_keys=("detection_masks", "num_detections"))
         masking_results["detection_masks"] = (reframed_masks.numpy()[None, ...] > 0.5)
         masking_results["num_detections"] = num_detections
 
         # Dilate masks?
-        if mask_dilation_pixels > 0:
-            dilate_masks(masking_results, mask_dilation_pixels)
+        if self.mask_dilation_pixels > 0:
+            dilate_masks(masking_results, self.mask_dilation_pixels)
 
         return masking_results
 
@@ -107,6 +118,9 @@ def download_model(download_base, model_name, model_path, extract_all=False):
     :type model_name: str
     :param model_path: Directory where the downloaded model shoud be stored.
     :type model_path: str
+    :param extract_all: When True, all files in the .tar.gz archive will be extracted. Otherwise, just extract
+                        "frozen_inference_graph.pb"
+    :type extract_all: bool
     """
     os.makedirs(model_path, exist_ok=True)
 
@@ -124,6 +138,19 @@ def download_model(download_base, model_name, model_path, extract_all=False):
             if 'frozen_inference_graph.pb' in file_name:
                 tar_file.extract(file, os.path.dirname(model_path))
     tar_file.close()
+
+
+@tf.function
+def _maybe_resize_image(img, max_image_height):
+    def true_fn():
+        new_width = tf.cast((max_image_height / img.shape[1]) * img.shape[2], tf.int32)
+        resized = tf.image.resize(img, (max_image_height, new_width), method=tf.image.ResizeMethod.BILINEAR)
+        return tf.cast(resized, tf.uint8)
+
+    def false_fn():
+        return img
+
+    return tf.cond(tf.shape(img)[1] > max_image_height, true_fn, false_fn)
 
 
 def _filter_detections_numpy(num_detections, classes, scores, boxes, masks):

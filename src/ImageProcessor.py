@@ -85,7 +85,7 @@ class ImageProcessor:
         :type paths: src.io.TreeWalker.Paths
         """
         # Compute the detected objects and their masks.
-        mask_results = self.masker.mask(image, mask_dilation_pixels=config.mask_dilation_pixels)
+        mask_results = self.masker.mask(image)
 
         # Convert the image to a numpy array
         if not isinstance(image, np.ndarray):

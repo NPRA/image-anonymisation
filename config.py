@@ -110,6 +110,11 @@ model_type = "Medium"
 #: Default: 4
 mask_dilation_pixels = 4
 
+#: Maximum height of images to be processed by the masking model. If the height of an image exceeds this value, it will
+#: be resized before the masker is applied. This will NOT change the resolution of the output image.
+max_image_height = 1200
+
+
 # ===============================================================
 # Parameters controlling the appearance of the anonymised regions
 # ===============================================================

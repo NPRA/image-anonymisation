@@ -112,7 +112,7 @@ def initialize():
     tree_walker = TreeWalker(base_input_dir, mirror_dirs, skip_webp=(not config.force_remask),
                              precompute_paths=(not config.lazy_paths))
     # Initialize the masker
-    masker = Masker()
+    masker = Masker(mask_dilation_pixels=config.mask_dilation_pixels, max_image_height=config.max_image_height)
     # Create the TensorFlow datatset
     dataset_iterator = iter(get_tf_dataset(tree_walker))
     # Initialize the ImageProcessor
