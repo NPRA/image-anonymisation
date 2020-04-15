@@ -49,6 +49,7 @@ CONFIG_VARS = {
     "db_max_n_accumulated_rows": 1,
     # Disable async since we cannot mock the config inside an asynchronous process.
     "enable_async": False,
+    "max_num_async_workers": 1,
     "TF_DATASET_NUM_PARALLEL_CALLS": 1,
     "MODEL_NAME": config.MODEL_NAME,
     "PROJECT_ROOT": config.PROJECT_ROOT,
