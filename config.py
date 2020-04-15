@@ -91,11 +91,13 @@ archive_mask = False
 #: The slowest model produces the most accurate masks, while the masks from the medium model are slightly worse.
 #: The masks from the `Fast` model are currently not recommended due to poor quality. Must be either "Slow", "Medium" or
 #: "Fast". "Medium" is recommended.
+#: Default: "Medium"
 model_type = "Medium"
 
 #: Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
 #: by the corresponding mask. Set `mask_dilation_pixels = 0` to disable mask dilation.
-mask_dilation_pixels = 8
+#: Default: 4
+mask_dilation_pixels = 4
 
 # ===============================================================
 # Parameters controlling the appearance of the anonymised regions
@@ -109,13 +111,16 @@ mask_color = None
 #: Blurring coefficient [1-100] which specifies the degree of blurring to apply within the
 #: mask. When this parameter is specified, the image will be blurred, and not masked with a
 #: specific color. Set `blur = None` to disable blurring, and use colored masks instead.
-blur = 10
+#: Default: 15
+blur = 15
 
 #: Convert the image to grayscale before blurring? (Ignored if blurring is disabled)
+#: Default: True
 gray_blur = True
 
 #: Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark
 #: colors. NOTE: Requires gray_blur=True
+#: Default: True
 normalized_gray_blur = True
 
 
