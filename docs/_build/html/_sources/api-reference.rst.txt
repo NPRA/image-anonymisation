@@ -46,6 +46,11 @@ io.TreeWalker
 .. automodule:: src.io.TreeWalker
    :members:
 
+email_sender
+=========================
+.. automodule:: src.email_sender
+   :members:
+
 ImageProcessor
 =========================
 .. automodule:: src.ImageProcessor

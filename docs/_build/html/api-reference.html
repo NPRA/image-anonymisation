@@ -566,7 +566,7 @@ returned.</p>
 <span id="io-save"></span><h3>io.save<a class="headerlink" href="#module-src.io.save" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="src.io.save.save_processed_img">
-<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">save_processed_img</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">exif</em>, <em class="sig-param">input_path</em>, <em class="sig-param">output_path</em>, <em class="sig-param">filename</em>, <em class="sig-param">draw_mask=False</em>, <em class="sig-param">local_json=False</em>, <em class="sig-param">remote_json=False</em>, <em class="sig-param">local_mask=False</em>, <em class="sig-param">remote_mask=False</em>, <em class="sig-param">json_objects=True</em>, <em class="sig-param">mask_color=None</em>, <em class="sig-param">blur=None</em>, <em class="sig-param">gray_blur=True</em>, <em class="sig-param">normalized_gray_blur=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.save_processed_img" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">save_processed_img</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">exif</em>, <em class="sig-param">paths</em>, <em class="sig-param">draw_mask=False</em>, <em class="sig-param">local_json=False</em>, <em class="sig-param">remote_json=False</em>, <em class="sig-param">local_mask=False</em>, <em class="sig-param">remote_mask=False</em>, <em class="sig-param">json_objects=True</em>, <em class="sig-param">mask_color=None</em>, <em class="sig-param">blur=None</em>, <em class="sig-param">gray_blur=True</em>, <em class="sig-param">normalized_gray_blur=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.save_processed_img" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an image which has been processed by the masker.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -574,9 +574,6 @@ returned.</p>
 <li><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p></li>
 <li><p><strong>mask_results</strong> (<em>dict</em>) – Dictionary containing masking results. Format must be as returned by Masker.mask.</p></li>
 <li><p><strong>exif</strong> (<em>dict</em>) – EXIF data for <cite>img</cite>.</p></li>
-<li><p><strong>input_path</strong> (<em>str</em>) – Path to input directory</p></li>
-<li><p><strong>output_path</strong> (<em>str</em>) – Path to output directory</p></li>
-<li><p><strong>filename</strong> (<em>str</em>) – Name of image file</p></li>
 <li><p><strong>draw_mask</strong> (<em>bool</em>) – Draw the mask on the image?</p></li>
 <li><p><strong>local_json</strong> (<em>bool</em>) – Write the EXIF .json file to the input directory?</p></li>
 <li><p><strong>remote_json</strong> (<em>bool</em>) – Write the EXIF .json file to the output directory?</p></li>
@@ -604,14 +601,11 @@ indistinguishable from dark colors. NOTE: Requires gray_blur=True.</p></li>
 
 <dl class="function">
 <dt id="src.io.save.archive">
-<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">archive</code><span class="sig-paren">(</span><em class="sig-param">input_path</em>, <em class="sig-param">mirror_paths</em>, <em class="sig-param">filename</em>, <em class="sig-param">archive_mask=False</em>, <em class="sig-param">archive_json=False</em>, <em class="sig-param">delete_input_img=False</em>, <em class="sig-param">assert_output_mask=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.archive" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">archive</code><span class="sig-paren">(</span><em class="sig-param">paths</em>, <em class="sig-param">archive_mask=False</em>, <em class="sig-param">archive_json=False</em>, <em class="sig-param">delete_input_img=False</em>, <em class="sig-param">assert_output_mask=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy the input image file (and possibly some output files) to the archive directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>input_path</strong> (<em>str</em>) – Path to the directory containing the input image.</p></li>
-<li><p><strong>mirror_paths</strong> (<em>list of str</em>) – List with at least two elements, containing the output path and the archive path.</p></li>
-<li><p><strong>filename</strong> (<em>str</em>) – Name of image-file</p></li>
 <li><p><strong>archive_mask</strong> (<em>bool</em>) – Copy the mask file to the archive directory?</p></li>
 <li><p><strong>archive_json</strong> (<em>bool</em>) – Copy the EXIF file to the archive directory?</p></li>
 <li><p><strong>delete_input_img</strong> (<em>bool</em>) – Delete the image from the input directory?</p></li>
@@ -632,15 +626,11 @@ indistinguishable from dark colors. NOTE: Requires gray_blur=True.</p></li>
 <span id="io-tf-dataset"></span><h3>io.tf_dataset<a class="headerlink" href="#module-src.io.tf_dataset" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="src.io.tf_dataset.prepare_img">
-<code class="sig-prename descclassname">src.io.tf_dataset.</code><code class="sig-name descname">prepare_img</code><span class="sig-paren">(</span><em class="sig-param">input_dir</em>, <em class="sig-param">_</em>, <em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.tf_dataset.prepare_img" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.tf_dataset.</code><code class="sig-name descname">prepare_img</code><span class="sig-paren">(</span><em class="sig-param">input_file</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.tf_dataset.prepare_img" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the image named <cite>filename</cite> from <cite>input_dir</cite>, and check that is is valid.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>input_dir</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Input directory. Expected to be a zero-dimensional string tensor.</p></li>
-<li><p><strong>_</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Ignored</p></li>
-<li><p><strong>filename</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Name of image file. Expected to be a zero-dimensional string tensor.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>input_file</strong> (<em>tf.string</em>) – Path to input image</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Loaded image</p>
@@ -703,6 +693,78 @@ elements:</p>
 
 </div>
 </div>
+<div class="section" id="module-src.email_sender">
+<span id="email-sender"></span><h2>email_sender<a class="headerlink" href="#module-src.email_sender" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="src.email_sender.email_excepthook">
+<code class="sig-prename descclassname">src.email_sender.</code><code class="sig-name descname">email_excepthook</code><span class="sig-paren">(</span><em class="sig-param">etype</em>, <em class="sig-param">ex</em>, <em class="sig-param">tb</em><span class="sig-paren">)</span><a class="headerlink" href="#src.email_sender.email_excepthook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function which can be replaced with sys.excepthook in order to send an email when the program exits due to an
+uncaught exception.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etype</strong> – Exception type</p></li>
+<li><p><strong>ex</strong> (<em>BaseException</em>) – Exception instance</p></li>
+<li><p><strong>tb</strong> (<em>traceback.traceback</em>) – Traceback object representing the exception’s traceback</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.email_sender.send_mail">
+<code class="sig-prename descclassname">src.email_sender.</code><code class="sig-name descname">send_mail</code><span class="sig-paren">(</span><em class="sig-param">message_type</em>, <em class="sig-param">etype=None</em>, <em class="sig-param">ex=None</em>, <em class="sig-param">tb=None</em>, <em class="sig-param">msg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.email_sender.send_mail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an email of type <cite>message_type</cite>. The sender, receiver(s) and smtp-server are configured in <cite>email_config.py</cite>.
+If  <cite>–log-folder</cite> is specified to <cite>src.main</cite>, the log-file will be attached to the message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message_type</strong> (<em>str</em>) – <p>Type of message. This determines the subject and contents of the message. Must be one of</p>
+<ul>
+<li><dl class="simple">
+<dt><cite>critical</cite>: This is suitable for critical errors which cause the program to exit abnormally.</dt><dd><p>A critical message requires <cite>etype</cite>, <cite>ex</cite> and <cite>tb</cite> to be specified, and will
+include the exception type in the subject, and the traceback in the contents.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><cite>error</cite>: This message is suitable for processing errors which do not cause the program to</dt><dd><p>exit.</p>
+</dd>
+</dl>
+</li>
+<li><p><cite>finished</cite>: This message type should be used when the program exits normally.</p></li>
+</ul>
+</p></li>
+<li><p><strong>etype</strong> (<em>type | None</em>) – Exception type</p></li>
+<li><p><strong>ex</strong> (<em>BaseException | None</em>) – Exception instance</p></li>
+<li><p><strong>tb</strong> (<em>traceback.traceback | None</em>) – Traceback object</p></li>
+<li><p><strong>msg</strong> (<em>str | None</em>) – Message to include in the contents of the email.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.email_sender.create_base_message">
+<code class="sig-prename descclassname">src.email_sender.</code><code class="sig-name descname">create_base_message</code><span class="sig-paren">(</span><em class="sig-param">subject</em>, <em class="sig-param">msg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.email_sender.create_base_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a base-message which is common for all message-types</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subject</strong> (<em>str</em>) – Message subject</p></li>
+<li><p><strong>msg</strong> (<em>str | None</em>) – Optional message to include in the contents.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Properly formatted email message converted to a string.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
 <div class="section" id="module-src.ImageProcessor">
 <span id="imageprocessor"></span><h2>ImageProcessor<a class="headerlink" href="#module-src.ImageProcessor" title="Permalink to this headline">¶</a></h2>
 <dl class="data">
@@ -713,7 +775,7 @@ elements:</p>
 
 <dl class="class">
 <dt id="src.ImageProcessor.ImageProcessor">
-<em class="property">class </em><code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">ImageProcessor</code><span class="sig-paren">(</span><em class="sig-param">masker</em>, <em class="sig-param">max_num_async_workers</em>, <em class="sig-param">base_input_path</em>, <em class="sig-param">base_output_path</em>, <em class="sig-param">base_archive_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.ImageProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">ImageProcessor</code><span class="sig-paren">(</span><em class="sig-param">masker</em>, <em class="sig-param">max_num_async_workers</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.ImageProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the image processing pipeline. When an image is received, it will be masked, and the resulting output
 files will be written asynchronously.</p>
 <dl class="field-list simple">
@@ -723,25 +785,16 @@ files will be written asynchronously.</p>
 <li><p><strong>max_num_async_workers</strong> (<em>int</em>) – Maximum number of async workers. When the number of dispatched workers exceeds
 <cite>max_num_async_workers</cite>, <cite>ImageProcessor.process_image</cite> will stop and wait for all
 dispatched workers to finish.</p></li>
-<li><p><strong>base_input_path</strong> (<em>str</em>) – Base input directory.</p></li>
-<li><p><strong>base_output_path</strong> (<em>str</em>) – Base output directory.</p></li>
-<li><p><strong>base_archive_path</strong> (<em>str | None</em>) – Base archive directory. Set <cite>base_archive_path = None</cite> when archiving is disabled.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="method">
 <dt id="src.ImageProcessor.ImageProcessor.process_image">
-<code class="sig-name descname">process_image</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">input_path</em>, <em class="sig-param">mirror_paths</em>, <em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.ImageProcessor.process_image" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">process_image</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">paths</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.ImageProcessor.process_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the processing pipeline for <cite>image</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>image</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Input image. Must be a 4D color image tensor with shape (1, height, width, 3)</p></li>
-<li><p><strong>input_path</strong> (<em>str</em>) – Path to directory containing the input image</p></li>
-<li><p><strong>mirror_paths</strong> (<em>list of str</em>) – List containing the path to the output directory, and optionally the path to the archive
-directory.</p></li>
-<li><p><strong>filename</strong> (<em>str</em>) – File name of input image</p></li>
-</ul>
+<dd class="field-odd"><p><strong>image</strong> (<em>tf.python.framework.ops.EagerTensor</em>) – Input image. Must be a 4D color image tensor with shape (1, height, width, 3)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -757,7 +810,7 @@ multiprocessing pool.</p>
 
 <dl class="function">
 <dt id="src.ImageProcessor.save_and_archive">
-<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">save_and_archive</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">exif</em>, <em class="sig-param">input_path</em>, <em class="sig-param">mirror_paths</em>, <em class="sig-param">filename</em>, <em class="sig-param">base_output_path</em>, <em class="sig-param">base_archive_path</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.save_and_archive" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">save_and_archive</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">exif</em>, <em class="sig-param">paths</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.save_and_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the result files and do archiving.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -765,12 +818,6 @@ multiprocessing pool.</p>
 <li><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p></li>
 <li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>src.Masker.Masker.mask</cite>. applied to <cite>image</cite>.</p></li>
 <li><p><strong>exif</strong> (<em>dict</em>) – EXIF data for <cite>img</cite>.</p></li>
-<li><p><strong>input_path</strong> (<em>str</em>) – Path to directory containing the input image</p></li>
-<li><p><strong>mirror_paths</strong> (<em>list of str</em>) – List containing the path to the output directory, and optionally the path to the archive
-directory.</p></li>
-<li><p><strong>filename</strong> (<em>str</em>) – File name of input image</p></li>
-<li><p><strong>base_output_path</strong> (<em>str</em>) – Base output directory.</p></li>
-<li><p><strong>base_archive_path</strong> (<em>str | None</em>) – Base archive directory. Set <cite>base_archive_path = None</cite> when archiving is disabled.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -978,6 +1025,7 @@ image width.</p></li>
 <li><a class="reference internal" href="#module-src.io.TreeWalker">io.TreeWalker</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#module-src.email_sender">email_sender</a></li>
 <li><a class="reference internal" href="#module-src.ImageProcessor">ImageProcessor</a></li>
 <li><a class="reference internal" href="#module-src.main">main</a></li>
 <li><a class="reference internal" href="#module-src.Masker">Masker</a></li>

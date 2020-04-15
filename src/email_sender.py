@@ -8,12 +8,12 @@ from socket import gethostname
 
 import config
 from src.Logger import LOGGER
-try:
-    import email_config
-except ImportError:
-    LOGGER.warning("Could not find `email_config.py` in the project root. Please create it if you want to use the "
-                   "emailing feature. See `config.py` for more details.")
-
+import email_config
+# try:
+#     import email_config
+# except ImportError:
+#     LOGGER.warning("Could not find `email_config.py` in the project root. Please create it if you want to use the "
+#                    "emailing feature. See `config.py` for more details.")
 
 CRITICAL_SUBJECT = "[image-anonymisation]: Execution stopped due to uncaught {etype}."
 ERROR_SUBJECT = "[image-anonymisation]: Processing error encountered."
@@ -43,14 +43,15 @@ def send_mail(message_type, etype=None, ex=None, tb=None, msg=None):
     Send an email of type `message_type`. The sender, receiver(s) and smtp-server are configured in `email_config.py`.
     If  `--log-folder` is specified to `src.main`, the log-file will be attached to the message.
 
-    :param message_type: Type of message. This determines the subject and contents of the message. Must be on of
+    :param message_type: Type of message. This determines the subject and contents of the message. Must be one of
 
                          - `critical`: This is suitable for critical errors which cause the program to exit abnormally.
                                        A critical message requires `etype`, `ex` and `tb` to be specified, and will
                                        include the exception type in the subject, and the traceback in the contents.
                          - `error`: This message is suitable for processing errors which do not cause the program to
-                                    exit, but
+                                    exit.
                          - `finished`: This message type should be used when the program exits normally.
+
     :type message_type: str
     :param etype: Exception type
     :type etype: type | None
