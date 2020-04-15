@@ -37,9 +37,16 @@ datetime_format = "%Y-%m-%d %H.%M.%S"
 #: will be replaced with the host name.
 log_file_name = "{datetime} {hostname}.log"
 
+# =====================================
+# Parameters for asynchronous execution
+# =====================================
+
 #: Enable asynchronous post-processing? When True, the file exports (anonymised image, mask file and JSON file) will be
-#: executed asynchronously in order to increase processing speed
+#: executed asynchronously in order to increase processing speed.
 enable_async = True
+
+#: Maximum number of asynchronous workers allowed to be active simultaneously. Should be <= (CPU core count - 1)
+max_num_async_workers = 2
 
 
 # ====================

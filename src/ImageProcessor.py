@@ -30,7 +30,7 @@ class ImageProcessor:
     :type max_num_async_workers: int
     """
 
-    def __init__(self, masker, max_num_async_workers=4):
+    def __init__(self, masker, max_num_async_workers=2):
         self.masker = masker
 
         self.workers = []
@@ -91,10 +91,11 @@ class ImageProcessor:
         if not isinstance(image, np.ndarray):
             image = image.numpy()
 
-        self._spawn_workers(paths, image, mask_results)
-
+        # If we have reached the maximum number of workers. Wait for them to finish
         if len(self.workers) >= self.max_num_async_workers:
             self._wait_for_workers()
+        # Create workers for the current image.
+        self._spawn_workers(paths, image, mask_results)
 
     def close(self):
         """
