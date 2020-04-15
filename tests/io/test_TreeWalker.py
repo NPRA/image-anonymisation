@@ -34,7 +34,8 @@ EXPECTED_FILES = [
 
 
 def _check_files(tree_walker, expected_files):
-    found_files = [os.path.join(input_dir, filename) for input_dir, _, filename in tree_walker.walk()]
+    # found_files = [os.path.join(input_dir, filename) for input_dir, _, filename in tree_walker.walk()]
+    found_files = [p.input_file for p in tree_walker.walk()]
     assert set(found_files) == set(expected_files), "Found files do not match"
 
 
@@ -81,6 +82,6 @@ def test_TreeWalker_input_output_correspondence():
     ]
 
     for input_dir, expected_output_dir in test_subdirs:
-        output_dir = tree_walker._get_mirror_paths(input_dir)[0]
+        output_dir = tree_walker._get_mirror_dirs(input_dir)[0]
         assert output_dir == expected_output_dir, f"Expected output dir '{expected_output_dir}' for input dir " \
                                                   f"'{input_dir}' but got '{output_dir}' instead."

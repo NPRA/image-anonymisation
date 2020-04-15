@@ -214,7 +214,7 @@ def _check_files(cfg, args):
 
     for rel_path, filename in EXPECTED_ERROR_FILES:
         if rel_path:
-            error_path = os.path.join(OUTPUT_DIR + "_error", rel_path + "_error")
+            error_path = os.path.join(OUTPUT_DIR + "_error", rel_path)
         else:
             error_path = OUTPUT_DIR + "_error"
         _check_file_exists(error_path, filename)
