@@ -34,6 +34,7 @@ CONFIG_VARS = {
     "lazy_paths": False,
     "mask_color": None,
     "mask_dilation_pixels": 0,
+    "max_image_height": 1200,
     "blur": None,
     "gray_blur": True,
     "normalized_gray_blur": True,
