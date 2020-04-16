@@ -1,20 +1,8 @@
-import os
 import multiprocessing
 import numpy as np
 
 import config
-from src.io import save
-from src.Logger import LOGGER
-from src.io.file_access_guard import wait_until_path_is_found
 from src.Workers import SaveWorker, EXIFWorker
-
-#: Exceptions to catch when saving and archiving.
-WORKER_EXCEPTIONS = (
-    AssertionError,
-    FileNotFoundError,
-    PermissionError,
-    OSError,
-)
 
 
 class ImageProcessor:
@@ -34,7 +22,6 @@ class ImageProcessor:
         self.masker = masker
 
         self.workers = []
-        self.got_worker_error = False
 
         if config.enable_async:
             self.max_num_async_workers = max_num_async_workers

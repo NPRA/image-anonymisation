@@ -175,8 +175,6 @@ def main():
     # Mask images
     time_at_iter_start = time.time()
     for i, paths in enumerate(tree_walker.walk()):
-        count_str = f"{i+1} of {n_imgs}"
-
         LOGGER.set_state(paths)
         start_time = time.time()
 
@@ -191,16 +189,12 @@ def main():
                                    f"{paths.input_file}.", save=True, email=True, email_mode="error")
             continue
 
-        # Check if the image_processor encountered a worker error. If an error was encountered, we reset the flag,
-        # and silently continue without logging the "Masked image x/y..." message.
-        if image_processor.got_worker_error:
-            image_processor.got_worker_error = False
-        else:
-            n_masked += 1
-            time_delta = "{:.3f}".format(time.time() - start_time)
-            est_done = get_estimated_done(time_at_iter_start, n_imgs, i+1)
-            LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
-                                  f"{paths.input_file}.")
+        time_delta = "{:.3f}".format(time.time() - start_time)
+        n_masked += 1
+        count_str = f"{i+1} of {n_imgs}"
+        est_done = get_estimated_done(time_at_iter_start, n_imgs, i+1)
+        LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
+                              f"{paths.input_file}.")
     image_processor.close()
 
     # Summary
