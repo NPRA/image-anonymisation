@@ -1,7 +1,9 @@
+import time
 import multiprocessing
 import numpy as np
 
 import config
+from src.Logger import LOGGER
 from src.Workers import SaveWorker, EXIFWorker
 
 
@@ -71,8 +73,11 @@ class ImageProcessor:
         :param paths: Paths object representing the image file.
         :type paths: src.io.TreeWalker.Paths
         """
+        start_time = time.time()
         # Compute the detected objects and their masks.
         mask_results = self.masker.mask(image)
+        time_delta = "{:.3f}".format(time.time() - start_time)
+        LOGGER.info(__name__, f"Masked image in {time_delta} s. File: {paths.input_file}")
 
         # Convert the image to a numpy array
         if not isinstance(image, np.ndarray):

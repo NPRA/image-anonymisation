@@ -7,7 +7,7 @@ import cv2
 
 import config
 from src.Logger import LOGGER
-from src.io.exif_util import write_exif
+from src.io.file_access_guard import wait_until_path_is_found
 
 
 def save_processed_img(img, mask_results, paths, draw_mask=False, local_mask=False, remote_mask=False, mask_color=None,
@@ -61,8 +61,10 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, local_mask=Fal
     pil_img.save(paths.output_file)
 
     if local_mask:
+        wait_until_path_is_found([paths.input_dir])
         _save_mask(agg_mask, paths.input_webp)
     if remote_mask:
+        wait_until_path_is_found([paths.output_dir])
         _save_mask(agg_mask, paths.output_webp)
     return 0
 

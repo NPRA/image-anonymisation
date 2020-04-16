@@ -22,6 +22,7 @@ class BaseWorker:
 
         self.worker_exceptions = (AssertionError,)
         self.error_message = "Got error while processing image '{image_path}':\n{err}"
+        self.finished_message = "Worker finished. File: 'image_path'"
         self.async_worker = None
 
         self.args = tuple()
@@ -76,13 +77,15 @@ class BaseWorker:
             try:
                 result = self.async_worker.get()
                 assert self.result_is_valid(result), f"Invalid result: '{result}'"
+
             except self.worker_exceptions as err:
                 self.handle_error(err)
-                result = None
+                return None
         else:
             # The execution was not run asynchronously, which means that the result is stored in `self.async_worker`.
             result = self.async_worker
 
+        LOGGER.info(__name__, self.finished_message.format(image_file=self.paths.input_file))
         return result
 
     def handle_error(self, err):
@@ -120,7 +123,8 @@ class SaveWorker(BaseWorker):
     def __init__(self, pool, paths, img, mask_results):
         super().__init__(pool, paths)
 
-        self.error_message = "Got error while saving masked image '{image_path}':\n{err}"
+        self.error_message = "Got error while saving masked image '{image_path}': {err}"
+        self.finished_message = "Saved masked image and mask. File: {image_file}"
         self.worker_exceptions = (
             AssertionError,
             FileNotFoundError,
@@ -181,7 +185,8 @@ class EXIFWorker(BaseWorker):
     def __init__(self, pool, paths, mask_results):
         super().__init__(pool, paths)
 
-        self.error_message = "Got error while processing EXIF data for image '{image_path}':\n{err}"
+        self.error_message = "Got error while processing EXIF data for image '{image_path}': {err}"
+        self.finished_message = "Saved EXIF to JSON. File: {image_file}"
         self.worker_exceptions = (
             AssertionError,
             FileNotFoundError,

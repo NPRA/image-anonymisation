@@ -13,7 +13,7 @@ import config
 from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
 from src.Masker import Masker
-from src.Logger import LOGGER, config_string
+from src.Logger import LOGGER, LOG_SEP, config_string
 from src.ImageProcessor import ImageProcessor
 
 # Exceptions to catch when processing an image
@@ -175,8 +175,11 @@ def main():
     # Mask images
     time_at_iter_start = time.time()
     for i, paths in enumerate(tree_walker.walk()):
-        LOGGER.set_state(paths)
+        count_str = f"{i+1} of {n_imgs}"
         start_time = time.time()
+        LOGGER.set_state(paths)
+        LOGGER.info(__name__, LOG_SEP)
+        LOGGER.info(__name__, f"Iteration: {count_str}.")
 
         # Catch potential exceptions raised while processing the image
         try:
@@ -185,16 +188,16 @@ def main():
             # Do the processing
             image_processor.process_image(img, paths)
         except PROCESSING_EXCEPTIONS as err:
-            LOGGER.error(__name__, f"Got error:\n'{str(err)}'\nwhile processing image {count_str}. File: "
-                                   f"{paths.input_file}.", save=True, email=True, email_mode="error")
+            error_msg = f"'{str(err)}'. File: {paths.input_file}"
+            LOGGER.error(__name__, error_msg, save=True, email=True, email_mode="error")
             continue
 
-        time_delta = "{:.3f}".format(time.time() - start_time)
         n_masked += 1
-        count_str = f"{i+1} of {n_imgs}"
         est_done = get_estimated_done(time_at_iter_start, n_imgs, i+1)
-        LOGGER.info(__name__, f"Masked image {count_str} in {time_delta} s. Estimated done: {est_done}. File: "
-                              f"{paths.input_file}.")
+        iter_time_delta = "{:.3f}".format(time.time() - start_time)
+        LOGGER.info(__name__, f"Iteration finished in {iter_time_delta} s.")
+        LOGGER.info(__name__, f"Estimated completion: {est_done}")
+
     image_processor.close()
 
     # Summary

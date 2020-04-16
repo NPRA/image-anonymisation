@@ -10,7 +10,7 @@ class Logger:
         self.paths = None
         self.namespace = "image-anonymisation"
         self.logger = logging.getLogger(self.namespace)
-        self.fmt = "%(asctime)s (%(levelname)s): %(message)s"
+        self.fmt = "[%(asctime)s %(levelname)s]: %(message)s"
         self.datefmt = config.datetime_format
         self.log_file_path = None
 
@@ -49,7 +49,7 @@ class Logger:
             # Try to create the error directory. Abort saving if it fails.
             try:
                 os.makedirs(self.paths.error_output_dir, exist_ok=True)
-            except FileNotFoundError as err:
+            except (FileNotFoundError, OSError) as err:
                 logger.log(logging.ERROR, f"Got error '{str(err)}' while trying to save error image.")
                 return
             
@@ -77,6 +77,7 @@ class Logger:
 
 
 LOGGER = Logger()
+LOG_SEP = 150 * "-"
 
 
 def config_string():
