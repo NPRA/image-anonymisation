@@ -6,8 +6,6 @@ from shutil import rmtree
 from config import PROJECT_ROOT
 from src.Masker import Masker, download_model
 
-# TODO: Performance check on small QA dataset.
-
 
 def test_Masker():
     masker = Masker()
@@ -22,6 +20,30 @@ def test_Masker():
     mask_shape = results["detection_masks"].shape
     assert mask_shape[2] == img.shape[1]
     assert mask_shape[3] == img.shape[2]
+
+
+def test_download_model():
+    """
+    Test that all three model (slow, medium, and fast) can be downloaded, extracted, and ran.
+    """
+    model_names = [
+        'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28',
+        "mask_rcnn_resnet101_atrous_coco_2018_01_28",
+        "mask_rcnn_inception_v2_coco_2018_01_28",
+    ]
+    base_model_path = os.path.join(PROJECT_ROOT, "tests", "tmp")
+    download_base = 'http://download.tensorflow.org/models/object_detection/'
+
+    for model_name in model_names:
+        model_path = os.path.join(base_model_path, model_name)
+        download_model(download_base, model_name, model_path, extract_all=True)
+        _check_model_dir(model_path)
+        _check_load_model(model_path)
+
+    if os.path.isdir(base_model_path):
+        rmtree(base_model_path)
+    else:
+        raise RuntimeError("Could not find download-path for downloaded testing models.")
 
 
 def _check_load_model(model_path):
@@ -58,27 +80,3 @@ def _check_model_dir(model_path):
     assert saved_model_files, f"Saved model directory is empty '{saved_model_path}'"
     assert "saved_model.pb" in saved_model_files, f"Could not find model file 'saved_model.pb' in model directory " \
                                                   f"'{saved_model_path}'"
-
-
-def test_download_model():
-    """
-    Test that all three model (slow, medium, and fast) can be downloaded, extracted, and ran.
-    """
-    model_names = [
-        'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28',
-        "mask_rcnn_resnet101_atrous_coco_2018_01_28",
-        "mask_rcnn_inception_v2_coco_2018_01_28",
-    ]
-    base_model_path = os.path.join(PROJECT_ROOT, "tests", "tmp")
-    download_base = 'http://download.tensorflow.org/models/object_detection/'
-
-    for model_name in model_names:
-        model_path = os.path.join(base_model_path, model_name)
-        download_model(download_base, model_name, model_path, extract_all=True)
-        _check_model_dir(model_path)
-        _check_load_model(model_path)
-
-    if os.path.isdir(base_model_path):
-        rmtree(base_model_path)
-    else:
-        raise RuntimeError("Could not find download-path for downloaded testing models.")

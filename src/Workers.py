@@ -69,9 +69,6 @@ class BaseWorker:
         :return: Return value from `self.async_func`.
         :rtype:
         """
-        if self.async_worker is None:
-            raise RuntimeError("Can not get the result from a not-started worker.")
-
         if config.enable_async:
             # Try to get the result from the asynchronous worker. If it raises an exception, handle the exception.
             try:
@@ -131,14 +128,22 @@ class SaveWorker(BaseWorker):
             PermissionError,
             OSError,
         )
-        self.args = (img, mask_results, self.paths)
+
+        # Arguments to async. function
+        save_args = dict(draw_mask=config.draw_mask, local_mask=config.local_mask, remote_mask=config.remote_mask,
+                         mask_color=config.mask_color, blur=config.blur, gray_blur=config.gray_blur,
+                         normalized_gray_blur=config.normalized_gray_blur)
+        archive_args = dict(archive_json=config.archive_json, archive_mask=config.archive_mask,
+                            delete_input_img=config.delete_input, assert_output_mask=True)
+        self.args = (img, mask_results, self.paths, save_args, archive_args)
+
         self.start()
 
     def result_is_valid(self, result):
         return result == 0
 
     @staticmethod
-    def async_func(img, mask_results, paths):
+    def async_func(img, mask_results, paths, save_args, archive_args):
         """
         Save the result files and do archiving.
 
@@ -148,6 +153,10 @@ class SaveWorker(BaseWorker):
         :type mask_results: dict
         :param paths: Paths object representing the image file.
         :type paths: src.io.TreeWalker.Paths
+        :param save_args: Additional keyword-arguments to `src.io.save.save_processed_img`
+        :type save_args: dict
+        :param archive_args: Additional keyword-arguments to `src.io.save.archive`
+        :type archive_args: dict
 
         :return: 0
         :rtype: int
@@ -156,16 +165,13 @@ class SaveWorker(BaseWorker):
         # `output_path` might be a folder which does not yet exist.
         wait_until_path_is_found([paths.input_file, paths.base_output_dir])
         # Save
-        save.save_processed_img(img, mask_results, paths, draw_mask=config.draw_mask, local_mask=config.local_mask,
-                                remote_mask=config.remote_mask, mask_color=config.mask_color, blur=config.blur,
-                                gray_blur=config.gray_blur, normalized_gray_blur=config.normalized_gray_blur)
+        save.save_processed_img(img, mask_results, paths, **save_args)
 
         if paths.archive_dir is not None:
             # Wait if we can't find the input image, the output path or the archive path
             wait_until_path_is_found([paths.input_file, paths.output_dir, paths.base_archive_dir])
             # Archive
-            save.archive(paths, archive_json=config.archive_json, archive_mask=config.archive_mask,
-                         delete_input_img=config.delete_input, assert_output_mask=True)
+            save.archive(paths, **archive_args)
 
         return 0
 
@@ -193,14 +199,14 @@ class EXIFWorker(BaseWorker):
             PermissionError,
             OSError,
         )
-        self.args = (self.paths, mask_results)
+        self.args = (self.paths, mask_results, config.local_json, config.remote_json)
         self.start()
 
     def result_is_valid(self, result):
         return isinstance(result, dict)
 
     @staticmethod
-    def async_func(paths, mask_results):
+    def async_func(paths, mask_results, local_json, remote_json):
         """
         Run the EXIF processing: Read the EXIF data, add the required fields, and save it. File exports are controlled
         in `config`.
@@ -209,6 +215,10 @@ class EXIFWorker(BaseWorker):
         :type paths: src.io.TreeWalker.Paths
         :param mask_results: Results from `src.Masker.Masker.mask`
         :type mask_results: dict
+        :param local_json: Write JSON file to the input (local) directory?
+        :type local_json: bool
+        :param remote_json: Write JSON file to the output (remote) directory?
+        :type remote_json: bool
         :return: EXIF dict written to the specified locations
         :rtype: dict
         """
@@ -220,10 +230,10 @@ class EXIFWorker(BaseWorker):
         # Insert path to output image
         exif["anonymisert_bildefil"] = paths.output_file.replace(os.sep, "/")
 
-        if config.local_json:
+        if local_json:
             # Write EXIF to input directory
             exif_util.write_exif(exif, paths.input_json)
-        if config.remote_json:
+        if remote_json:
             # Write EXIF to output directory
             wait_until_path_is_found([paths.base_output_dir])
             os.makedirs(paths.output_dir, exist_ok=True)

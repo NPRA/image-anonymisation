@@ -202,7 +202,7 @@ def main():
 
     # Summary
     summary_str = get_summary(tree_walker, n_masked, start_datetime)
-    LOGGER.info(__name__, summary_str, email=True, email_mode="finished")
+    LOGGER.info(__name__, LOG_SEP + "\n" + summary_str, email=True, email_mode="finished")
 
 
 if __name__ == '__main__':
