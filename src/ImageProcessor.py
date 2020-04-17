@@ -1,3 +1,4 @@
+import os
 import time
 import multiprocessing
 import numpy as np
@@ -5,6 +6,7 @@ import numpy as np
 import config
 from src.Logger import LOGGER
 from src.Workers import SaveWorker, EXIFWorker
+from src.io.file_checker import check_all_files_written
 
 
 class ImageProcessor:
@@ -50,19 +52,29 @@ class ImageProcessor:
         :param mask_results:
         :type mask_results:
         """
-        self.workers.append(SaveWorker(self.pool, paths, image, mask_results))
-        self.workers.append(EXIFWorker(self.pool, paths, mask_results))
+        # Write the cache file indicating that the saving process has begun.
+        paths.create_cache_file()
+        # Create workers
+        worker = {
+            "paths": paths,
+            "SaveWorker": SaveWorker(self.pool, paths, image, mask_results),
+            "EXIFWorker": EXIFWorker(self.pool, paths, mask_results)
+        }
+        self.workers.append(worker)
 
     def _wait_for_workers(self):
         while self.workers:
             worker = self.workers.pop(0)
-            result = worker.get()
 
-            if isinstance(worker, EXIFWorker) and self.database_client is not None:
-                # If `worker` is an `EXIFWorker`, then `result` is the EXIF dict for the
-                # worker's image. If we also have an active database_client, add the EXIF data
-                # to the database client.
-                self.database_client.add_row(result)
+            exif_result = worker["EXIFWorker"].get()
+            save_result = worker["SaveWorker"].get()
+
+            if self.database_client is not None and exif_result is not None:
+                # If we have an active database_client, add the EXIF data to the database client.
+                self.database_client.add_row(exif_result)
+
+            # Check that all expected output files exist, and log an error if any files are missing.
+            check_all_files_written(worker["paths"])
 
     def process_image(self, image, paths):
         """

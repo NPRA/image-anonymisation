@@ -175,6 +175,9 @@ PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 #: Directory containing saved models
 GRAPH_DIRECTORY = os.path.join(PROJECT_ROOT, "models")
 
+#: Directory for cache files
+CACHE_DIRECTORY = os.path.join(PROJECT_ROOT, "_cache")
+
 #: Full path to the saved model
 MODEL_PATH = os.path.join(GRAPH_DIRECTORY, MODEL_NAME)
 

@@ -101,8 +101,9 @@ def initialize():
         mirror_dirs.append(base_archive_dir)
         # Make the archive directory
         os.makedirs(base_archive_dir, exist_ok=True)
-    else:
-        base_archive_dir = None
+
+    # Make the cache directory
+    os.makedirs(config.CACHE_DIRECTORY, exist_ok=True)
 
     # Configure the logger
     LOGGER.base_input_dir = base_input_dir

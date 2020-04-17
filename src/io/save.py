@@ -97,8 +97,6 @@ def archive(paths, archive_mask=False, archive_json=False, delete_input_img=Fals
         _copy_file(paths.output_webp, paths.archive_webp)
     if archive_json:
         _copy_file(paths.output_json, paths.archive_json)
-    if delete_input_img:
-        os.remove(paths.input_file)
     return 0
 
 

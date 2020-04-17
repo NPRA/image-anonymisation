@@ -1,4 +1,8 @@
 import os
+import json
+from uuid import uuid4
+
+import config
 from src.Logger import LOGGER
 
 
@@ -65,6 +69,8 @@ class Paths:
         else:
             self.remaining_mirror_dirs = None
 
+        self.cache_file = os.path.join(config.CACHE_DIRECTORY, str(uuid4()) + ".json")
+
     @property
     def error_output_dir(self):
         error_extension = "_error"
@@ -77,6 +83,17 @@ class Paths:
     @property
     def error_output_file(self):
         return os.path.join(self.error_output_dir, self.filename)
+
+    def create_cache_file(self):
+        json_contents = {k: v for k, v in self.__dict__.items() if isinstance(k, str) or k is None}
+        with open(self.cache_file, "w") as f:
+            json.dump(json_contents, f)
+
+    def remove_cache_file(self):
+        if os.path.isfile(self.cache_file):
+            os.remove(self.cache_file)
+        else:
+            LOGGER.warning(__name__, f"Attempted to remove cache file '{self.cache_file}', but is does not exist.")
 
 
 class TreeWalker:

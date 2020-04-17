@@ -82,7 +82,7 @@ class BaseWorker:
             # The execution was not run asynchronously, which means that the result is stored in `self.async_worker`.
             result = self.async_worker
 
-        LOGGER.info(__name__, self.finished_message.format(image_file=self.paths.input_file))
+        LOGGER.debug(__name__, self.finished_message.format(image_file=self.paths.input_file))
         return result
 
     def handle_error(self, err):

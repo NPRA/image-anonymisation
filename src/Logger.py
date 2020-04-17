@@ -46,25 +46,22 @@ class Logger:
         logger = self.logger
         logger.log(level, msg, *args, **kwargs)
         if save:
-            # Try to create the error directory. Abort saving if it fails.
             try:
+                # Try to save image
                 os.makedirs(self.paths.error_output_dir, exist_ok=True)
-            except (FileNotFoundError, OSError) as err:
+                self._save_error(msg)
+            except Exception as err:
                 logger.log(logging.ERROR, f"Got error '{str(err)}' while trying to save error image.")
                 return
-            
-            # Can we reach the input image?
-            if not os.path.exists(self.paths.input_file):
-                logger.log(logging.ERROR, f"Could not copy image to error directory: Input image "
-                                          f"'{self.paths.input_file}' not found.")
             else:
-                # Save image
-                logger.log(logging.INFO, f"Copying image file to {self.paths.error_output_dir} for manual inspection.")
-                self._save_error(msg)
+                logger.log(logging.INFO, f"Copied image file to {self.paths.error_output_dir} for manual inspection.")
 
         if email and config.processing_error_email:
             from src.email_sender import send_mail
             send_mail(email_mode, msg=msg)
+
+    def debug(self, namespace, *args, **kwargs):
+        self._log(logging.DEBUG, namespace, *args, **kwargs)
 
     def info(self, namespace, *args, **kwargs):
         self._log(logging.INFO, namespace, *args, **kwargs)

@@ -6,6 +6,10 @@ import config
 from src.Logger import LOGGER
 
 
+class PathNotReachableError(Exception):
+    pass
+
+
 def all_exists(paths, exists_func=os.path.exists):
     """
     Returns true if all elements of `paths` is a valid path.
@@ -49,8 +53,8 @@ def wait_until_path_is_found(paths, retry_interval=config.file_access_retry_seco
         time.sleep(retry_interval)
         total_wait_time += retry_interval
         if total_wait_time > timeout:
-            raise FileNotFoundError(f"At least one of the paths in {paths} could not be reached in {timeout}s. "
-                                    f"Aborting.")
+            raise PathNotReachableError(f"At least one of the paths in {paths} could not be reached in {timeout}s. "
+                                        f"Aborting.")
         else:
             LOGGER.info(__name__, f"At least one of the paths in {paths} could not be reached. Retrying.")
     return 0
