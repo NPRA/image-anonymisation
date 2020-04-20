@@ -24,7 +24,7 @@ class ImageProcessor:
 
     def __init__(self, masker, max_num_async_workers=2):
         self.masker = masker
-
+        self.n_completed = 0
         self.workers = []
 
         if config.enable_async:
@@ -74,7 +74,9 @@ class ImageProcessor:
                 self.database_client.add_row(exif_result)
 
             # Check that all expected output files exist, and log an error if any files are missing.
-            check_all_files_written(worker["paths"])
+            all_ok = check_all_files_written(worker["paths"])
+            if all_ok:
+                self.n_completed += 1
 
     def process_image(self, image, paths):
         """

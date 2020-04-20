@@ -182,7 +182,6 @@ def main():
     start_datetime = datetime.now()
     args, tree_walker, image_processor, dataset_iterator = initialize()
     n_imgs = "?" if config.lazy_paths else tree_walker.n_valid_images
-    n_masked = 0
 
     # Mask images
     time_at_iter_start = time.time()
@@ -204,7 +203,6 @@ def main():
             LOGGER.error(__name__, error_msg, save=True, email=True, email_mode="error")
             continue
 
-        n_masked += 1
         est_done = get_estimated_done(time_at_iter_start, n_imgs, i+1)
         iter_time_delta = "{:.3f}".format(time.time() - start_time)
         LOGGER.info(__name__, f"Iteration finished in {iter_time_delta} s.")
@@ -213,7 +211,7 @@ def main():
     image_processor.close()
 
     # Summary
-    summary_str = get_summary(tree_walker, n_masked, start_datetime)
+    summary_str = get_summary(tree_walker, image_processor.n_completed, start_datetime)
     LOGGER.info(__name__, LOG_SEP + "\n" + summary_str, email=True, email_mode="finished")
 
 
