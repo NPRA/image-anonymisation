@@ -124,6 +124,11 @@ def clear_cache():
     export process was aborted due to a critical error. This function will clear the output files written for the
     unfinished image, and then delete the cache file.
     """
+    # Return if we couldn't find a cache directory. This probably means that this is the first time the application is
+    # ran on this machine, so the cache directory has not been created yet
+    if not os.path.exists(config.CACHE_DIRECTORY):
+        return
+
     LOGGER.info(__name__, "Clearing cache files")
     count = 0
     for filename in os.listdir(config.CACHE_DIRECTORY):
