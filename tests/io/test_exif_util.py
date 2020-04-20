@@ -1,7 +1,5 @@
 import os
-import atexit
 import pytest
-from shutil import rmtree
 import numpy as np
 
 from src.io import exif_util
@@ -34,8 +32,6 @@ EXPECTED_KEYS = {
 
 def test_exif_from_file(get_tmp_data_dir):
     tmp_dir = get_tmp_data_dir(subdirs=["real"])
-    atexit.register(rmtree, tmp_dir)
-
     image_path = os.path.join(tmp_dir, "real", "Fy50_Rv003_hp01_f1_m01237.jpg")
     exif = exif_util.exif_from_file(image_path)
     assert set(exif.keys()) == EXPECTED_KEYS
@@ -43,8 +39,6 @@ def test_exif_from_file(get_tmp_data_dir):
 
 def test_get_exif_bad_img(get_tmp_data_dir):
     tmp_dir = get_tmp_data_dir(subdirs=["fake"])
-    atexit.register(rmtree, tmp_dir)
-
     image_path = os.path.join(tmp_dir, "fake", "test_2.jpg")
     with pytest.raises(AssertionError):
         exif_util.exif_from_file(image_path)

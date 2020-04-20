@@ -1,9 +1,30 @@
 import os
 import pytest
-from shutil import copytree
+import atexit
+from shutil import copytree, rmtree
 from uuid import uuid4
 
 import config as original_config
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--runslow", action="store_true", default=False, help="Run slow tests"
+    )
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "slow: mark test as slow to run")
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--runslow"):
+        # --runslow given in cli: do not skip slow tests
+        return
+    skip_slow = pytest.mark.skip(reason="need --runslow option to run")
+    for item in items:
+        if "slow" in item.keywords:
+            item.add_marker(skip_slow)
 
 
 class Config:
@@ -61,7 +82,7 @@ def get_args():
 
 @pytest.fixture
 def get_tmp_data_dir():
-    def _get_tmp_data_dir(subdirs=tuple()):
+    def _get_tmp_data_dir(subdirs=tuple(), remove_on_exit=True):
         tests_root = os.path.dirname(os.path.realpath(__file__))
         tmp_dir_name = f"tmp_{uuid4()}"
         tmp_dir = os.path.join(tests_root, tmp_dir_name)
@@ -71,5 +92,9 @@ def get_tmp_data_dir():
             src_dir = os.path.join(tests_root, "data", subdir_name)
             dest_dir = os.path.join(tmp_dir, subdir_name)
             copytree(src_dir, dest_dir)
+
+        if remove_on_exit:
+            atexit.register(rmtree, tmp_dir)
+
         return tmp_dir
     return _get_tmp_data_dir

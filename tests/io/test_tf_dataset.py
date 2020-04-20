@@ -6,6 +6,7 @@ import numpy as np
 from collections import namedtuple
 
 from src.io.tf_dataset import get_tf_dataset, prepare_img
+from src.io.file_access_guard import PathNotReachableError
 from config import PROJECT_ROOT
 
 IMG_DIR = os.path.join(PROJECT_ROOT, "tests", "data", "fake")
@@ -89,6 +90,7 @@ def test_prepare_imgs_bad_image_tensor():
                         prepare_img(tf.constant("", dtype=tf.string))
 
 
+@pytest.mark.slow
 def test_prepare_imgs_bad_image_file():
     """
     Check that `prepare_img` raises the proper exceptions on corrupted and missing files.
@@ -98,5 +100,5 @@ def test_prepare_imgs_bad_image_file():
         prepare_img(corrupted_filename)
 
     non_existing_filename = tf.constant(os.path.join(IMG_DIR, "foobar.jpg"), tf.string)
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(PathNotReachableError):
         prepare_img(non_existing_filename)

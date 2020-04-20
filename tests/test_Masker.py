@@ -1,12 +1,12 @@
 import os
+import pytest
 import numpy as np
 import tensorflow as tf
-from shutil import rmtree
 
-from config import PROJECT_ROOT
 from src.Masker import Masker, download_model
 
 
+@pytest.mark.slow
 def test_Masker():
     masker = Masker()
     img = tf.zeros((1, 1018, 2703, 3), dtype=tf.uint8)
@@ -22,28 +22,24 @@ def test_Masker():
     assert mask_shape[3] == img.shape[2]
 
 
-def test_download_model():
+@pytest.mark.slow
+def test_download_model(get_tmp_data_dir):
     """
     Test that all three model (slow, medium, and fast) can be downloaded, extracted, and ran.
     """
+    tmp_dir = get_tmp_data_dir()
     model_names = [
         'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28',
         "mask_rcnn_resnet101_atrous_coco_2018_01_28",
         "mask_rcnn_inception_v2_coco_2018_01_28",
     ]
-    base_model_path = os.path.join(PROJECT_ROOT, "tests", "tmp")
     download_base = 'http://download.tensorflow.org/models/object_detection/'
 
     for model_name in model_names:
-        model_path = os.path.join(base_model_path, model_name)
+        model_path = os.path.join(tmp_dir, model_name)
         download_model(download_base, model_name, model_path, extract_all=True)
         _check_model_dir(model_path)
         _check_load_model(model_path)
-
-    if os.path.isdir(base_model_path):
-        rmtree(base_model_path)
-    else:
-        raise RuntimeError("Could not find download-path for downloaded testing models.")
 
 
 def _check_load_model(model_path):

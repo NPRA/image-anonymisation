@@ -1,10 +1,8 @@
 import os
 import pickle
 import pytest
-import atexit
 import numpy as np
 from PIL import Image
-from shutil import rmtree
 
 from src.io.TreeWalker import Paths
 from src.io import save
@@ -15,7 +13,6 @@ from tests.helpers import check_file_exists
 @pytest.fixture
 def image_info(get_tmp_data_dir):
     tmp_dir = get_tmp_data_dir(subdirs=["fake"])
-    atexit.register(rmtree, tmp_dir)
 
     tmp_in = os.path.join(tmp_dir, "fake")
     tmp_out = os.path.join(tmp_dir, "out")

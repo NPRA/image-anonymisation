@@ -1,7 +1,5 @@
 import os
 import pytest
-import atexit
-from shutil import rmtree
 from unittest import mock
 import numpy as np
 import pickle
@@ -18,7 +16,6 @@ from tests.helpers import check_file_exists
 def get_image_info(get_tmp_data_dir):
     def _get_info(enable_archive):
         tmp_dir = get_tmp_data_dir(subdirs=["real"])
-        atexit.register(rmtree, tmp_dir)
 
         tmp_in = os.path.join(tmp_dir, "real")
         mirror_dirs = [os.path.join(tmp_dir, "out")]

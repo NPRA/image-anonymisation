@@ -1,8 +1,6 @@
 import os
 import time
-import atexit
 import pytest
-from shutil import rmtree
 from unittest import mock
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
@@ -41,6 +39,7 @@ EXPECTED_ERROR_FILES = [
 ]
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("enable_exports,enable_async", [
     (True, True),
     (True, False),
@@ -64,8 +63,6 @@ def test_main(get_args, get_config, get_tmp_data_dir, enable_exports, enable_asy
     """
     # Setup a temporary directory
     tmp_dir = get_tmp_data_dir(subdirs=["real"])
-    # Register an exit handler which removes the temporary directory
-    atexit.register(rmtree, tmp_dir)
 
     # Booleans for archiving and output file saving.
     archive = enable_exports
@@ -80,7 +77,7 @@ def test_main(get_args, get_config, get_tmp_data_dir, enable_exports, enable_asy
 
     # Get the command line arguments
     args = get_args(input_folder=os.path.join(tmp_dir, "real"), output_folder=os.path.join(tmp_dir, "out"),
-                    archive_folder=archive_folder, clear_cache=True)
+                    archive_folder=archive_folder, clear_cache=False)
     # Get the config
     cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), **config_params)
     # Run main
@@ -102,11 +99,13 @@ def run_main(new_config, new_args):
     """
     tf.keras.backend.clear_session()
     mockers = [
+        mock.patch("src.main.get_args", new=new_args),
         mock.patch("src.main.config", new=new_config),
         mock.patch("src.ImageProcessor.config", new=new_config),
         mock.patch("src.Masker.config", new=new_config),
-        mock.patch("src.main.get_args", new=new_args),
-        mock.patch("src.Workers.config", new=new_config)
+        mock.patch("src.Workers.config", new=new_config),
+        mock.patch("src.io.TreeWalker.config", new=new_config),
+        mock.patch("src.io.file_checker.config", new=new_config),
     ]
     for m in mockers: m.start()
     main()
