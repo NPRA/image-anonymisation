@@ -173,16 +173,16 @@ MODEL_NAME = {
     "Fast": "mask_rcnn_inception_v2_coco_2018_01_28",
 }[model_type]
 
-#: Root directory for the project
+# Root directory for the project
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 
-#: Directory containing saved models
+# Directory containing saved models
 GRAPH_DIRECTORY = os.path.join(PROJECT_ROOT, "models")
 
-#: Directory for cache files
+# Directory for cache files
 CACHE_DIRECTORY = os.path.join(PROJECT_ROOT, "_cache")
 
-#: Full path to the saved model
+# Full path to the saved model
 MODEL_PATH = os.path.join(GRAPH_DIRECTORY, MODEL_NAME)
 
 #: Base URL for model downloading

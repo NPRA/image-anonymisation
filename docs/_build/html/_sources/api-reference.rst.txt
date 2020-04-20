@@ -46,6 +46,16 @@ io.TreeWalker
 .. automodule:: src.io.TreeWalker
    :members:
 
+io.file_access_guard
+-------------------------
+.. automodule:: src.io.file_access_guard
+   :members:
+
+io.file_checker
+-------------------------
+.. automodule:: src.io.file_checker
+   :members:
+
 email_sender
 =========================
 .. automodule:: src.email_sender

@@ -99,23 +99,20 @@ class Paths:
 class TreeWalker:
     """
     Traverses a file-tree and finds all valid files with extension `ext`.
+
+    :param input_folder: Root directory for tree traversal.
+    :type input_folder: str
+    :param mirror_folders: List of directories to traverse in parallel to `input_folders`.
+    :type mirror_folders: list of str
+    :param skip_webp: Skip images that already have an associated .webp file in `output_folder`.
+    :type skip_webp: bool
+    :param precompute_paths: Traverse the whole tree during initialization? When this is true, `TreeWalker.walk`
+                             will return an iterator. Otherwise it will return a generator.
+    :type precompute_paths: bool
+    :param ext: File extension for files returned by `TreeWalker.walk`.
+    :type ext: str
     """
     def __init__(self, input_folder, mirror_folders, skip_webp=True, precompute_paths=True, ext="jpg"):
-        """
-        Initialize the file-tree walker.
-
-        :param input_folder: Root directory for tree traversal.
-        :type input_folder: str
-        :param mirror_folders: List of directories to traverse in parallel to `input_folders`.
-        :type mirror_folders: list of str
-        :param skip_webp: Skip images that already have an associated .webp file in `output_folder`.
-        :type skip_webp: bool
-        :param precompute_paths: Traverse the whole tree during initialization? When this is true, `TreeWalker.walk`
-                                 will return an iterator. Otherwise it will return a generator.
-        :type precompute_paths: bool
-        :param ext: File extension for files returned by `TreeWalker.walk`.
-        :type ext: str
-        """
         LOGGER.info(__name__, f"Initializing file tree walker at '{input_folder}'.")
         self.input_folder = input_folder
         self.mirror_folders = mirror_folders

@@ -7,6 +7,7 @@ from src.Logger import LOGGER
 
 
 class PathNotReachableError(Exception):
+    """Error raised when one or more paths cannot be reached"""
     pass
 
 
@@ -33,7 +34,7 @@ def wait_until_path_is_found(paths, retry_interval=config.file_access_retry_seco
                              timeout=config.file_access_timeout_seconds):
     """
     Blocks execution until all elements of `paths` are valid paths, for `timeout` seconds. If the timeout is reached,
-    and one or more paths still do not exist, a `FileNotFoundError` will be raised.
+    and one or more paths still do not exist, a `PathNotReachableError` will be raised.
 
     :param paths: Iterable where each element is a string of paths. The elements can also be `bytes`.
     :type paths: list of str | tuple of str | np.ndarray
