@@ -69,8 +69,7 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, local_mask=Fal
     return 0
 
 
-def archive(paths, archive_mask=False, archive_json=False, delete_input_img=False,
-            assert_output_mask=True):
+def archive(paths, archive_mask=False, archive_json=False, assert_output_mask=True):
     """
     Copy the input image file (and possibly some output files) to the archive directory.
 
@@ -80,8 +79,6 @@ def archive(paths, archive_mask=False, archive_json=False, delete_input_img=Fals
     :type archive_mask: bool
     :param archive_json: Copy the EXIF file to the archive directory?
     :type archive_json: bool
-    :param delete_input_img: Delete the image from the input directory?
-    :type delete_input_img: bool
     :param assert_output_mask: Assert that the output mask exists before archiving?
     :type assert_output_mask: bool
     :returns: 0

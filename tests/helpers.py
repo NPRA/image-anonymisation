@@ -1,7 +1,7 @@
 import os
 
 
-def check_file_exists(path, filename, ext=None, invert=False):
+def check_file_exists(path, filename=None, ext=None, invert=False):
     """
     Assert that the given file exists.
 
@@ -14,10 +14,14 @@ def check_file_exists(path, filename, ext=None, invert=False):
     :param invert: Invert the assertion? (Default = False).
     :type invert: bool
     """
-    if ext is not None:
-        filename = os.path.splitext(filename)[0] + ext
+    if filename is not None:
+        file_path = os.path.join(path, filename)
+    else:
+        file_path = path
 
-    file_path = os.path.join(path, filename)
+    if ext is not None:
+        file_path = os.path.splitext(file_path)[0] + ext
+
     is_file = os.path.isfile(file_path)
     if not invert:
         assert is_file, f"Expected to find file '{file_path}'"

@@ -44,7 +44,7 @@ def get_config():
 
 
 class Args:
-    KEYS = ["input_folder", "output_folder", "archive_folder", "log_folder"]
+    KEYS = ["input_folder", "output_folder", "archive_folder", "log_folder", "clear_cache"]
     
     def __init__(self, **kwargs):
         for key in Args.KEYS:

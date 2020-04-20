@@ -89,9 +89,9 @@ def run_test(get_args, get_config, get_tmp_data_dir, archive, config_params):
 
     # Get the command line arguments
     args = get_args(input_folder=os.path.join(tmp_dir, "real"), output_folder=os.path.join(tmp_dir, "out"),
-                    archive_folder=archive_folder)
+                    archive_folder=archive_folder, clear_cache=True)
     # Get the configs
-    cfg = get_config(**config_params)
+    cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), **config_params)
     # Run main
     run_main(cfg, args)
     # Wait for the asynchronous export to complete
