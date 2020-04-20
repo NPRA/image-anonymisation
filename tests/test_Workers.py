@@ -99,8 +99,38 @@ def test_EXIFWorker(get_config, get_image_info, remote_json, local_json, enable_
     # Run the worker
     with mock.patch("src.Workers.config", new=config):
         worker = EXIFWorker(pool, paths, mask_results)
-        worker.get()
+        exif = worker.get()
 
+    # Check that the exif dict contains the required keys
+    assert set(exif.keys()) == EXPECTED_EXIF_KEYS
     # Check expected output files
     check_file_exists(paths.input_json, invert=not local_json)
     check_file_exists(paths.output_json, invert=not remote_json)
+
+
+EXPECTED_EXIF_KEYS = {
+    "exif_tid",
+    "exif_dato",
+    "exif_speed",
+    "exif_heading",
+    "exif_gpsposisjon",
+    "exif_strekningsnavn",
+    "exif_fylke",
+    "exif_vegkat",
+    "exif_vegstat",
+    "exif_vegnr",
+    "exif_hp",
+    "exif_meter",
+    "exif_feltkode",
+    "exif_mappenavn",
+    "exif_filnavn",
+    "exif_strekningreferanse",
+    "exif_imageproperties",
+    "exif_reflinkid",
+    "exif_reflinkposisjon",
+    "exif_reflinkinfo",
+    "exif_xptitle",
+    "bildeuuid",
+    "detekterte_objekter",
+    "anonymisert_bildefil",
+}
