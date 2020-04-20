@@ -25,9 +25,8 @@ def main():
     tree_walker = TreeWalker(args.input_dir, [], skip_webp=False, precompute_paths=True, ext="json")
 
     with DatabaseClient(max_n_accumulated_rows=8) as cli:
-        for input_path, _, filename in tqdm(tree_walker.walk()):
-            filepath = os.path.join(input_path, filename)
-            process_json(filepath, cli)
+        for paths in tqdm(tree_walker.walk()):
+            process_json(paths.input_file, cli)
 
 
 if __name__ == '__main__':

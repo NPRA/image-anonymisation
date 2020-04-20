@@ -9,6 +9,10 @@ from src.db.DatabaseClient import DatabaseClient
 from src.db.setup_table import COLUMNS
 
 
+WIDTH = 150
+SEP = WIDTH * "-"
+
+
 def output_type_handler(cursor, name, defaultType, size, precision, scale):
     if defaultType == cxo.CLOB:
         return cursor.var(cxo.LONG_STRING, arraysize=cursor.arraysize)
@@ -24,8 +28,8 @@ def datetime_to_str(dt):
     return datetime.strftime(dt, config.datetime_format)
 
 
-def print_result(res, width=120):
-    print(width * "-")
+def print_result(res):
+    print(SEP)
     print_dict = {}
     for col, elem in zip(COLUMNS, res):
         if col.col_dtype == "DATE":
@@ -34,7 +38,7 @@ def print_result(res, width=120):
             elem = lob_to_dict(elem)
         print_dict[col.col_name] = elem
 
-    pprint(print_dict, width=width, depth=1)
+    pprint(print_dict, width=WIDTH, depth=1)
 
 
 if __name__ == '__main__':
@@ -43,5 +47,9 @@ if __name__ == '__main__':
             connection.outputtypehandler = output_type_handler
             cursor = connection.cursor()
             cursor.execute(f"SELECT * FROM {db_config.table_name}")
+            count = 0
             for res in cursor:
                 print_result(res)
+                count += 1
+            print(SEP)
+            print(f"Found {count} records in table.")
