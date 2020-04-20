@@ -1,6 +1,7 @@
 import os
 import time
 import atexit
+import pytest
 from shutil import rmtree
 from unittest import mock
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -40,6 +41,56 @@ EXPECTED_ERROR_FILES = [
 ]
 
 
+@pytest.mark.parametrize("enable_exports,enable_async", [
+    (True, True),
+    (True, False),
+    (False, True),
+    (False, False)
+])
+def test_main(get_args, get_config, get_tmp_data_dir, enable_exports, enable_async):
+    """
+    End-to-end test for the `src.main.main` function.
+
+    :param get_args: Fixture-function which gets the command line arguments
+    :type get_args: function
+    :param get_config: Fixture-function which gets the config
+    :type get_config: function
+    :param get_tmp_data_dir: Fixture-function which sets up a temporary data directory
+    :type get_tmp_data_dir: function
+    :param enable_exports: Enable saving of extra output files (mask, json, and archive)
+    :type enable_exports: bool
+    :param enable_async: Enable asynchronous processing
+    :type enable_async: bool
+    """
+    # Setup a temporary directory
+    tmp_dir = get_tmp_data_dir(subdirs=["real"])
+    # Register an exit handler which removes the temporary directory
+    atexit.register(rmtree, tmp_dir)
+
+    # Booleans for archiving and output file saving.
+    archive = enable_exports
+    config_params = dict(local_json=enable_exports, remote_json=enable_exports, local_mask=enable_exports,
+                         remote_mask=enable_exports)
+
+    # Set the archive folder
+    if archive:
+        archive_folder = os.path.join(tmp_dir, "arch")
+    else:
+        archive_folder = None
+
+    # Get the command line arguments
+    args = get_args(input_folder=os.path.join(tmp_dir, "real"), output_folder=os.path.join(tmp_dir, "out"),
+                    archive_folder=archive_folder, clear_cache=True)
+    # Get the config
+    cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), **config_params)
+    # Run main
+    run_main(cfg, args)
+    # Wait for the asynchronous export to complete
+    time.sleep(3)
+    # Check that all files were created/not created as expected
+    check_files(tmp_dir, cfg, args)
+
+
 def run_main(new_config, new_args):
     """
     Run `src.main.main` while mocking the command line arguments and the config.
@@ -60,44 +111,6 @@ def run_main(new_config, new_args):
     for m in mockers: m.start()
     main()
     for m in mockers: m.stop()
-
-
-def run_test(get_args, get_config, get_tmp_data_dir, archive, config_params):
-    """
-    Actually run the test.
-
-    :param get_args: Fixture-function which gets the command line arguments
-    :type get_args: function
-    :param get_config: Fixture-function which gets the config
-    :type get_config: function
-    :param get_tmp_data_dir: Fixture-function which sets up a temporary data directory
-    :type get_tmp_data_dir: function
-    :param config_params: Dictionary containing config parameters. These will override the defaults in
-                        `tests.conftest.Config` and `config`.
-    :type config_params: dict
-    """
-    # Setup a temporary directory
-    tmp_dir = get_tmp_data_dir(subdirs=["real"])
-    # Register an exit handler which removes the temporary directory
-    atexit.register(rmtree, tmp_dir)
-
-    # Is archiving enabled?
-    if archive:
-        archive_folder = os.path.join(tmp_dir, "arch")
-    else:
-        archive_folder = None
-
-    # Get the command line arguments
-    args = get_args(input_folder=os.path.join(tmp_dir, "real"), output_folder=os.path.join(tmp_dir, "out"),
-                    archive_folder=archive_folder, clear_cache=True)
-    # Get the configs
-    cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), **config_params)
-    # Run main
-    run_main(cfg, args)
-    # Wait for the asynchronous export to complete
-    time.sleep(3)
-    # Check that all files were created/not created as expected
-    check_files(tmp_dir, cfg, args)
 
 
 def check_files(tmp_dir, cfg, args):
@@ -130,45 +143,3 @@ def check_files(tmp_dir, cfg, args):
     for rel_path, filename in EXPECTED_ERROR_FILES:
         error_path = os.path.join(tmp_dir, "out_error", rel_path)
         check_file_exists(error_path, filename)
-
-
-def test_main(get_args, get_config, get_tmp_data_dir):
-    """
-    Run `src.main.main` without any additional file exports, and without asynchronous processing enabled. Check that
-    files are created/not created as expected.
-    """
-    run_test(get_args, get_config, get_tmp_data_dir, archive=False, config_params=dict(
-        enable_async=False, local_json=False, remote_json=False, local_mask=False, remote_mask=False
-    ))
-
-
-def test_main_async(get_args, get_config, get_tmp_data_dir):
-    """
-    Run `src.main.main` without any additional file exports, and with asynchronous processing enabled. Check that
-    files are created/not created as expected.
-    """
-    run_test(get_args, get_config, get_tmp_data_dir, archive=False, config_params=dict(
-        enable_async=True, local_json=False, remote_json=False, local_mask=False, remote_mask=False
-    ))
-
-
-def test_main_exports(get_args, get_config, get_tmp_data_dir):
-    """
-    Run `src.main.main` with all additional file exports, but without asynchronous processing enabled. Check that
-    files are created/not created as expected.
-    """
-    run_test(get_args, get_config, get_tmp_data_dir, archive=True, config_params=dict(
-        enable_async=False, local_json=True, remote_json=True, local_mask=True, remote_mask=True
-    ))
-
-
-def test_main_async_exports(get_args, get_config, get_tmp_data_dir):
-    """
-    Run `src.main.main` with all additional file exports, and with asynchronous processing enabled. Check that
-    files are created/not created as expected.
-    """
-    run_test(get_args, get_config, get_tmp_data_dir, archive=True, config_params=dict(
-        enable_async=True, local_json=True, remote_json=True, local_mask=True, remote_mask=True
-    ))
-
-

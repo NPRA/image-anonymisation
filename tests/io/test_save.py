@@ -4,11 +4,10 @@ import pytest
 import atexit
 import numpy as np
 from PIL import Image
-from shutil import copy2, rmtree
+from shutil import rmtree
 
 from src.io.TreeWalker import Paths
 from src.io import save
-from config import PROJECT_ROOT
 
 from tests.helpers import check_file_exists
 
@@ -35,19 +34,26 @@ def image_info(get_tmp_data_dir):
     return img, mask_results, paths
 
 
-def run_save(image_info, local_mask=False, remote_mask=False, mask_color=None, blur=None,
-             gray_blur=True, normalized_gray_blur=True):
+@pytest.mark.parametrize("local_mask,remote_mask", [
+    (True, True),
+    (False, False)
+])
+def test_save_processed_img(image_info, local_mask, remote_mask):
     img, mask_results, paths = image_info
     save.save_processed_img(img, mask_results, paths, draw_mask=True, local_mask=local_mask, remote_mask=remote_mask,
-                            mask_color=mask_color, blur=blur, gray_blur=gray_blur,
-                            normalized_gray_blur=normalized_gray_blur)
+                            mask_color=None, blur=15, gray_blur=True,
+                            normalized_gray_blur=True)
 
     check_file_exists(paths.output_file)
     check_file_exists(paths.output_webp, invert=not remote_mask)
     check_file_exists(paths.input_webp, invert=not local_mask)
 
 
-def run_archive(image_info, archive_mask=False, archive_json=False, assert_output_mask=True):
+@pytest.mark.parametrize("archive_mask,archive_json", [
+    (True, True),
+    (False, False)
+])
+def test_archive_without_extra_files(image_info, archive_mask, archive_json):
     paths = image_info[2]
 
     os.makedirs(paths.output_dir)
@@ -59,29 +65,11 @@ def run_archive(image_info, archive_mask=False, archive_json=False, assert_outpu
     with open(paths.output_json, "w") as f:
         f.write("Output json")
 
-    save.archive(paths, archive_mask=archive_mask, archive_json=archive_json, assert_output_mask=assert_output_mask)
+    save.archive(paths, archive_mask=archive_mask, archive_json=archive_json, assert_output_mask=True)
 
     check_file_exists(paths.archive_file)
     check_file_exists(paths.archive_json, invert=not archive_json)
     check_file_exists(paths.archive_webp, invert=not archive_mask)
-
-
-def test_save_processed_img_without_masks(image_info):
-    run_save(image_info, local_mask=False, remote_mask=False, mask_color=None, blur=15, gray_blur=True,
-             normalized_gray_blur=True)
-
-
-def test_save_processed_img_with_masks(image_info):
-    run_save(image_info, local_mask=True, remote_mask=True, mask_color=None, blur=15, gray_blur=True,
-             normalized_gray_blur=True)
-
-
-def test_archive_without_extra_files(image_info):
-    run_archive(image_info, archive_mask=False, archive_json=False, assert_output_mask=True)
-
-
-def test_archive_with_extra_files(image_info):
-    run_archive(image_info, archive_mask=True, archive_json=True, assert_output_mask=True)
 
 
 def test_archive_raises_assertion_error(image_info):
