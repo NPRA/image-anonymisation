@@ -12,6 +12,7 @@ import tensorflow as tf
 import config
 from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
+from src.io.file_checker import clear_cache
 from src.Masker import Masker
 from src.Logger import LOGGER, LOG_SEP, config_string
 from src.ImageProcessor import ImageProcessor
@@ -27,14 +28,17 @@ PROCESSING_EXCEPTIONS = (
 def get_args():
     """ Get the command-line arguments. """
     parser = argparse.ArgumentParser(description='Image anonymisation')
-    parser.add_argument("-i", "--input-folder", dest="input_folder", help="Base directory for input images.")
+    parser.add_argument("-i", "--input-folder", dest="input_folder",
+                        help="Base directory for input images.")
     parser.add_argument("-o", "--output-folder", dest="output_folder",
                         help="Base directory for masked (output) images and metadata files")
     parser.add_argument("-a", "--archive-folder", dest="archive_folder", default=None,
                         help="Optional base directory for archiving original images.")
     parser.add_argument("-l", "--log-folder", dest="log_folder", default=None,
                         help="Optional path to directory of log file. The log file will be named "
-                             "<log\\folder>\\<hostname>.log")
+                             "<log\\folder>\\<timestamp> <hostname>.log")
+    parser.add_argument("--skip-clear-cache", dest="clear_cache", action="store_false",
+                        help="Disables the clearing of cahce files at startup.")
     args = parser.parse_args()
     return args
 
@@ -56,6 +60,9 @@ def check_config(args):
         # Otherwise this will raise an exception prompting the user to create the file.
         import src.email_sender
 
+    valid_log_levels = ["DEBUG", "INFO", "WARNING", "ERROR"]
+    assert config.log_level in valid_log_levels, f"config.log_level must be one of {valid_log_levels}"
+
 
 def initialize():
     """
@@ -70,10 +77,13 @@ def initialize():
         from src.email_sender import email_excepthook
         sys.excepthook = email_excepthook
 
-    # Configure logger
-    logging.basicConfig(level=logging.INFO, format=LOGGER.fmt, datefmt=LOGGER.datefmt)
     # Get arguments
     args = get_args()
+    # Check that the config and command line arguments are valid
+    check_config(args)
+
+    # Configure logger
+    logging.basicConfig(level=getattr(logging, config.log_level), format=LOGGER.fmt, datefmt=LOGGER.datefmt)
 
     # Set log file
     if args.log_folder is not None:
@@ -86,8 +96,9 @@ def initialize():
     # Log the current config.
     LOGGER.info(__name__, "\n" + config_string())
 
-    # Check that the config and command line arguments are valid
-    check_config(args)
+    if args.clear_cache:
+        # Clear any cached files
+        clear_cache()
 
     # Get the absolute path of the directories
     base_input_dir = os.path.abspath(args.input_folder)

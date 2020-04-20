@@ -151,7 +151,7 @@ class TreeWalker:
         if self.skip_webp:
             webp_path = os.path.join(mirror_dirs[0], self._to_webp(filename))
             if os.path.exists(webp_path):
-                LOGGER.info(__name__, f"Mask already found for '{input_filepath}' at '{webp_path}'.")
+                LOGGER.debug(__name__, f"Mask already found for '{input_filepath}' at '{webp_path}'.")
                 self.n_skipped_images += 1
                 return False
 
@@ -163,7 +163,6 @@ class TreeWalker:
             mirror_dirs = self._get_mirror_dirs(input_dir)
             for filename in file_names:
                 if self._path_is_valid(input_dir, mirror_dirs, filename):
-                    # yield input_dir, mirror_dirs, filename
                     yield Paths(base_input_dir=self.input_folder, base_mirror_dirs=self.mirror_folders,
                                 input_dir=input_dir, mirror_dirs=mirror_dirs, filename=filename)
 

@@ -8,6 +8,10 @@ import os
 # Miscellaneous configuration parameters
 # ======================================
 
+#: Logging level for the application. This controls the log level for terminal logging and file logging (if it is
+#: enabled). Must be one of {"DEBUG", "INFO", "WARNING", "ERROR"}.
+log_level = "DEBUG"
+
 #: Apply the mask to the output image?
 draw_mask = True
 

@@ -5,6 +5,19 @@ from shutil import copy2
 import config
 
 
+class FileHandler(logging.StreamHandler):
+    def __init__(self, file_path):
+        super().__init__()
+        self.file_path = file_path
+
+    def emit(self, record):
+        try:
+            with open(self.file_path, "a+") as f:
+                f.write(record.getMessage() + "\n")
+        except (FileNotFoundError, OSError):
+            print(f"Log file '{self.file_path}' not reachable.")
+
+
 class Logger:
     def __init__(self):
         self.paths = None
@@ -16,7 +29,8 @@ class Logger:
 
     def set_log_file(self, log_file_path, level=logging.INFO):
         self.log_file_path = log_file_path
-        file_handler = logging.FileHandler(log_file_path)
+        # file_handler = logging.FileHandler(log_file_path)
+        file_handler = FileHandler(log_file_path)
         file_handler.setLevel(level)
         file_handler.setFormatter(logging.Formatter(self.fmt, datefmt=self.datefmt))
         self.logger.addHandler(file_handler)

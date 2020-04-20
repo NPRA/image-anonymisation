@@ -1,8 +1,10 @@
 import os
+import json
 
 import config
 from src.Logger import LOGGER
 from src.io.file_access_guard import wait_until_path_is_found
+from src.io.TreeWalker import Paths
 
 
 def check_all_files_written(paths):
@@ -22,11 +24,7 @@ def check_all_files_written(paths):
 def find_missing_files(paths):
     expected_files = get_expected_files(paths)
 
-    wait_paths = [paths.base_input_dir, paths.base_output_dir]
-    if paths.base_archive_dir:
-        wait_paths.append(paths.base_archive_dir)
-    wait_until_path_is_found(wait_paths)
-
+    wait_until_path_is_found([paths.base_input_dir, *paths.base_mirror_dirs])
     missing_files = []
     for file_path in expected_files:
         if not _file_is_ok(file_path):
@@ -71,3 +69,34 @@ def _handle_missing_files(paths, missing_files):
     LOGGER.error(__name__, f"Missing output files {missing_files} for image: {paths.input_file}", save=True,
                  email=True, email_mode="error")
     LOGGER.set_state(current_logger_state)
+
+
+def clear_cache():
+    LOGGER.info(__name__, "Clearing cache files")
+    count = 0
+    for filename in os.listdir(config.CACHE_DIRECTORY):
+        if filename.endswith(".json"):
+            clear_cache_file(os.path.join(config.CACHE_DIRECTORY, filename))
+            count += 1
+    LOGGER.info(__name__, f"Found and cleared {count} cache file(s)")
+
+
+def clear_cache_file(file_path):
+    with open(file_path, "r") as f:
+        cache_info = json.load(f)
+
+    paths = Paths(base_input_dir=cache_info["base_input_dir"], base_mirror_dirs=cache_info["base_mirror_dirs"],
+                  input_dir=cache_info["input_dir"], mirror_dirs=cache_info["mirror_dirs"],
+                  filename=cache_info["filename"])
+
+    wait_until_path_is_found([paths.base_input_dir, *paths.base_mirror_dirs])
+
+    for expected_file in get_expected_files(paths):
+        if os.path.isfile(expected_file):
+            os.remove(expected_file)
+            LOGGER.info(__name__, f"Removed file '{expected_file}' for unfinished image '{paths.input_file}'")
+        else:
+            LOGGER.debug(__name__, f"Could not find file '{expected_file}' for unfinished image '{paths.input_file}'")
+
+    # Remove the cache file
+    os.remove(file_path)
