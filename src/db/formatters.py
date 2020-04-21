@@ -76,8 +76,7 @@ def Meter(json_data):
 
 
 def Mappenavn(json_data):
-    path = (json_data["anonymisert_bildefil"])
-
+    path = os.path.dirname(json_data["anonymisert_bildefil"])
     top_folder = "Vegbilder"
     if top_folder in path:
         return path[path.find(top_folder):]
