@@ -4,8 +4,18 @@ from collections import namedtuple
 
 from src.db import db_config, formatters
 
-
+#: Prototype column
 COL = namedtuple("column", ["col_name", "col_dtype", "get_value", "not_null"])
+#: The `COLUMNS` list specifies the columns in the table. Each column is represented as a namedtuple with four elements:
+#:
+#: * `col_name`: The name of the column
+#: * `col_dtype`: The SQL datatype of the column
+#: * `get_value`: A function that returns the value of the column for a given dictionary. The dictionary is assumed
+#:   to contain the same key-value-pairs as the JSON-file written by the anonymisation application.
+#:   The return type of the function must be compatible with `col_dtype`. For instance, if
+#:   `col_dtype="VARCHAR(...)"`, then `get_value` should return a string. Note that if
+#:   `col_dtype="SDO_GEOMETRY"`, then `get_value` should return a `src.db.geometry.SDOGeometry` object.
+#: * `not_null`: True if the value cannot be null. False otherwise
 COLUMNS = [
     COL(col_name="Tidspunkt",          col_dtype="DATE",         get_value=formatters.Tidspunkt,          not_null=True),
     COL(col_name="Retning",            col_dtype="NUMBER",       get_value=formatters.Retning,            not_null=True),

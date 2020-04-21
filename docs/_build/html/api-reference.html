@@ -228,13 +228,13 @@ Default: True</p>
 
 <dl class="data">
 <dt id="config.write_exif_to_db">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">write_exif_to_db</code><em class="property"> = False</em><a class="headerlink" href="#config.write_exif_to_db" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">write_exif_to_db</code><em class="property"> = True</em><a class="headerlink" href="#config.write_exif_to_db" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the EXIF data to the database?</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="config.db_max_n_accumulated_rows">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">db_max_n_accumulated_rows</code><em class="property"> = 8</em><a class="headerlink" href="#config.db_max_n_accumulated_rows" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">config.</code><code class="sig-name descname">db_max_n_accumulated_rows</code><em class="property"> = 4</em><a class="headerlink" href="#config.db_max_n_accumulated_rows" title="Permalink to this definition">¶</a></dt>
 <dd><p>Maximum number of rows to accumulate locally before writing all accumulated rows to the database.</p>
 </dd></dl>
 
@@ -304,9 +304,41 @@ database.</p>
 </dd>
 </dl>
 <dl class="method">
+<dt id="src.db.DatabaseClient.DatabaseClient.get_insert_sql">
+<em class="property">static </em><code class="sig-name descname">get_insert_sql</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.get_insert_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the SQL expression used to insert a row into the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><cite>INSERT</cite> SQL expression</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.db.DatabaseClient.DatabaseClient.create_row">
+<em class="property">static </em><code class="sig-name descname">create_row</code><span class="sig-paren">(</span><em class="sig-param">json_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.create_row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a database row from the given <cite>json_dict</cite>. See <cite>src.db.setup_table</cite> for the list of columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>json_dict</strong> (<em>dict</em>) – EXIF data</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict representing the database row.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="src.db.DatabaseClient.DatabaseClient.connect">
 <em class="property">static </em><code class="sig-name descname">connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.connect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Connect to the database, and set the schema if it is specified.</p>
+<dd><p>Connect to the database, and set the schema if it is specified. An appropriate input type handler will also
+be set for the connection, in order to make it compatible with spatial objects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Database connection object</p>
@@ -345,37 +377,70 @@ written to the database. The buffer will then be cleared.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-src.db.formatters">
-<span id="db-formatters"></span><h3>db.formatters<a class="headerlink" href="#module-src.db.formatters" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="src.db.formatters.get_insert_sql">
-<code class="sig-prename descclassname">src.db.formatters.</code><code class="sig-name descname">get_insert_sql</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.formatters.get_insert_sql" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the SQL expression used to insert a row into the database</p>
+<div class="section" id="module-src.db.geometry">
+<span id="db-geometry"></span><h3>db.geometry<a class="headerlink" href="#module-src.db.geometry" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="src.db.geometry.SDOGeometry">
+<em class="property">class </em><code class="sig-prename descclassname">src.db.geometry.</code><code class="sig-name descname">SDOGeometry</code><span class="sig-paren">(</span><em class="sig-param">gtype</em>, <em class="sig-param">srid</em>, <em class="sig-param">elem_info</em>, <em class="sig-param">ordinates</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.geometry.SDOGeometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intermediate class to represent SDO_GEOMETRY objects. If an object of this class is inserted with a
+<cite>src.db.DatabaseClient.connect</cite> connection, it will be converted to an SDO_GEOMETRY object before insertion.
+Conversion is done using the converter returned by <cite>src.db.geometry.get_geometry_converter</cite>.
+See <a class="reference external" href="https://docs.oracle.com/database/121/SPATL/sdo_geometry-object-type.htm#SPATL489">https://docs.oracle.com/database/121/SPATL/sdo_geometry-object-type.htm#SPATL489</a> for a description of the
+parameters</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><cite>INSERT</cite> SQL expression</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>string</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gtype</strong> (<em>int</em>) – SDO_GTYPE</p></li>
+<li><p><strong>srid</strong> (<em>int</em>) – SDO_SRID</p></li>
+<li><p><strong>elem_info</strong> (<em>list of int</em>) – SDO_ELEM_INFO</p></li>
+<li><p><strong>ordinates</strong> (<em>list of</em><em> (</em><em>int | float</em><em>)</em>) – SDO_ORDINATES</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="src.db.formatters.create_row">
-<code class="sig-prename descclassname">src.db.formatters.</code><code class="sig-name descname">create_row</code><span class="sig-paren">(</span><em class="sig-param">json_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.formatters.create_row" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a database row from the given <cite>json_dict</cite>. See <cite>src.db.setup_table</cite> for the list of columns.</p>
+<dt id="src.db.geometry.get_geometry_converter">
+<code class="sig-prename descclassname">src.db.geometry.</code><code class="sig-name descname">get_geometry_converter</code><span class="sig-paren">(</span><em class="sig-param">connection</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.geometry.get_geometry_converter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a converter for SDO_GEOMETRY objects which can be used in input type handlers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>json_dict</strong> (<em>dict</em>) – EXIF data</p>
+<dd class="field-odd"><p><strong>connection</strong> (<em>cx_Oracle.Connection</em>) – Connection to the database</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Dict representing the database row.</p>
+<dd class="field-even"><p>Conversion function which accepts a <cite>src.db.geometry.SDOGeometry</cite> instance, an returns an SDO_GEOMETRY
+object.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>function</p>
 </dd>
 </dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.db.setup_table">
+<span id="db-setup-table"></span><h3>db.setup_table<a class="headerlink" href="#module-src.db.setup_table" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="src.db.setup_table.COL">
+<code class="sig-prename descclassname">src.db.setup_table.</code><code class="sig-name descname">COL</code><a class="headerlink" href="#src.db.setup_table.COL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prototype column</p>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">src.db.setup_table.column</span></code></p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.db.setup_table.COLUMNS">
+<code class="sig-prename descclassname">src.db.setup_table.</code><code class="sig-name descname">COLUMNS</code><em class="property"> = [column(col_name='Tidspunkt', col_dtype='DATE', get_value=&lt;function Tidspunkt&gt;, not_null=True), column(col_name='Retning', col_dtype='NUMBER', get_value=&lt;function Retning&gt;, not_null=True), column(col_name='Posisjon', col_dtype='SDO_GEOMETRY', get_value=&lt;function Posisjon&gt;, not_null=True), column(col_name='FylkeNummer', col_dtype='VARCHAR(255)', get_value=&lt;function FylkeNummer&gt;, not_null=True), column(col_name='Vegkategori', col_dtype='VARCHAR(255)', get_value=&lt;function Vegkategori&gt;, not_null=True), column(col_name='Vegstatus', col_dtype='VARCHAR(255)', get_value=&lt;function Vegstatus&gt;, not_null=True), column(col_name='Vegnummer', col_dtype='VARCHAR(255)', get_value=&lt;function Vegnummer&gt;, not_null=True), column(col_name='StrekningReferanse', col_dtype='VARCHAR(255)', get_value=&lt;function StrekningReferanse&gt;, not_null=True), column(col_name='Meter', col_dtype='NUMBER', get_value=&lt;function Meter&gt;, not_null=True), column(col_name='Mappenavn', col_dtype='VARCHAR(255)', get_value=&lt;function Mappenavn&gt;, not_null=True), column(col_name='Filnavn', col_dtype='VARCHAR(255)', get_value=&lt;function Filnavn&gt;, not_null=True), column(col_name='JsonData', col_dtype='CLOB', get_value=&lt;function JsonData&gt;, not_null=True), column(col_name='ReflinkID', col_dtype='NUMBER', get_value=&lt;function ReflinkID&gt;, not_null=False), column(col_name='ReflinkPosisjon', col_dtype='NUMBER', get_value=&lt;function ReflinkPosisjon&gt;, not_null=False), column(col_name='DetekterteObjekter', col_dtype='CLOB', get_value=&lt;function DetekterteObjekter&gt;, not_null=False), column(col_name='Aar', col_dtype='NUMBER', get_value=&lt;function Aar&gt;, not_null=True), column(col_name='Feltkode', col_dtype='VARCHAR(255)', get_value=&lt;function Feltkode&gt;, not_null=True)]</em><a class="headerlink" href="#src.db.setup_table.COLUMNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <cite>COLUMNS</cite> list specifies the columns in the table. Each column is represented as a namedtuple with four elements:</p>
+<ul class="simple">
+<li><p><cite>col_name</cite>: The name of the column</p></li>
+<li><p><cite>col_dtype</cite>: The SQL datatype of the column</p></li>
+<li><p><cite>get_value</cite>: A function that returns the value of the column for a given dictionary. The dictionary is assumed
+to contain the same key-value-pairs as the JSON-file written by the anonymisation application.
+The return type of the function must be compatible with <cite>col_dtype</cite>. For instance, if
+<cite>col_dtype=”VARCHAR(…)”</cite>, then <cite>get_value</cite> should return a string. Note that if
+<cite>col_dtype=”SDO_GEOMETRY”</cite>, then <cite>get_value</cite> should return a <cite>src.db.geometry.SDOGeometry</cite> object.</p></li>
+<li><p><cite>not_null</cite>: True if the value cannot be null. False otherwise</p></li>
+</ul>
 </dd></dl>
 
 </div>
@@ -612,7 +677,7 @@ indistinguishable from dark colors. NOTE: Requires gray_blur=True.</p></li>
 
 <dl class="function">
 <dt id="src.io.save.archive">
-<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">archive</code><span class="sig-paren">(</span><em class="sig-param">paths</em>, <em class="sig-param">archive_mask=False</em>, <em class="sig-param">archive_json=False</em>, <em class="sig-param">delete_input_img=False</em>, <em class="sig-param">assert_output_mask=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.archive" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.save.</code><code class="sig-name descname">archive</code><span class="sig-paren">(</span><em class="sig-param">paths</em>, <em class="sig-param">archive_mask=False</em>, <em class="sig-param">archive_json=False</em>, <em class="sig-param">assert_output_mask=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.save.archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy the input image file (and possibly some output files) to the archive directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -620,7 +685,6 @@ indistinguishable from dark colors. NOTE: Requires gray_blur=True.</p></li>
 <li><p><strong>paths</strong> (<a class="reference internal" href="#src.io.TreeWalker.Paths" title="src.io.TreeWalker.Paths"><em>src.io.TreeWalker.Paths</em></a>) – Paths object representing the image file.</p></li>
 <li><p><strong>archive_mask</strong> (<em>bool</em>) – Copy the mask file to the archive directory?</p></li>
 <li><p><strong>archive_json</strong> (<em>bool</em>) – Copy the EXIF file to the archive directory?</p></li>
-<li><p><strong>delete_input_img</strong> (<em>bool</em>) – Delete the image from the input directory?</p></li>
 <li><p><strong>assert_output_mask</strong> (<em>bool</em>) – Assert that the output mask exists before archiving?</p></li>
 </ul>
 </dd>
@@ -1334,7 +1398,8 @@ in <cite>config</cite>.</p>
 <li><a class="reference internal" href="#module-config">config</a></li>
 <li><a class="reference internal" href="#db">db</a><ul>
 <li><a class="reference internal" href="#module-src.db.DatabaseClient">db.DatabaseClient</a></li>
-<li><a class="reference internal" href="#module-src.db.formatters">db.formatters</a></li>
+<li><a class="reference internal" href="#module-src.db.geometry">db.geometry</a></li>
+<li><a class="reference internal" href="#module-src.db.setup_table">db.setup_table</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#io">io</a><ul>

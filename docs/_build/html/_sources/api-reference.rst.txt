@@ -14,9 +14,14 @@ db.DatabaseClient
 .. automodule:: src.db.DatabaseClient
    :members:
 
-db.formatters
+db.geometry
 -------------------------
-.. automodule:: src.db.formatters
+.. automodule:: src.db.geometry
+   :members:
+
+db.setup_table
+-------------------------
+.. automodule:: src.db.setup_table
    :members:
 
 io
