@@ -8,12 +8,12 @@ from socket import gethostname
 
 import config
 from src.Logger import LOGGER
-import email_config
-# try:
-#     import email_config
-# except ImportError:
-#     LOGGER.warning("Could not find `email_config.py` in the project root. Please create it if you want to use the "
-#                    "emailing feature. See `config.py` for more details.")
+try:
+    import email_config
+except ImportError:
+    LOGGER.warning("Could not find `email_config.py` in the project root. Please create it if you want to use the "
+                   "emailing feature. See `config.py` for more details.")
+
 
 CRITICAL_SUBJECT = "[image-anonymisation]: Execution stopped due to uncaught {etype}."
 ERROR_SUBJECT = "[image-anonymisation]: Processing error encountered."
