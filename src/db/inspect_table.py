@@ -4,7 +4,7 @@ from pprint import pprint, pformat
 from datetime import datetime
 
 import config
-from src.db import db_config
+from src.db import db_config, geometry
 from src.db.DatabaseClient import DatabaseClient
 from src.db.setup_table import COLUMNS
 
@@ -28,6 +28,14 @@ def datetime_to_str(dt):
     return datetime.strftime(dt, config.datetime_format)
 
 
+def sdo_geometry_to_str(sdo):
+    gtype = sdo.SDO_GTYPE
+    srid = sdo.SDO_SRID
+    elem_info = sdo.SDO_ELEM_INFO.aslist()
+    ordinates = sdo.SDO_ORDINATES.aslist()
+    return str(geometry.SDOGeometry(gtype, srid, elem_info, ordinates))
+
+
 def print_result(res):
     print(SEP)
     print_dict = {}
@@ -36,6 +44,8 @@ def print_result(res):
             elem = datetime_to_str(elem)
         elif col.col_dtype == "CLOB":
             elem = lob_to_dict(elem)
+        elif col.col_dtype == "SDO_GEOMETRY":
+            elem = sdo_geometry_to_str(elem)
         print_dict[col.col_name] = elem
 
     pprint(print_dict, width=WIDTH, depth=1)

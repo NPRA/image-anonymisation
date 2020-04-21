@@ -1,10 +1,8 @@
 import cx_Oracle as cxo
 
 from src.Logger import LOGGER
-from src.db import db_config
-from src.db.formatters import create_row, get_insert_sql
-
-INSERT_SQL = get_insert_sql()
+from src.db import db_config, geometry
+from src.db.setup_table import COLUMNS
 
 
 class DatabaseClient:
@@ -19,16 +17,60 @@ class DatabaseClient:
     def __init__(self, max_n_accumulated_rows=8):
         self.max_n_accumulated_rows = max_n_accumulated_rows
         self.accumulated_rows = []
+        self.insert_sql = self.get_insert_sql()
+
+    @staticmethod
+    def get_insert_sql():
+        """
+        Get the SQL expression used to insert a row into the database
+
+        :return: `INSERT` SQL expression
+        :rtype: string
+        """
+        col_names = ", ".join([c.col_name for c in COLUMNS])
+        values = ", ".join([":" + c.col_name for c in COLUMNS])
+        insert_sql = f"INSERT INTO {db_config.table_name}({col_names}) VALUES ({values})"
+        return insert_sql
+
+    @staticmethod
+    def create_row(json_dict):
+        """
+        Create a database row from the given `json_dict`. See `src.db.setup_table` for the list of columns.
+
+        :param json_dict: EXIF data
+        :type json_dict: dict
+        :return: Dict representing the database row.
+        :rtype: dict
+        """
+        out = {}
+        for col in COLUMNS:
+            try:
+                value = col.get_value(json_dict)
+            except Exception as err:
+                LOGGER.error(__name__, f"Got error '{err}' while getting value for database column {col.col_name}. "
+                                       f"Value will be set to None")
+                value = None
+            out[col.col_name] = value
+        return out
+
+    @staticmethod
+    def input_type_handler(cursor, value, num_elements):
+        if isinstance(value, geometry.SDOGeometry):
+            in_converter, obj_type = geometry.get_geometry_converter(cursor.connection)
+            var = cursor.var(cxo.OBJECT, arraysize=num_elements, inconverter=in_converter, typename=obj_type.name)
+            return var
 
     @staticmethod
     def connect():
         """
-        Connect to the database, and set the schema if it is specified.
+        Connect to the database, and set the schema if it is specified. An appropriate input type handler will also
+        be set for the connection, in order to make it compatible with spatial objects.
 
         :return: Database connection object
         :rtype: cxo.Connection
         """
         connection = cxo.connect(db_config.user, db_config.pwd, db_config.dsn)
+        connection.inputtypehandler = DatabaseClient.input_type_handler
         if db_config.schema is not None:
             connection.current_schema = db_config.schema
         return connection
@@ -42,7 +84,7 @@ class DatabaseClient:
         :param json_dict: EXIF data
         :type json_dict: dict
         """
-        row = create_row(json_dict)
+        row = self.create_row(json_dict)
         self.accumulated_rows.append(row)
 
         if len(self.accumulated_rows) >= self.max_n_accumulated_rows:
@@ -56,7 +98,7 @@ class DatabaseClient:
         try:
             with self.connect() as connection:
                 cursor = connection.cursor()
-                cursor.executemany(INSERT_SQL, self.accumulated_rows)
+                cursor.executemany(self.insert_sql, self.accumulated_rows)
                 connection.commit()
             LOGGER.info(__name__, f"Successfully inserted {len(self.accumulated_rows)} rows into the database.")
         except cxo.DatabaseError as err:
