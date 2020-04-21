@@ -1,8 +1,10 @@
+import os
 import re
 import json
 import iso8601
 
 from src.db import geometry
+from src.Logger import LOGGER
 
 WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d{4});POINT Z\(\s*(\d+\.?\d*) (\d+\.?\d*) (\d+\.?\d*)\s*\)")
 
@@ -74,7 +76,13 @@ def Meter(json_data):
 
 
 def Mappenavn(json_data):
-    return json_data["exif_mappenavn"]
+    path = (json_data["anonymisert_bildefil"])
+
+    top_folder = "Vegbilder"
+    if top_folder in path:
+        return path[path.find(top_folder):]
+    LOGGER.warning(__name__, f"Could not find '{top_folder}' in path to output folder '{path}'")
+    return " "
 
 
 def Filnavn(json_data):
