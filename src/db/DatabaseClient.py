@@ -69,7 +69,7 @@ class DatabaseClient:
         :return: Database connection object
         :rtype: cxo.Connection
         """
-        connection = cxo.connect(db_config.user, db_config.pwd, db_config.dsn)
+        connection = cxo.connect(db_config.user, db_config.pwd, db_config.dsn, encoding="UTF-8", nencoding="UTF-8")
         connection.inputtypehandler = DatabaseClient.input_type_handler
         if db_config.schema is not None:
             connection.current_schema = db_config.schema

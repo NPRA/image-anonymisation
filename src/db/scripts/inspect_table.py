@@ -51,7 +51,7 @@ def print_result(res):
             elem = sdo_geometry_to_str(elem)
         print_dict[col.col_name] = elem
 
-    pprint(print_dict, width=WIDTH, depth=1)
+    pprint(print_dict, width=WIDTH, depth=None)
 
 
 if __name__ == '__main__':

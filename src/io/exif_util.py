@@ -49,7 +49,7 @@ def exif_from_file(image_path):
 
 
 def write_exif(exif, output_filepath):
-    with open(output_filepath, "w") as out_file:
+    with open(output_filepath, "w", encoding="utf-8") as out_file:
         json.dump(exif, out_file, indent=4, ensure_ascii=False)
 
 
@@ -188,7 +188,7 @@ def to_pretty_xml(contents_bytes):
     :return: Prettified contents
     :rtype: str
     """
-    xmlstr = contents_bytes.decode("utf8")[1:]
+    xmlstr = contents_bytes.decode("utf-8")[1:]
     plain_xml = xml.dom.minidom.parseString(xmlstr)
     pretty_xml = plain_xml.toprettyxml()
     return pretty_xml

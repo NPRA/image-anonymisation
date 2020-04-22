@@ -34,3 +34,14 @@ COLUMNS = [
     COL(col_name="Aar",                col_dtype="NUMBER",       get_value=formatters.Aar,                not_null=True),
     COL(col_name="Feltkode",           col_dtype="VARCHAR(255)", get_value=formatters.Feltkode,           not_null=True),
 ]
+
+#: The column representing the unique id.
+ID_COLUMN = COL(col_name="id", col_dtype="NUMBER GENERATED ALWAYS AS IDENTITY", get_value=None, not_null=False)
+
+
+def to_string(col):
+    col_str = "\n    {:20s} {:12}".format(col.col_name, col.col_dtype)
+    if col.not_null:
+        col_str += " {:8s}".format("NOT NULL")
+    col_str += ","
+    return col_str

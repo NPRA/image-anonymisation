@@ -22,7 +22,7 @@ def to_number(x):
 
 
 def to_clob(d):
-    return json.dumps(d)
+    return json.dumps(d, ensure_ascii=False)
 
 
 def Tidspunkt(json_data):
