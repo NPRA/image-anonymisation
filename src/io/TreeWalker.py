@@ -113,7 +113,7 @@ class TreeWalker:
     :type ext: str
     """
     def __init__(self, input_folder, mirror_folders, skip_webp=True, precompute_paths=True, ext="jpg"):
-        LOGGER.info(__name__, f"Initializing file tree walker at '{input_folder}'.")
+        LOGGER.info(__name__, f"Searching for {ext}-files in '{input_folder}'.")
         self.input_folder = input_folder
         self.mirror_folders = mirror_folders
         self.skip_webp = skip_webp
@@ -122,11 +122,11 @@ class TreeWalker:
         self.n_valid_images = self.n_skipped_images = 0
 
         if self.precompute_paths:
-            LOGGER.info(__name__, "Precomputing paths...")
             self.paths = [p for p in self._walk()]
-            LOGGER.info(__name__, f"Found {self.n_valid_images} valid image paths.")
+            LOGGER.info(__name__, f"Found {self.n_valid_images} valid {ext}-files.")
             if self.n_skipped_images > 0:
-                LOGGER.info(__name__, f"Found {self.n_skipped_images} images with masks. These will be skipped.")
+                LOGGER.info(__name__, f"Found {self.n_skipped_images} files with associated webp-files. "
+                                      f"These will be skipped.")
         else:
             self.paths = None
 

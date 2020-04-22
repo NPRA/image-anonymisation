@@ -69,13 +69,13 @@ class ImageProcessor:
             exif_result = worker["EXIFWorker"].get()
             save_result = worker["SaveWorker"].get()
 
-            if self.database_client is not None and exif_result is not None:
-                # If we have an active database_client, add the EXIF data to the database client.
-                self.database_client.add_row(exif_result)
-
             # Check that all expected output files exist, and log an error if any files are missing.
             all_ok = check_all_files_written(worker["paths"])
             if all_ok:
+                # If we have an active database_client, add the EXIF data to the database client.
+                if self.database_client is not None and exif_result is not None:
+                    self.database_client.add_row(exif_result)
+
                 self.n_completed += 1
 
     def process_image(self, image, paths):
