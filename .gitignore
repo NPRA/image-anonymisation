@@ -146,6 +146,7 @@ src/db/db_config.py
 
 data/*
 tests/data/real
+tests/data/json_files
 !tests/data/fake/
 
 docs/_build/*

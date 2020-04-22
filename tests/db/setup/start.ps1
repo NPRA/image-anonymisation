@@ -1,0 +1,1 @@
+docker run -e ORACLE_PWD=password -p 1521:1521  oracle/database:18.4.0-xe

@@ -1,0 +1,1 @@
+ docker build -t oracle/database:18.4.0-xe tests\db\setup
