@@ -1,11 +1,10 @@
-import sys
-import cx_Oracle as cxo
 from collections import namedtuple
 
-from src.db import db_config, formatters
+from src.db import formatters
 
-#: Prototype column
+# Prototype column
 COL = namedtuple("column", ["col_name", "col_dtype", "get_value", "not_null"])
+
 #: The `COLUMNS` list specifies the columns in the table. Each column is represented as a namedtuple with four elements:
 #:
 #: * `col_name`: The name of the column
@@ -35,28 +34,3 @@ COLUMNS = [
     COL(col_name="Aar",                col_dtype="NUMBER",       get_value=formatters.Aar,                not_null=True),
     COL(col_name="Feltkode",           col_dtype="VARCHAR(255)", get_value=formatters.Feltkode,           not_null=True),
 ]
-
-
-if __name__ == '__main__':
-    create_table_sql = f"CREATE TABLE {db_config.table_name}("
-    for col in COLUMNS:
-        create_table_sql += "\n    {:20s} {:12}".format(col.col_name, col.col_dtype)
-        if col.not_null:
-            create_table_sql += " {:8s}".format("NOT NULL")
-        create_table_sql += ","
-
-    create_table_sql = create_table_sql[:-1] + "\n)"
-
-    with cxo.connect(db_config.user, db_config.pwd, db_config.dsn) as connection:
-        if db_config.schema is not None:
-            connection.current_schema = db_config.schema
-
-        cursor = connection.cursor()
-
-        if "--drop" in sys.argv:
-            cursor.execute(f"DROP TABLE {db_config.table_name}")
-            print(f"Deleted table {db_config.table_name}")
-
-        cursor.execute(create_table_sql)
-
-    print(f"Table {db_config.table_name} created successfully with command:\n{create_table_sql}")

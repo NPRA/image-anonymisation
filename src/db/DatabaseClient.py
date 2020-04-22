@@ -2,7 +2,7 @@ import cx_Oracle as cxo
 
 from src.Logger import LOGGER
 from src.db import db_config, geometry
-from src.db.setup_table import COLUMNS
+from src.db.columns import COLUMNS
 
 
 class DatabaseClient:

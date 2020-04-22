@@ -1,12 +1,15 @@
+"""
+Print all rows of the table specified in `src.db.db_config`. Should only be used for debugging purposes.
+"""
 import json
 import cx_Oracle as cxo
-from pprint import pprint, pformat
+from pprint import pprint
 from datetime import datetime
 
 import config
 from src.db import db_config, geometry
 from src.db.DatabaseClient import DatabaseClient
-from src.db.setup_table import COLUMNS
+from src.db.columns import COLUMNS
 
 
 WIDTH = 150
@@ -52,14 +55,13 @@ def print_result(res):
 
 
 if __name__ == '__main__':
-    with DatabaseClient() as cli:
-        with cli.connect() as connection:
-            connection.outputtypehandler = output_type_handler
-            cursor = connection.cursor()
-            cursor.execute(f"SELECT * FROM {db_config.table_name}")
-            count = 0
-            for res in cursor:
-                print_result(res)
-                count += 1
-            print(SEP)
-            print(f"Found {count} records in table.")
+    with DatabaseClient.connect() as connection:
+        connection.outputtypehandler = output_type_handler
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT * FROM {db_config.table_name}")
+        count = 0
+        for res in cursor:
+            print_result(res)
+            count += 1
+        print(SEP)
+        print(f"Found {count} records in table.")

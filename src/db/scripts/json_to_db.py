@@ -1,4 +1,6 @@
-import os
+"""
+Find all JSON-files in a directory tree, and insert their contents into the table specified in `src.db.db_config`.
+"""
 import json
 import argparse
 from tqdm import tqdm
