@@ -9,7 +9,7 @@ from datetime import datetime
 import config
 from src.db import db_config, geometry
 from src.db.DatabaseClient import DatabaseClient
-from src.db.columns import COLUMNS
+from src.db.columns import COLUMNS, ID_COLUMN
 
 
 WIDTH = 150
@@ -42,7 +42,8 @@ def sdo_geometry_to_str(sdo):
 def print_result(res):
     print(SEP)
     print_dict = {}
-    for col, elem in zip(COLUMNS, res):
+    all_columns = [ID_COLUMN, *COLUMNS]
+    for col, elem in zip(all_columns, res):
         if col.col_dtype == "DATE":
             elem = datetime_to_str(elem)
         elif col.col_dtype == "CLOB":
