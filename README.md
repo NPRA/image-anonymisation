@@ -184,3 +184,28 @@ optional arguments:
 ```
 
 Note that the annotations for the evaluation dataset must be on the [COCO format](http://cocodataset.org/#format-data).
+
+## Tests
+The `tests/` directory provides a large number of tests which can be used to check that the application works as expected. Use the `pytest` command
+to run the tests:
+```
+pytest tests
+```
+Note that this will skip the tests marked as `slow` and `db`. Add the `--run-slow` to run the `slow` tests, and `--run-db` to run the `db` tests.
+
+### Setting up the test database
+The tests marked with `db` requires a test database to be running locally. The test database is a
+[Single instance Oracle database (18c XE), running in a docker container](https://github.com/oracle/docker-images/tree/master/OracleDatabase/SingleInstance)
+[Docker](https://www.docker.com/) is therefore required to build and run the test database.
+
+To build the docker image, run:
+```
+.\tests\db\setup\build.ps1
+```
+
+To start the test database, run:
+```
+.\tests\db\setup\start.ps1
+```
+
+Note that the tests marked with `db` will fail if the test database is not running.
