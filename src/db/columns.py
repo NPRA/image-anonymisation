@@ -36,7 +36,7 @@ COLUMNS = [
 ]
 
 #: The column representing the unique id.
-ID_COLUMN = COL(col_name="id", col_dtype="NUMBER GENERATED ALWAYS AS IDENTITY", get_value=None, not_null=False)
+ID_COLUMN = COL(col_name="id", col_dtype="NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY", get_value=None, not_null=False)
 
 
 def to_string(col):
