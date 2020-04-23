@@ -192,7 +192,7 @@ Note that this will skip the tests marked as `slow` and `db`. Add the `--run-slo
 
 ### Setting up the test database
 The tests marked with `db` requires a test database to be running locally. The test database is a
-[Single instance Oracle database (18c XE), running in a docker container](https://github.com/oracle/docker-images/tree/master/OracleDatabase/SingleInstance)
+[Single instance Oracle database (18c XE), running in a docker container](https://github.com/oracle/docker-images/tree/master/OracleDatabase/SingleInstance).
 [Docker](https://www.docker.com/) is therefore required to build and run the test database.
 
 To build the docker image, run:
