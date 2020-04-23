@@ -85,6 +85,8 @@ def get_args():
 
 @pytest.fixture
 def get_tmp_data_dir():
+    remove_dirs = []
+
     def _get_tmp_data_dir(subdirs=tuple(), remove_on_exit=True):
         tests_root = os.path.dirname(os.path.realpath(__file__))
         tmp_dir_name = f"tmp_{uuid4()}"
@@ -96,8 +98,15 @@ def get_tmp_data_dir():
             dest_dir = os.path.join(tmp_dir, subdir_name)
             copytree(src_dir, dest_dir)
 
+        # Add the temporary directory to the list of dirs to remove
         if remove_on_exit:
-            atexit.register(rmtree, tmp_dir)
+            remove_dirs.append(tmp_dir)
 
         return tmp_dir
-    return _get_tmp_data_dir
+
+    # Yield the function
+    yield _get_tmp_data_dir
+
+    # Remove the temporary directories
+    for dir_path in remove_dirs:
+        rmtree(dir_path)

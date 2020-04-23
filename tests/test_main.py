@@ -67,7 +67,7 @@ def test_main(get_args, get_config, get_tmp_data_dir, enable_exports, enable_asy
     # Booleans for archiving and output file saving.
     archive = enable_exports
     config_params = dict(local_json=enable_exports, remote_json=enable_exports, local_mask=enable_exports,
-                         remote_mask=enable_exports)
+                         remote_mask=enable_exports, enable_async=enable_async)
 
     # Set the archive folder
     if archive:
