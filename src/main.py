@@ -208,6 +208,9 @@ def main():
         LOGGER.info(__name__, f"Iteration finished in {iter_time_delta} s.")
         LOGGER.info(__name__, f"Estimated completion: {est_done}")
 
+    # Close the image_processor. This will make sure that all exports are finished before we continue.
+    LOGGER.info(__name__, LOG_SEP)
+    LOGGER.info(__name__, f"Writing output files for the remaining images.")
     image_processor.close()
 
     # Summary
