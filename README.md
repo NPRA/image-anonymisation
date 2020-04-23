@@ -162,9 +162,6 @@ This will recursively traverse `<base input folder>`, read all .json files, and 
 
 Database writing can also be done automatically during anonymisation. This is enabled by setting `write_exif_to_db = True` in `config.py`.
 
-WARNING: Currently, the EXIF header will be written to the database even if image postprocessing failed. It is therefore recommended to use
-the `json_to_db` script instead.
-
 ## Evaluating the current model
 The anonymisation model can be evaluated by running the evaluation script:
 ```
