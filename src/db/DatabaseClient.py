@@ -2,7 +2,7 @@ import cx_Oracle as cxo
 
 from src.Logger import LOGGER
 from src.db import db_config, geometry
-from src.db.columns import COLUMNS
+from src.db.columns import COLUMNS, ID_COLUMN_NAME
 
 
 class DatabaseClient:
@@ -17,10 +17,10 @@ class DatabaseClient:
     def __init__(self, max_n_accumulated_rows=8):
         self.max_n_accumulated_rows = max_n_accumulated_rows
         self.accumulated_rows = []
-        self.insert_sql = self.get_insert_sql()
+        self.insert_sql, self.update_sql = self.get_insert_and_update_sql()
 
     @staticmethod
-    def get_insert_sql():
+    def get_insert_and_update_sql():
         """
         Get the SQL expression used to insert a row into the database
 
@@ -30,7 +30,13 @@ class DatabaseClient:
         col_names = ", ".join([c.col_name for c in COLUMNS])
         values = ", ".join([":" + c.col_name for c in COLUMNS])
         insert_sql = f"INSERT INTO {db_config.table_name}({col_names}) VALUES ({values})"
-        return insert_sql
+
+        col_names_equals_values = ", ".join([f"{c.col_name} = :{c.col_name}" for c in COLUMNS])
+        update_sql = f"UPDATE {db_config.table_name} " \
+                     f"SET {col_names_equals_values} " \
+                     f"WHERE {ID_COLUMN_NAME} = :{ID_COLUMN_NAME}"
+
+        return insert_sql, update_sql
 
     @staticmethod
     def create_row(json_dict):
@@ -98,9 +104,33 @@ class DatabaseClient:
         try:
             with self.connect() as connection:
                 cursor = connection.cursor()
-                cursor.executemany(self.insert_sql, self.accumulated_rows)
+                # Attempt to insert the rows into the database. When we have `batcherrors = True`, the rows which do not
+                # violate the unique constraint will be inserted normally. The rows which do violate the constraint will
+                # not be inserted.
+                cursor.executemany(self.insert_sql, self.accumulated_rows, batcherrors=True)
+
+                # Get the indices of the rows where the insertion failed.
+                error_indices = [e.offset for e in cursor.getbatcherrors()]
+
+                # If we have any rows which caused an error.
+                if error_indices:
+                    LOGGER.warning(__name__, f"Found {len(error_indices)} rows where the {ID_COLUMN_NAME} already "
+                                             f"existed in the database. These will be updated.")
+                    # Filter out the rows which caused errors
+                    error_rows = [self.accumulated_rows[i] for i in error_indices]
+                    # Call an update on these rows
+                    cursor.executemany(self.update_sql, error_rows)
+
+                # Counts
+                n_updated = len(error_indices)
+                n_inserted = len(self.accumulated_rows) - n_updated
+                # Commit the changes
                 connection.commit()
-            LOGGER.info(__name__, f"Successfully inserted {len(self.accumulated_rows)} rows into the database.")
+
+            LOGGER.info(__name__, f"Successfully inserted {n_inserted} rows into the database.")
+            if n_updated > 0:
+                LOGGER.info(__name__, f"Successfully updated {n_updated} rows in the database.")
+
         except cxo.DatabaseError as err:
             raise AssertionError(f"cx_Oracle.DatabaseError: {str(err)}")
 

@@ -2,11 +2,13 @@
 Find all JSON-files in a directory tree, and insert their contents into the table specified in `src.db.db_config`.
 """
 import json
+import logging
 import argparse
 from tqdm import tqdm
 
 from src.db.DatabaseClient import DatabaseClient
 from src.io.TreeWalker import TreeWalker
+from src.Logger import LOGGER
 
 
 def get_args():
@@ -23,6 +25,7 @@ def process_json(filename, cli):
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG, format=LOGGER.fmt, datefmt=LOGGER.datefmt)
     args = get_args()
     tree_walker = TreeWalker(args.input_dir, [], skip_webp=False, precompute_paths=True, ext="json")
 
