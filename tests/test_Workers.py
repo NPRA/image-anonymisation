@@ -128,6 +128,7 @@ EXPECTED_EXIF_KEYS = {
     "exif_reflinkinfo",
     "exif_xptitle",
     "bildeuuid",
+    "bilde_id",
     "detekterte_objekter",
-    "anonymisert_bildefil",
+    # "anonymisert_bildefil",
 }

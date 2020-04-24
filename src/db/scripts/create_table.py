@@ -5,14 +5,14 @@ argument is specified, a `DROP TABLE <table name>` will be executed before the t
 import sys
 
 from src.db import db_config
-from src.db.columns import ID_COLUMN, COLUMNS, to_string
+from src.db.columns import COLUMNS, to_string
 from src.db.DatabaseClient import DatabaseClient
 
 
 if __name__ == '__main__':
     # Create the "CREATE TABLE ..." SQL expression
     create_table_sql = f"CREATE TABLE {db_config.table_name}("
-    for col in [ID_COLUMN, *COLUMNS]:
+    for col in COLUMNS:
         create_table_sql += to_string(col)
 
     create_table_sql = create_table_sql[:-1] + "\n)"

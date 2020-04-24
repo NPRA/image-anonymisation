@@ -5,6 +5,7 @@ import iso8601
 
 from src.db import geometry
 from src.Logger import LOGGER
+from src.io.exif_util import get_deterministic_id
 
 WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d{4});POINT Z\(\s*(\d+\.?\d*) (\d+\.?\d*) (\d+\.?\d*)\s*\)")
 
@@ -23,6 +24,19 @@ def to_number(x):
 
 def to_clob(d):
     return json.dumps(d, ensure_ascii=False)
+
+
+def BildeID(json_data):
+    # Try to get 'bilde_id' from the json_data.
+    image_id = json_data.get("bilde_id", None)
+
+    # If 'bilde_id' could not be found in the json_data. Create it from the contents.
+    if image_id is None:
+        LOGGER.warning(__name__, "Could not find 'bilde_id' in JSON data. The ID will be created from the contents of "
+                                 "the JSON data instead.")
+        image_id = get_deterministic_id(json_data)
+
+    return image_id
 
 
 def Tidspunkt(json_data):
@@ -52,7 +66,7 @@ def Posisjon(json_data):
 
 
 def FylkeNummer(json_data):
-    return json_data["exif_fylke"]
+    return to_number(json_data["exif_fylke"])
 
 
 def Vegkategori(json_data):
@@ -64,7 +78,7 @@ def Vegstatus(json_data):
 
 
 def Vegnummer(json_data):
-    return json_data["exif_vegnr"]
+    return to_number(json_data["exif_vegnr"])
 
 
 def StrekningReferanse(json_data):
@@ -76,11 +90,7 @@ def Meter(json_data):
 
 
 def Mappenavn(json_data):
-    path = os.path.dirname(json_data["anonymisert_bildefil"])
-    top_folder = "Vegbilder"
-    if top_folder in path:
-        return path[path.find(top_folder):]
-    LOGGER.warning(__name__, f"Could not find '{top_folder}' in path to output folder '{path}'")
+    # TODO
     return " "
 
 

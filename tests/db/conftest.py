@@ -5,7 +5,7 @@ import cx_Oracle as cxo
 from collections import namedtuple
 from uuid import uuid4
 
-from src.db.columns import ID_COLUMN, COLUMNS, to_string
+from src.db.columns import COLUMNS, to_string
 from src.db.DatabaseClient import DatabaseClient
 
 
@@ -57,7 +57,7 @@ def load_json_files(json_dir):
 
 def create_table(table_name, conn):
     create_table_sql = f"CREATE TABLE {table_name}("
-    for col in [ID_COLUMN, *COLUMNS]:
+    for col in COLUMNS:
         create_table_sql += to_string(col)
     create_table_sql = create_table_sql[:-1] + "\n)"
 
@@ -76,8 +76,7 @@ def check_row(row, expected_row):
 
     for i, col in enumerate(COLUMNS):
         if col.col_dtype not in skip_dtypes:
-            # Add 1 to skip the ID column
-            value = row[i+1]
+            value = row[i]
             expected_value = expected_row[col.col_name]
             assert value == expected_value, f"Value in database not equal to expected value. " \
                                             f"({value} != {expected_value})"
@@ -93,4 +92,3 @@ def check_results(conn, json_dicts, table_name):
         count += 1
 
     assert len(json_dicts) == count
-

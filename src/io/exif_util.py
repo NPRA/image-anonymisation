@@ -1,7 +1,9 @@
 """From: https://github.com/vegvesen/vegbilder/blob/master/trinn1_lagmetadata/vegbilder_lesexif.py"""
+import os
 import re
 import uuid
 import json
+import iso8601
 import xmltodict
 import xml.dom.minidom
 import numpy as np
@@ -32,6 +34,11 @@ REDACT_XML_REGEX_PATTERNS = [re.compile(f"<{tag}>.*</{tag}") for tag in REDACT_X
 
 #: Placeholders for the redacted entries
 REDACT_XML_REPLACE_STRINGS = [f"<{tag}>FJERNET</{tag}" for tag in REDACT_XML_TAGS]
+
+#: Timestamp format for the deterministic id
+ID_TIMESTAMP_FORMATTER = "%Y-%m-%dT%H.%M.%S.%f"
+#: Pattern to remove from the filename when creating the deterministic id
+ID_REMOVE_FROM_FILENAME_PATTERN = re.compile(r"_f\d+")
 
 
 def exif_from_file(image_path):
@@ -95,9 +102,32 @@ def get_exif(img):
     # Title of image.
     XPTitle = labeled.get("XPTitle", b"").decode("utf16")
     exif_data['exif_xptitle'] = XPTitle
-    # Assign a unique ID to the image
+
+    # Assign a UUID to the image
     exif_data['bildeuuid'] = str(uuid.uuid4())
+    # Get a deterministic ID from the exif data.
+    exif_data["bilde_id"] = get_deterministic_id(exif_data)
+
     return exif_data
+
+
+def get_deterministic_id(exif):
+    """
+    This function will create a unique deterministic ID from the EXIF metadata. The id is created by concatenating the
+    timestamp and filename (without extension and "feltkode").
+
+    :param exif: EXIF metadata contents
+    :type exif: dict
+    :return: Deterministic unique ID computed from the EXIF metadata
+    :rtype: str
+    """
+    timestamp = iso8601.parse_date(exif["exif_tid"]).strftime(ID_TIMESTAMP_FORMATTER)
+    filename = os.path.splitext(exif["exif_filnavn"])[0]
+    # Remove "feltkode" from filename.
+    filename = re.sub(ID_REMOVE_FROM_FILENAME_PATTERN, "", filename)
+    # Create the ID
+    deterministic_id = timestamp + "_" + filename
+    return deterministic_id
 
 
 def label_exif(exif):

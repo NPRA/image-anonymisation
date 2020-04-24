@@ -227,7 +227,7 @@ class EXIFWorker(BaseWorker):
         # Insert detected objects
         exif["detekterte_objekter"] = exif_util.get_detected_objects_dict(mask_results)
         # Insert path to output image
-        exif["anonymisert_bildefil"] = paths.output_file.replace(os.sep, "/")
+        # exif["anonymisert_bildefil"] = paths.output_file.replace(os.sep, "/")
 
         if local_json:
             # Write EXIF to input directory
