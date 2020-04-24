@@ -50,7 +50,7 @@ def test_save_processed_img(image_info, local_mask, remote_mask):
     (True, True),
     (False, False)
 ])
-def test_archive_without_extra_files(image_info, archive_mask, archive_json):
+def test_archive(image_info, archive_mask, archive_json):
     paths = image_info[2]
 
     os.makedirs(paths.output_dir)
@@ -89,7 +89,7 @@ def test_draw_mask_on_img(image_info):
     mask_color = np.array(mask_color).reshape((1, 1, 1, -1))
 
     assert np.allclose(masked_img[mask], mask_color), "Got wrong color in colored mask!"
-    assert np.allclose(img[~mask], masked_img[~mask]), "Expected masked image an input image to be equal outside mask."
+    assert np.allclose(img[~mask], masked_img[~mask]), "Expected masked image and input image to be equal outside mask."
 
 
 def test_blur_mask_on_img(image_info):
@@ -99,4 +99,4 @@ def test_blur_mask_on_img(image_info):
     mask = mask_results["detection_masks"].any(axis=1)
     save._blur_mask_on_img(masked_img, mask, blur_factor=15, gray_blur=True, normalized_gray_blur=True)
     assert not np.allclose(masked_img[mask], img[mask]), "Input image and masked image are equal at masked locations."
-    assert np.allclose(img[~mask], masked_img[~mask]), "Expected masked image an input image to be equal outside mask."
+    assert np.allclose(img[~mask], masked_img[~mask]), "Expected masked image and input image to be equal outside mask."
