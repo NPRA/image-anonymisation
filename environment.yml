@@ -16,6 +16,7 @@ dependencies:
   - tqdm=4.43.0
   - xmltodict=0.12.0
   - pip:
+    - cx-oracle==7.3.0
     - m2r==0.2.1
     - opencv-python==4.2.0.32
     - pillow==7.0.0
