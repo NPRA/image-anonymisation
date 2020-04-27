@@ -23,12 +23,6 @@ def check_all_files_written(paths):
         _handle_missing_files(paths, missing_files)
         return False
     else:
-        if config.delete_input:
-            wait_until_path_is_found(paths.input_file)
-            os.remove(paths.input_file)
-            LOGGER.debug(__name__, f"Input file removed: {paths.input_file}")
-
-        paths.remove_cache_file()
         LOGGER.info(__name__, f"All output files written for image: {paths.input_file}")
         return True
 

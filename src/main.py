@@ -99,6 +99,10 @@ def initialize():
     if args.clear_cache:
         # Clear any cached files
         clear_cache()
+        # Clear the database cache if database writing is enabled
+        if config.write_exif_to_db:
+            from src.db.DatabaseClient import clear_db_cache
+            clear_db_cache()
 
     # Get the absolute path of the directories
     base_input_dir = os.path.abspath(args.input_folder)

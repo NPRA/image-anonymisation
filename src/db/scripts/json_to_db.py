@@ -29,7 +29,7 @@ def main():
     args = get_args()
     tree_walker = TreeWalker(args.input_dir, [], skip_webp=False, precompute_paths=True, ext="json")
 
-    with DatabaseClient(max_n_accumulated_rows=8) as cli:
+    with DatabaseClient(max_n_accumulated_rows=32) as cli:
         for paths in tqdm(tree_walker.walk()):
             process_json(paths.input_file, cli)
 

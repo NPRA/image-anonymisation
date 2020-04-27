@@ -7,6 +7,7 @@ import config
 from src.Logger import LOGGER
 from src.Workers import SaveWorker, EXIFWorker
 from src.io.file_checker import check_all_files_written
+from src.io.file_access_guard import wait_until_path_is_found
 
 
 class ImageProcessor:
@@ -66,15 +67,25 @@ class ImageProcessor:
         while self.workers:
             worker = self.workers.pop(0)
 
+            paths = worker["paths"]
             exif_result = worker["EXIFWorker"].get()
             save_result = worker["SaveWorker"].get()
 
             # Check that all expected output files exist, and log an error if any files are missing.
-            all_ok = check_all_files_written(worker["paths"])
+            all_ok = check_all_files_written(paths)
             if all_ok:
                 # If we have an active database_client, add the EXIF data to the database client.
                 if self.database_client is not None and exif_result is not None:
                     self.database_client.add_row(exif_result)
+
+                # Remove the cahce file
+                paths.remove_cache_file()
+
+                # Delete the input file?
+                if config.delete_input:
+                    wait_until_path_is_found(paths.input_file)
+                    os.remove(paths.input_file)
+                    LOGGER.debug(__name__, f"Input file removed: {paths.input_file}")
 
                 self.n_completed += 1
 
