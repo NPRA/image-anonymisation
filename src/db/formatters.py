@@ -3,6 +3,7 @@ import re
 import json
 import iso8601
 
+import config
 from src.db import geometry
 from src.Logger import LOGGER
 from src.io.exif_util import get_deterministic_id
@@ -88,8 +89,29 @@ def Meter(json_data):
 
 
 def Mappenavn(json_data):
-    # TODO
-    return " "
+    # db_folder_name = "Vegbilder/{fylke}/{aar}/{strekningreferanse}/F{feltkode}_{aar}_{maaned}_{dag}"
+    timestamp = Tidspunkt(json_data)
+    format_values = dict(
+        aar=timestamp.year,
+        maaned=timestamp.month,
+        dag=timestamp.day,
+        fylke=json_data["exif_fylke"],
+        vegkat=json_data["exif_vegkat"],
+        vegstat=json_data["exif_vegstat"],
+        vegnr=json_data["exif_vegnr"],
+        hp=json_data["exif_hp"],
+        meter=json_data["exif_meter"],
+        feltkode=json_data["exif_feltkode"],
+        mappenavn=json_data["exif_mappenavn"],
+        filnavn=json_data["exif_filnavn"],
+        strekningreferanse=json_data["exif_strekningreferanse"],
+    )
+
+    folder_name = config.db_folder_name.format(**format_values)
+
+    assert "{" not in folder_name and "}" not in folder_name, f"Invalid `Mappenavn`: {config.db_folder_name} -> " \
+                                                              f"{folder_name}."
+    return folder_name
 
 
 def Filnavn(json_data):
