@@ -7,7 +7,7 @@ from src.db import geometry
 from src.Logger import LOGGER
 from src.io.exif_util import get_deterministic_id
 
-WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d{4});POINT Z\(\s*(\d+\.?\d*) (\d+\.?\d*) (\d+\.?\d*)\s*\)")
+WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d{4});POINT Z\(\s*(-?\d+\.?\d*) (-?\d+\.?\d*) (-?\d+\.?\d*)\s*\)")
 
 
 def to_datetime(ts):
@@ -51,14 +51,12 @@ def Posisjon(json_data):
     # See https://docs.oracle.com/database/121/SPATL/sdo_geometry-object-type.htm#SPATL489
     # D = 3 (3 dimensions) | L = 0 (Default) | TT = 01 (Geometry type: Point)
     gtype = 3001
-    # SDO_STARTING_OFFSET = 1 | SDO_ETYPE, SDO_INTERPRETATION = 1, 1 (Point)
-    elem_info = [1, 1, 1]
 
     try:
         # Parse `exif_gpsposisjon` and create an SDOGeometry object from the results
         matches = WKT_GEOMETRY_REGEX.findall(json_data["exif_gpsposisjon"])
         srid, x, y, z = matches[0]
-        sdo_geometry = geometry.SDOGeometry(gtype, int(srid), elem_info, [float(x), float(y), float(z)])
+        sdo_geometry = geometry.SDOGeometry(gtype=gtype, srid=int(srid), point=[float(x), float(y), float(z)])
     except Exception as err:
         raise ValueError(f"Could not parse position string: {json_data['exif_gpsposisjon']}") from err
 

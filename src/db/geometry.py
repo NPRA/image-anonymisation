@@ -7,17 +7,20 @@ class SDOGeometry:
     parameters
 
     :param gtype: SDO_GTYPE
-    :type gtype: int
+    :type gtype: int | None
     :param srid: SDO_SRID
-    :type srid: int
+    :type srid: int | None
+    :param point: SDO_POINT
+    :type point: list of (int | float) | None
     :param elem_info: SDO_ELEM_INFO
-    :type elem_info: list of int
+    :type elem_info: list of int | None
     :param ordinates: SDO_ORDINATES
-    :type ordinates: list of (int | float)
+    :type ordinates: list of (int | float) | None
     """
-    def __init__(self, gtype, srid, elem_info, ordinates):
+    def __init__(self, gtype=None, srid=None, point=None, elem_info=None, ordinates=None):
         self.gtype = gtype
         self.srid = srid
+        self.point = point
         self.elem_info = elem_info
         self.ordinates = ordinates
 
@@ -39,21 +42,32 @@ def get_geometry_converter(connection):
     :rtype: function
     """
     # Get types
-    obj_type = connection.gettype("MDSYS.SDO_GEOMETRY")
-    element_info_type_obj = connection.gettype("MDSYS.SDO_ELEM_INFO_ARRAY")
-    ordinate_type_obj = connection.gettype("MDSYS.SDO_ORDINATE_ARRAY")
+    geometry_obj_type = connection.gettype("MDSYS.SDO_GEOMETRY")
+    element_info_type = connection.gettype("MDSYS.SDO_ELEM_INFO_ARRAY")
+    ordinate_type = connection.gettype("MDSYS.SDO_ORDINATE_ARRAY")
+    point_type = connection.gettype("MDSYS.SDO_POINT_TYPE")
 
     # Conversion function
     def _converter(value):
         # Create object
-        obj = obj_type.newobject()
-        obj.SDO_ELEM_INFO = element_info_type_obj.newobject()
-        obj.SDO_ORDINATES = ordinate_type_obj.newobject()
+        obj = geometry_obj_type.newobject()
+
         # Set values of object
         obj.SDO_GTYPE = value.gtype
         obj.SDO_SRID = value.srid
-        obj.SDO_ELEM_INFO.extend(value.elem_info)
-        obj.SDO_ORDINATES.extend(value.ordinates)
+
+        if value.point is not None:
+            obj.SDO_POINT = point_type.newobject()
+            obj.SDO_POINT.X, obj.SDO_POINT.Y, obj.SDO_POINT.Z = value.point
+
+        if value.elem_info is not None:
+            obj.SDO_ELEM_INFO = element_info_type.newobject()
+            obj.SDO_ELEM_INFO.extend(value.elem_info)
+
+        if value.ordinates is not None:
+            obj.SDO_ORDINATES = ordinate_type.newobject()
+            obj.SDO_ORDINATES.extend(value.ordinates)
+
         return obj
 
-    return _converter, obj_type
+    return _converter, geometry_obj_type

@@ -1,0 +1,1 @@
+docker stop "oracle_test_database"
