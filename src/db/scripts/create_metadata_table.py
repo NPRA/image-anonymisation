@@ -5,7 +5,7 @@ Use the command line arguments --create, --drop, --insert, to create, drop, and 
 
 import sys
 
-from src.db import db_config
+from config import db_config
 from src.db.DatabaseClient import DatabaseClient
 from src.db.columns import COLUMNS, COL, to_string
 

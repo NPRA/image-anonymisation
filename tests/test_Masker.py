@@ -29,9 +29,9 @@ def test_download_model(get_tmp_data_dir):
     """
     tmp_dir = get_tmp_data_dir()
     model_names = [
-        'mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28',
+        # "mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28",
         "mask_rcnn_resnet101_atrous_coco_2018_01_28",
-        "mask_rcnn_inception_v2_coco_2018_01_28",
+        # "mask_rcnn_inception_v2_coco_2018_01_28",
     ]
     download_base = 'http://download.tensorflow.org/models/object_detection/'
 

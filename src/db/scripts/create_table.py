@@ -4,7 +4,7 @@ argument is specified, a `DROP TABLE <table name>` will be executed before the t
 """
 import sys
 
-from src.db import db_config
+from config import db_config
 from src.db.columns import COLUMNS, to_string
 from src.db.DatabaseClient import DatabaseClient
 

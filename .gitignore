@@ -141,8 +141,8 @@ _cache
 tmp*/
 models/
 logs/
-email_config.py
-src/db/db_config.py
+config/db_config.py
+config/email_config.py
 
 data/*
 tests/data/real

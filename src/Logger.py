@@ -99,18 +99,12 @@ def config_string():
     :rtype: str
     """
     start_line = 5
-    stop_string = "# Configuration constants below."
-    stop_offset = -3
 
-    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config.py")
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config", "config.py")
     with open(config_path, "r") as config_file:
         lines = config_file.readlines()
 
-    stop_idx = start_line
-    while stop_string not in lines[stop_idx]:
-        stop_idx += 1
-
-    lines = lines[start_line: (stop_idx + stop_offset)]
+    lines = lines[start_line:]
     config_str = "".join(lines)
     config_str = 40 * "#" + " CONFIG START " + 40 * "#" + "\n" + config_str + "\n" + \
         40 * "#" + " CONFIG END " + 40 * "#"

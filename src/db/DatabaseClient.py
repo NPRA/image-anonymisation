@@ -3,8 +3,9 @@ import pickle
 import cx_Oracle as cxo
 
 import config
+from config import db_config
 from src.Logger import LOGGER
-from src.db import db_config, geometry
+from src.db import geometry
 from src.db.columns import COLUMNS, ID_COLUMN_NAME
 
 DB_CACHE_DIR = os.path.join(config.CACHE_DIRECTORY, "db")

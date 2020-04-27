@@ -9,10 +9,11 @@ from socket import gethostname
 import config
 from src.Logger import LOGGER
 try:
-    import email_config
+    from config import email_config
 except ImportError:
     LOGGER.warning("Could not find `email_config.py` in the project root. Please create it if you want to use the "
                    "emailing feature. See `config.py` for more details.")
+    email_config = None
 
 
 CRITICAL_SUBJECT = "[image-anonymisation]: Execution stopped due to uncaught {etype}."
