@@ -2,6 +2,7 @@ import os
 import time
 import pytest
 from unittest import mock
+from func_timeout import func_timeout, FunctionTimedOut
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 
@@ -85,6 +86,49 @@ def test_main(get_args, get_config, get_tmp_data_dir, enable_exports, enable_asy
     # Wait for the asynchronous export to complete
     time.sleep(3)
     # Check that all files were created/not created as expected
+    check_files(tmp_dir, cfg, args)
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("timeout", [20, 22.5, 25])
+def test_main_with_interrupt(get_tmp_data_dir, get_args, get_config, timeout):
+    """
+    Check that the main function is capable of recovering from "random" interruptions. This test uses the `func_timeout`
+    module to simulate an interrupt, calls main again, and checks that the produced output is as expected.
+
+
+     :param get_args: Fixture-function which gets the command line arguments
+    :type get_args: function
+    :param get_config: Fixture-function which gets the config
+    :type get_config: function
+    :param get_tmp_data_dir: Fixture-function which sets up a temporary data directory
+    :type get_tmp_data_dir: function
+    :param timeout: Number of seconds to wait before interrupting the first call to `src.main.main`.
+    :type timeout: int | float
+    """
+    tmp_dir = get_tmp_data_dir(subdirs=["real"])
+
+    # Get the command line arguments
+    args = get_args(input_folder=os.path.join(tmp_dir, "real"), output_folder=os.path.join(tmp_dir, "out"),
+                    archive_folder=os.path.join(tmp_dir, "arch"), clear_cache=True)
+    # Get the config
+    cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), local_json=True, remote_json=True,
+                     local_mask=True, remote_mask=True, enable_async=True)
+
+    # Start main, and abort it after `timeout` seconds.
+    try:
+        func_timeout(timeout, run_main, args=[cfg, args])
+    except FunctionTimedOut as err:
+        print(err)
+
+    # We expect an assertion error to be raised, since main was aborted.
+    with pytest.raises(AssertionError):
+        check_files(tmp_dir, cfg, args)
+
+    # Run main again. This time, let it finish
+    run_main(cfg, args)
+
+    # Check that the expected files were written.
     check_files(tmp_dir, cfg, args)
 
 
