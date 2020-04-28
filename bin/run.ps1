@@ -5,7 +5,8 @@ param (
     [string]$log_folder,
     [string]$python_module = "src.main",
     [string]$conda_env_name = "image-anonymisation",
-    [string]$conda_path
+    [string]$conda_path,
+    [string]$oracle_client_path
 )
 
 # Configure arguments to script
@@ -14,6 +15,11 @@ $python_args = "-i $input_folder -o $output_folder"
 if ($archive_folder) { $python_args = "$python_args -a $archive_folder" }
 # Add the log-folder argument if it is not empty
 if ($log_folder) { $python_args = "$python_args -l $log_folder" }
+
+$old_path = $env:PATH
+if ($oracle_client_path) {
+    $env:PATH += ";$oracle_client_path"
+}
 
 # Run the conda-hook script which gives us the `conda` command.
 if ($conda_path) { Invoke-Expression -Command "$conda_path\shell\condabin\conda-hook.ps1" }
@@ -27,3 +33,5 @@ echo "Done running script"
 
 # Deactivate the conda environment.
 conda deactivate
+# Reset the PATH environment variable
+$env:PATH = $old_path
