@@ -27,13 +27,13 @@ def to_clob(d):
     return json.dumps(d, ensure_ascii=False)
 
 
-def BildeID(json_data):
-    # Try to get 'bilde_id' from the json_data.
-    image_id = json_data.get("bilde_id", None)
+def UUID(json_data):
+    # Try to get 'bildeuuid' from the json_data.
+    image_id = json_data.get("bildeuuid", None)
 
     # If 'bilde_id' could not be found in the json_data. Create it from the contents.
     if image_id is None:
-        LOGGER.warning(__name__, "Could not find 'bilde_id' in JSON data. The ID will be created from the contents of "
+        LOGGER.warning(__name__, "Could not find 'bildeuuid' in JSON data. The ID will be created from the contents of "
                                  "the JSON data instead.")
         image_id = get_deterministic_id(json_data)
 

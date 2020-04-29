@@ -6,7 +6,7 @@ from src.db import formatters
 COL = namedtuple("column", ["col_name", "col_dtype", "get_value", "not_null"])
 
 #: Name of the ID-column. This will also be the primary key in the database.
-ID_COLUMN_NAME = "BildeID"
+ID_COLUMN_NAME = "UUID"
 
 #: The `COLUMNS` list specifies the columns in the table. Each column is represented as a namedtuple with four elements:
 #:
@@ -19,7 +19,7 @@ ID_COLUMN_NAME = "BildeID"
 #:   `col_dtype="SDO_GEOMETRY"`, then `get_value` should return a `src.db.geometry.SDOGeometry` object.
 #: * `not_null`: True if the value cannot be null. False otherwise
 COLUMNS = [
-    COL(col_name=ID_COLUMN_NAME,       col_dtype="VARCHAR(255) PRIMARY KEY", get_value=formatters.BildeID,            not_null=False),
+    COL(col_name=ID_COLUMN_NAME,       col_dtype="VARCHAR(255) PRIMARY KEY", get_value=formatters.UUID,               not_null=False),
     COL(col_name="Tidspunkt",          col_dtype="DATE",                     get_value=formatters.Tidspunkt,          not_null=True),
     COL(col_name="Retning",            col_dtype="NUMBER",                   get_value=formatters.Retning,            not_null=True),
     COL(col_name="Posisjon",           col_dtype="SDO_GEOMETRY",             get_value=formatters.Posisjon,           not_null=True),

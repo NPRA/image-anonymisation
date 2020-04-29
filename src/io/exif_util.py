@@ -104,9 +104,9 @@ def get_exif(img):
     exif_data['exif_xptitle'] = XPTitle
 
     # Assign a UUID to the image
-    exif_data['bildeuuid'] = str(uuid.uuid4())
+    # exif_data['bildeuuid'] = str(uuid.uuid4())
     # Get a deterministic ID from the exif data.
-    exif_data["bilde_id"] = get_deterministic_id(exif_data)
+    exif_data["bildeuuid"] = get_deterministic_id(exif_data)
 
     return exif_data
 
