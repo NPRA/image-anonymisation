@@ -27,7 +27,6 @@ EXPECTED_KEYS = {
     "exif_reflinkinfo",
     "exif_xptitle",
     "bildeuuid",
-    "bilde_id"
 }
 
 
