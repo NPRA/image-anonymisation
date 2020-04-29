@@ -17,6 +17,8 @@ dependencies:
   - xmltodict=0.12.0
   - pip:
     - cx-oracle==7.3.0
+    - func-timeout==4.3.5
+    - iso8601==0.1.12
     - m2r==0.2.1
     - opencv-python==4.2.0.32
     - pillow==7.0.0

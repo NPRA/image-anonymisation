@@ -37,11 +37,17 @@ Build Tools for Visual Studio 2019 is required to build some of the package-depe
     ```Bash
     conda activate image-anonymisation
     ```
+   NOTE: If you are unable to run the script in a terminal with conda initialized, you can use the
+   `bin/run.ps1` (PowerShell only) script, with the `-conda_path` argument to invoke the application.
 
-5. Install `pycocotools`:
-    ```Bash
-    pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
-    ```
+#### Installing the Oracle Instant Client
+[Oracle Instant Client](https://www.oracle.com/database/technologies/instant-client/downloads.html)
+(or any other Oracle Database installation which contains the Oracle Client libraries) is required when
+using the optional database functionality. Download the client, and add the path to the `instantclient_xx_x`
+folder to the `PATH` environment variable.
+
+NOTE: If you do not want to modify the `PATH` variable, you can use `bin/run.ps1`, with the `-oracle_path` argument
+to invoke the application instead.
 
 #### Proxy setup
 If Anaconda fails to create the environment above due to a HTTP error, you might need to configure Anaconda to use
@@ -178,6 +184,11 @@ optional arguments:
                         annotations. The file must be formatted according to
                         the COCO annotation file guidelines.
   --accumulate          Accumulate the results for all images?
+```
+
+The evaluation script requires the `pycocotools` package. It can be installed with:
+```Bash
+pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
 ```
 
 Note that the annotations for the evaluation dataset must be on the [COCO format](http://cocodataset.org/#format-data).
