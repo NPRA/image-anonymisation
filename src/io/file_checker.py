@@ -3,7 +3,7 @@ import json
 
 import config
 from src.Logger import LOGGER
-from src.io.file_access_guard import wait_until_path_is_found
+from src.io.file_access_guard import wait_until_path_is_found, PathNotReachableError
 from src.io.TreeWalker import Paths
 
 
@@ -147,7 +147,14 @@ def clear_cache_file(file_path):
                   input_dir=cache_info["input_dir"], mirror_dirs=cache_info["mirror_dirs"],
                   filename=cache_info["filename"])
     # Wait for the directories if they cannot be reached
-    wait_until_path_is_found([paths.base_input_dir, *paths.base_mirror_dirs])
+    try:
+        wait_until_path_is_found([paths.base_input_dir, *paths.base_mirror_dirs])
+    except PathNotReachableError as err:
+        raise PathNotReachableError(f"The directories pointed to by the cache file '{file_path}' could not be found. If"
+                                    f" they were deleted manually, delete this cache file and run the program again")\
+                                   from err
+
+
     # Remove any expected output files if they are present
     for expected_file in get_expected_files(paths):
         if os.path.isfile(expected_file):
