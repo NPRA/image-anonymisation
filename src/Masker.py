@@ -32,13 +32,15 @@ class Masker:
         """
         Initialize the TensorFlow-graph
         """
+        saved_model_path = os.path.join(config.MODEL_PATH, "saved_model")
         # Download and extract model
-        if not os.path.exists(config.MODEL_PATH):
+
+        if not os.path.exists(saved_model_path):
             LOGGER.info(__name__, "Could not find the model graph file. Downloading...")
             download_model(config.DOWNLOAD_BASE, config.MODEL_NAME, config.MODEL_PATH, extract_all=True)
             LOGGER.info(__name__, "Model graph file downloaded.")
 
-        model = tf.saved_model.load(os.path.join(config.MODEL_PATH, "saved_model"))
+        model = tf.saved_model.load(saved_model_path)
         self.model = model.signatures["serving_default"]
 
     def mask(self, image):
@@ -130,8 +132,7 @@ def download_model(download_base, model_name, model_path, extract_all=False):
     if extract_all:
         tar_file.extractall(os.path.dirname(model_path))
     else:
-        if not os.path.isdir(model_path):
-            os.makedirs(model_path)
+        os.makedirs(model_path, exist_ok=True)
 
         for file in tar_file.getmembers():
             file_name = os.path.basename(file.name)
