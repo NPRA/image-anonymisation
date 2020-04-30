@@ -92,7 +92,7 @@ mask_dilation_pixels = 4
 
 #: Maximum number of pixels in images to be processed by the masking model. If the number of pixels exceeds this value,
 #: it will be resized before the masker is applied. This will NOT change the resolution of the output image.
-max_num_pixels = 5E5
+max_num_pixels = 5E7
 
 
 # ===============================================================
