@@ -154,7 +154,6 @@ def clear_cache_file(file_path):
                                     f" they were deleted manually, delete this cache file and run the program again")\
                                    from err
 
-
     # Remove any expected output files if they are present
     for expected_file in get_expected_files(paths):
         if os.path.isfile(expected_file):

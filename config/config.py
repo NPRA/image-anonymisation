@@ -90,9 +90,9 @@ model_type = "Medium"
 #: Default: 4
 mask_dilation_pixels = 4
 
-#: Maximum height of images to be processed by the masking model. If the height of an image exceeds this value, it will
-#: be resized before the masker is applied. This will NOT change the resolution of the output image.
-max_image_height = 1200
+#: Maximum number of pixels in images to be processed by the masking model. If the number of pixels exceeds this value,
+#: it will be resized before the masker is applied. This will NOT change the resolution of the output image.
+max_num_pixels = 5E5
 
 
 # ===============================================================

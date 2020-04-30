@@ -17,15 +17,15 @@ class Masker:
                                  identified object is completely covered by the corresponding mask. Set
                                  `mask_dilation_pixels = 0` to disable mask dilation.
     :type mask_dilation_pixels: int
-    :param max_image_height: Maximum height of images to be processed by the masking model. If the height of an image
-                             exceeds this value, it will be resized before the masker is applied. This will NOT change
-                             the resolution of the output image.
-    :type max_image_height: int
+    :param max_num_pixels: Maximum number of pixels in images to be processed by the masking model. If the number of
+                           pixels exceeds this value, it will be resized before the masker is applied. This will NOT
+                           change the resolution of the output image.
+    :type max_num_pixels: int
     """
 
-    def __init__(self, mask_dilation_pixels=0, max_image_height=10000):
+    def __init__(self, mask_dilation_pixels=0, max_num_pixels=10000):
         self.mask_dilation_pixels = mask_dilation_pixels
-        self.max_image_height = max_image_height
+        self.max_num_pixels = int(max_num_pixels)
         self._init_model()
 
     def _init_model(self):
@@ -53,7 +53,7 @@ class Masker:
         # Original image shape
         image_shape = image.shape
         # Resize the image if it is too large
-        image = _maybe_resize_image(image, self.max_image_height)
+        image = _maybe_resize_image(image, self.max_num_pixels)
         # Get results from model
         masking_results = self.model(image)
         # Remove "uninteresting" detections. I.e. detections which are not relevant for anonymisation.
@@ -141,16 +141,20 @@ def download_model(download_base, model_name, model_path, extract_all=False):
 
 
 @tf.function
-def _maybe_resize_image(img, max_image_height):
+def _maybe_resize_image(img, max_num_pixels):
+    shape = tf.shape(img)
+
     def true_fn():
-        new_width = tf.cast((max_image_height / img.shape[1]) * img.shape[2], tf.int32)
-        resized = tf.image.resize(img, (max_image_height, new_width), method=tf.image.ResizeMethod.BILINEAR)
+        h, w, = tf.cast(shape[1], tf.int64), tf.cast(shape[2], tf.int64)
+        new_w = tf.cast(tf.sqrt(max_num_pixels * w / h), dtype=tf.int64)
+        new_h = tf.cast(new_w * h / w, dtype=tf.int64)
+        resized = tf.image.resize(img, (new_h, new_w), method=tf.image.ResizeMethod.BILINEAR)
         return tf.cast(resized, tf.uint8)
 
     def false_fn():
         return img
 
-    return tf.cond(tf.shape(img)[1] > max_image_height, true_fn, false_fn)
+    return tf.cond(shape[1] * shape[2] > max_num_pixels, true_fn, false_fn)
 
 
 def _filter_detections_numpy(num_detections, classes, scores, boxes, masks):
