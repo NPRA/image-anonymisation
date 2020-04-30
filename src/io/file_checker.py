@@ -140,8 +140,16 @@ def clear_cache_file(file_path):
     :type file_path: str
     """
     # Read the JSON file
-    with open(file_path, "r") as f:
-        cache_info = json.load(f)
+    try:
+        with open(file_path, "r") as f:
+            cache_info = json.load(f)
+    except json.JSONDecodeError:
+        # If we got a JSONDecodeError, it was most likely because the program was killed before it finished writing the
+        # file. Since cache file writing is the first step when exporting the output images, we have no output images to
+        # clean up. We therefore remove the (incomplete) cache file and continue.
+        os.remove(file_path)
+        return
+
     # Create a `src.io.TreeWalker.Paths` object representing the image
     paths = Paths(base_input_dir=cache_info["base_input_dir"], base_mirror_dirs=cache_info["base_mirror_dirs"],
                   input_dir=cache_info["input_dir"], mirror_dirs=cache_info["mirror_dirs"],
