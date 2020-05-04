@@ -41,252 +41,6 @@
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="module-config">
 <span id="config"></span><h2>config<a class="headerlink" href="#module-config" title="Permalink to this headline">¶</a></h2>
-<p>Configuration variables.</p>
-<dl class="data">
-<dt id="config.log_level">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">log_level</code><em class="property"> = 'DEBUG'</em><a class="headerlink" href="#config.log_level" title="Permalink to this definition">¶</a></dt>
-<dd><p>Logging level for the application. This controls the log level for terminal logging and file logging (if it is
-enabled). Must be one of {“DEBUG”, “INFO”, “WARNING”, “ERROR”}.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.draw_mask">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">draw_mask</code><em class="property"> = True</em><a class="headerlink" href="#config.draw_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the mask to the output image?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.delete_input">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">delete_input</code><em class="property"> = False</em><a class="headerlink" href="#config.delete_input" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete the original image from the input directory when the masking is completed?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.force_remask">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">force_remask</code><em class="property"> = False</em><a class="headerlink" href="#config.force_remask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Recompute masks even though a .webp file exists in the input folder.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.lazy_paths">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">lazy_paths</code><em class="property"> = False</em><a class="headerlink" href="#config.lazy_paths" title="Permalink to this definition">¶</a></dt>
-<dd><p>When <cite>lazy_paths = True</cite>, traverse the file tree during the masking process.
-Otherwise, all paths will be identified and stored before the masking starts.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.file_access_retry_seconds">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">file_access_retry_seconds</code><em class="property"> = 10</em><a class="headerlink" href="#config.file_access_retry_seconds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of seconds to wait before (re)trying to access a file/directory which cannot currently be reached. This
-applies to both reading input files, and writing output files.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.file_access_timeout_seconds">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">file_access_timeout_seconds</code><em class="property"> = 60</em><a class="headerlink" href="#config.file_access_timeout_seconds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Total number of seconds to wait before giving up on accessing a file/directory which cannot currently be reached.
-This also applies to both reading input files, and writing output files.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.datetime_format">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">datetime_format</code><em class="property"> = '%Y-%m-%d %H.%M.%S'</em><a class="headerlink" href="#config.datetime_format" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format of datetime identifiers. See <a class="reference external" href="https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior">https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior</a> for
-more information.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.log_file_name">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">log_file_name</code><em class="property"> = '{datetime} {hostname}.log'</em><a class="headerlink" href="#config.log_file_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Name of the log file. <cite>{datetime}</cite> will be replaced with a timestamp formatted as <cite>datetime_format</cite>. {hostname}
-will be replaced with the host name.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.enable_async">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">enable_async</code><em class="property"> = True</em><a class="headerlink" href="#config.enable_async" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enable asynchronous post-processing? When True, the file exports (anonymised image, mask file and JSON file) will be
-executed asynchronously in order to increase processing speed.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.max_num_async_workers">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">max_num_async_workers</code><em class="property"> = 2</em><a class="headerlink" href="#config.max_num_async_workers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maximum number of asynchronous workers allowed to be active simultaneously. Should be &lt;= (CPU core count - 1)</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.uncaught_exception_email">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">uncaught_exception_email</code><em class="property"> = False</em><a class="headerlink" href="#config.uncaught_exception_email" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an email if the program exits abnormally due to an uncaught exception.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.processing_error_email">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">processing_error_email</code><em class="property"> = False</em><a class="headerlink" href="#config.processing_error_email" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an email if a processing error is encountered, but the program is able to continue</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.finished_email">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">finished_email</code><em class="property"> = False</em><a class="headerlink" href="#config.finished_email" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an email if the anonymisation finishes normally.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.remote_json">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">remote_json</code><em class="property"> = True</em><a class="headerlink" href="#config.remote_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the EXIF .json file to the output (remote) directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.local_json">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">local_json</code><em class="property"> = False</em><a class="headerlink" href="#config.local_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the EXIF .json file to the input (local) directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.archive_json">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">archive_json</code><em class="property"> = False</em><a class="headerlink" href="#config.archive_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the EXIF .json file to the archive directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.remote_mask">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">remote_mask</code><em class="property"> = True</em><a class="headerlink" href="#config.remote_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write mask file to the output (remote) directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.local_mask">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">local_mask</code><em class="property"> = False</em><a class="headerlink" href="#config.local_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the mask file to the input (local) directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.archive_mask">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">archive_mask</code><em class="property"> = False</em><a class="headerlink" href="#config.archive_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write mask file to the archive directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.model_type">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">model_type</code><em class="property"> = 'Medium'</em><a class="headerlink" href="#config.model_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Type of masking model. Currently, there are three available models with varying speed and accuracy.
-The slowest model produces the most accurate masks, while the masks from the medium model are slightly worse.
-The masks from the <cite>Fast</cite> model are currently not recommended due to poor quality. Must be either “Slow”, “Medium” or
-“Fast”. “Medium” is recommended.
-Default: “Medium”</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.mask_dilation_pixels">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">mask_dilation_pixels</code><em class="property"> = 4</em><a class="headerlink" href="#config.mask_dilation_pixels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
-by the corresponding mask. Set <cite>mask_dilation_pixels = 0</cite> to disable mask dilation.
-Default: 4</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.max_image_height">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">max_image_height</code><em class="property"> = 1200</em><a class="headerlink" href="#config.max_image_height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maximum height of images to be processed by the masking model. If the height of an image exceeds this value, it will
-be resized before the masker is applied. This will NOT change the resolution of the output image.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.mask_color">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">mask_color</code><em class="property"> = None</em><a class="headerlink" href="#config.mask_color" title="Permalink to this definition">¶</a></dt>
-<dd><p>“RGB tuple [0-255] indicating the masking color. Setting this option will override the
-colors specified below. Example: Setting <cite>mask_color = (50, 50, 50)</cite> will make all masks
-dark gray.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.blur">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">blur</code><em class="property"> = 15</em><a class="headerlink" href="#config.blur" title="Permalink to this definition">¶</a></dt>
-<dd><p>Blurring coefficient [1-100] which specifies the degree of blurring to apply within the
-mask. When this parameter is specified, the image will be blurred, and not masked with a
-specific color. Set <cite>blur = None</cite> to disable blurring, and use colored masks instead.
-Default: 15</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.gray_blur">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">gray_blur</code><em class="property"> = True</em><a class="headerlink" href="#config.gray_blur" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the image to grayscale before blurring? (Ignored if blurring is disabled)
-Default: True</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.normalized_gray_blur">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">normalized_gray_blur</code><em class="property"> = True</em><a class="headerlink" href="#config.normalized_gray_blur" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark
-colors. NOTE: Requires gray_blur=True
-Default: True</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.write_exif_to_db">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">write_exif_to_db</code><em class="property"> = True</em><a class="headerlink" href="#config.write_exif_to_db" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the EXIF data to the database?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.db_max_n_accumulated_rows">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">db_max_n_accumulated_rows</code><em class="property"> = 4</em><a class="headerlink" href="#config.db_max_n_accumulated_rows" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maximum number of rows to accumulate locally before writing all accumulated rows to the database.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.TF_DATASET_NUM_PARALLEL_CALLS">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">TF_DATASET_NUM_PARALLEL_CALLS</code><em class="property"> = 1</em><a class="headerlink" href="#config.TF_DATASET_NUM_PARALLEL_CALLS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of parallel calls to tf.dataset.map and tf.dataset.prefetch. Set <cite>TF_DATASET_NUM_PARALLEL_CALLS = “auto”</cite> to
-use tf.data.experimental.AUTOTUNE. This might yield a small gain in performance.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.MODEL_NAME">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">MODEL_NAME</code><em class="property"> = 'mask_rcnn_resnet101_atrous_coco_2018_01_28'</em><a class="headerlink" href="#config.MODEL_NAME" title="Permalink to this definition">¶</a></dt>
-<dd><p>Actual name of the masking model. Controlled by the value of <cite>model_type</cite></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.DOWNLOAD_BASE">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">DOWNLOAD_BASE</code><em class="property"> = 'http://download.tensorflow.org/models/object_detection/'</em><a class="headerlink" href="#config.DOWNLOAD_BASE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base URL for model downloading</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.PATH_TO_LABELS">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">PATH_TO_LABELS</code><em class="property"> = 'mscoco_label_map.pbtxt'</em><a class="headerlink" href="#config.PATH_TO_LABELS" title="Permalink to this definition">¶</a></dt>
-<dd><p>List of the strings that is used to add correct label for each box.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.MASK_LABELS">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">MASK_LABELS</code><em class="property"> = (1, 2, 3, 4, 6, 8)</em><a class="headerlink" href="#config.MASK_LABELS" title="Permalink to this definition">¶</a></dt>
-<dd><p>COCO labels to mask in input images</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.LABEL_COLORS">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">LABEL_COLORS</code><em class="property"> = {1: (255, 255, 255), 2: (0, 0, 255), 3: (255, 0, 0), 4: (255, 255, 0), 6: (0, 255, 255), 8: (0, 255, 0)}</em><a class="headerlink" href="#config.LABEL_COLORS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Masking colors. &lt;COCO label id&gt;: &lt;RGB color&gt;</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.DEFAULT_COLOR">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">DEFAULT_COLOR</code><em class="property"> = (100, 100, 100)</em><a class="headerlink" href="#config.DEFAULT_COLOR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Default color for labels not contained in <cite>LABEL_COLORS</cite></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.LABEL_MAP">
-<code class="sig-prename descclassname">config.</code><code class="sig-name descname">LABEL_MAP</code><em class="property"> = {1: 'person', 2: 'bicycle', 3: 'car', 4: 'motorcycle', 5: 'airplane', 6: 'bus', 7: 'train', 8: 'truck', 9: 'boat', 10: 'traffic light', 11: 'fire hydrant', 13: 'stop sign', 14: 'parking meter', 15: 'bench', 16: 'bird', 17: 'cat', 18: 'dog', 19: 'horse', 20: 'sheep', 21: 'cow', 22: 'elephant', 23: 'bear', 24: 'zebra', 25: 'giraffe', 27: 'backpack', 28: 'umbrella', 31: 'handbag', 32: 'tie', 33: 'suitcase', 34: 'frisbee', 35: 'skis', 36: 'snowboard', 37: 'sports ball', 38: 'kite', 39: 'baseball bat', 40: 'baseball glove', 41: 'skateboard', 42: 'surfboard', 43: 'tennis racket', 44: 'bottle', 46: 'wine glass', 47: 'cup', 48: 'fork', 49: 'knife', 50: 'spoon', 51: 'bowl', 52: 'banana', 53: 'apple', 54: 'sandwich', 55: 'orange', 56: 'broccoli', 57: 'carrot', 58: 'hot dog', 59: 'pizza', 60: 'donut', 61: 'cake', 62: 'chair', 63: 'couch', 64: 'potted plant', 65: 'bed', 67: 'dining table', 70: 'toilet', 72: 'tv', 73: 'laptop', 74: 'mouse', 75: 'remote', 76: 'keyboard', 77: 'cell phone', 78: 'microwave', 79: 'oven', 80: 'toaster', 81: 'sink', 82: 'refrigerator', 84: 'book', 85: 'clock', 86: 'vase', 87: 'scissors', 88: 'teddy bear', 89: 'hair drier', 90: 'toothbrush'}</em><a class="headerlink" href="#config.LABEL_MAP" title="Permalink to this definition">¶</a></dt>
-<dd><p>Label map for the COCO dataset.</p>
-</dd></dl>
-
 </div>
 <div class="section" id="db">
 <h2>db<a class="headerlink" href="#db" title="Permalink to this headline">¶</a></h2>
@@ -304,8 +58,8 @@ database.</p>
 </dd>
 </dl>
 <dl class="method">
-<dt id="src.db.DatabaseClient.DatabaseClient.get_insert_sql">
-<em class="property">static </em><code class="sig-name descname">get_insert_sql</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.get_insert_sql" title="Permalink to this definition">¶</a></dt>
+<dt id="src.db.DatabaseClient.DatabaseClient.get_insert_and_update_sql">
+<em class="property">static </em><code class="sig-name descname">get_insert_and_update_sql</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.get_insert_and_update_sql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the SQL expression used to insert a row into the database</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -332,6 +86,12 @@ database.</p>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.db.DatabaseClient.DatabaseClient.input_type_handler">
+<em class="property">static </em><code class="sig-name descname">input_type_handler</code><span class="sig-paren">(</span><em class="sig-param">cursor</em>, <em class="sig-param">value</em>, <em class="sig-param">num_elements</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.input_type_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input type handler which converts <cite>src.db.geometry.SDOGeometry</cite> objects to oracle SDO_GEOMETRY objects.</p>
 </dd></dl>
 
 <dl class="method">
@@ -369,6 +129,19 @@ written to the database. The buffer will then be cleared.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="src.db.DatabaseClient.DatabaseClient.insert_rows">
+<code class="sig-name descname">insert_rows</code><span class="sig-paren">(</span><em class="sig-param">rows</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.insert_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert <cite>rows</cite> into the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rows</strong> – List of rows to be inserted. These should be on the form returned by</p>
+</dd>
+</dl>
+<p><cite>src.db.DatabaseClient.create_row</cite>
+:type rows: list of dict</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="src.db.DatabaseClient.DatabaseClient.close">
 <code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert the remaining accumulated rows into the database</p>
@@ -376,12 +149,19 @@ written to the database. The buffer will then be cleared.</p>
 
 </dd></dl>
 
+<dl class="function">
+<dt id="src.db.DatabaseClient.clear_db_cache">
+<code class="sig-prename descclassname">src.db.DatabaseClient.</code><code class="sig-name descname">clear_db_cache</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.clear_db_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Traverse the database cache directory and insert all cached rows into the database. If insertion was successful, the
+cache files will be deleted.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-src.db.geometry">
 <span id="db-geometry"></span><h3>db.geometry<a class="headerlink" href="#module-src.db.geometry" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="src.db.geometry.SDOGeometry">
-<em class="property">class </em><code class="sig-prename descclassname">src.db.geometry.</code><code class="sig-name descname">SDOGeometry</code><span class="sig-paren">(</span><em class="sig-param">gtype</em>, <em class="sig-param">srid</em>, <em class="sig-param">elem_info</em>, <em class="sig-param">ordinates</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.geometry.SDOGeometry" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.db.geometry.</code><code class="sig-name descname">SDOGeometry</code><span class="sig-paren">(</span><em class="sig-param">gtype=None</em>, <em class="sig-param">srid=None</em>, <em class="sig-param">point=None</em>, <em class="sig-param">elem_info=None</em>, <em class="sig-param">ordinates=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.geometry.SDOGeometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Intermediate class to represent SDO_GEOMETRY objects. If an object of this class is inserted with a
 <cite>src.db.DatabaseClient.connect</cite> connection, it will be converted to an SDO_GEOMETRY object before insertion.
 Conversion is done using the converter returned by <cite>src.db.geometry.get_geometry_converter</cite>.
@@ -390,10 +170,11 @@ parameters</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>gtype</strong> (<em>int</em>) – SDO_GTYPE</p></li>
-<li><p><strong>srid</strong> (<em>int</em>) – SDO_SRID</p></li>
-<li><p><strong>elem_info</strong> (<em>list of int</em>) – SDO_ELEM_INFO</p></li>
-<li><p><strong>ordinates</strong> (<em>list of</em><em> (</em><em>int | float</em><em>)</em>) – SDO_ORDINATES</p></li>
+<li><p><strong>gtype</strong> (<em>int | None</em>) – SDO_GTYPE</p></li>
+<li><p><strong>srid</strong> (<em>int | None</em>) – SDO_SRID</p></li>
+<li><p><strong>point</strong> (<em>list of</em><em> (</em><em>int | float</em><em>) </em><em>| None</em>) – SDO_POINT</p></li>
+<li><p><strong>elem_info</strong> (<em>list of int | None</em>) – SDO_ELEM_INFO</p></li>
+<li><p><strong>ordinates</strong> (<em>list of</em><em> (</em><em>int | float</em><em>) </em><em>| None</em>) – SDO_ORDINATES</p></li>
 </ul>
 </dd>
 </dl>
@@ -418,31 +199,8 @@ object.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-src.db.setup_table">
-<span id="db-setup-table"></span><h3>db.setup_table<a class="headerlink" href="#module-src.db.setup_table" title="Permalink to this headline">¶</a></h3>
-<dl class="attribute">
-<dt id="src.db.setup_table.COL">
-<code class="sig-prename descclassname">src.db.setup_table.</code><code class="sig-name descname">COL</code><a class="headerlink" href="#src.db.setup_table.COL" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prototype column</p>
-<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">src.db.setup_table.column</span></code></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="src.db.setup_table.COLUMNS">
-<code class="sig-prename descclassname">src.db.setup_table.</code><code class="sig-name descname">COLUMNS</code><em class="property"> = [column(col_name='Tidspunkt', col_dtype='DATE', get_value=&lt;function Tidspunkt&gt;, not_null=True), column(col_name='Retning', col_dtype='NUMBER', get_value=&lt;function Retning&gt;, not_null=True), column(col_name='Posisjon', col_dtype='SDO_GEOMETRY', get_value=&lt;function Posisjon&gt;, not_null=True), column(col_name='FylkeNummer', col_dtype='VARCHAR(255)', get_value=&lt;function FylkeNummer&gt;, not_null=True), column(col_name='Vegkategori', col_dtype='VARCHAR(255)', get_value=&lt;function Vegkategori&gt;, not_null=True), column(col_name='Vegstatus', col_dtype='VARCHAR(255)', get_value=&lt;function Vegstatus&gt;, not_null=True), column(col_name='Vegnummer', col_dtype='VARCHAR(255)', get_value=&lt;function Vegnummer&gt;, not_null=True), column(col_name='StrekningReferanse', col_dtype='VARCHAR(255)', get_value=&lt;function StrekningReferanse&gt;, not_null=True), column(col_name='Meter', col_dtype='NUMBER', get_value=&lt;function Meter&gt;, not_null=True), column(col_name='Mappenavn', col_dtype='VARCHAR(255)', get_value=&lt;function Mappenavn&gt;, not_null=True), column(col_name='Filnavn', col_dtype='VARCHAR(255)', get_value=&lt;function Filnavn&gt;, not_null=True), column(col_name='JsonData', col_dtype='CLOB', get_value=&lt;function JsonData&gt;, not_null=True), column(col_name='ReflinkID', col_dtype='NUMBER', get_value=&lt;function ReflinkID&gt;, not_null=False), column(col_name='ReflinkPosisjon', col_dtype='NUMBER', get_value=&lt;function ReflinkPosisjon&gt;, not_null=False), column(col_name='DetekterteObjekter', col_dtype='CLOB', get_value=&lt;function DetekterteObjekter&gt;, not_null=False), column(col_name='Aar', col_dtype='NUMBER', get_value=&lt;function Aar&gt;, not_null=True), column(col_name='Feltkode', col_dtype='VARCHAR(255)', get_value=&lt;function Feltkode&gt;, not_null=True)]</em><a class="headerlink" href="#src.db.setup_table.COLUMNS" title="Permalink to this definition">¶</a></dt>
-<dd><p>The <cite>COLUMNS</cite> list specifies the columns in the table. Each column is represented as a namedtuple with four elements:</p>
-<ul class="simple">
-<li><p><cite>col_name</cite>: The name of the column</p></li>
-<li><p><cite>col_dtype</cite>: The SQL datatype of the column</p></li>
-<li><p><cite>get_value</cite>: A function that returns the value of the column for a given dictionary. The dictionary is assumed
-to contain the same key-value-pairs as the JSON-file written by the anonymisation application.
-The return type of the function must be compatible with <cite>col_dtype</cite>. For instance, if
-<cite>col_dtype=”VARCHAR(…)”</cite>, then <cite>get_value</cite> should return a string. Note that if
-<cite>col_dtype=”SDO_GEOMETRY”</cite>, then <cite>get_value</cite> should return a <cite>src.db.geometry.SDOGeometry</cite> object.</p></li>
-<li><p><cite>not_null</cite>: True if the value cannot be null. False otherwise</p></li>
-</ul>
-</dd></dl>
-
+<div class="section" id="db-setup-table">
+<h3>db.setup_table<a class="headerlink" href="#db-setup-table" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 <div class="section" id="io">
@@ -486,6 +244,18 @@ The return type of the function must be compatible with <cite>col_dtype</cite>. 
 <dd><p>Placeholders for the redacted entries</p>
 </dd></dl>
 
+<dl class="data">
+<dt id="src.io.exif_util.ID_TIMESTAMP_FORMATTER">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">ID_TIMESTAMP_FORMATTER</code><em class="property"> = '%Y-%m-%dT%H.%M.%S.%f'</em><a class="headerlink" href="#src.io.exif_util.ID_TIMESTAMP_FORMATTER" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timestamp format for the deterministic id</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.io.exif_util.ID_REMOVE_FROM_FILENAME_PATTERN">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">ID_REMOVE_FROM_FILENAME_PATTERN</code><em class="property"> = re.compile('_f\\d+')</em><a class="headerlink" href="#src.io.exif_util.ID_REMOVE_FROM_FILENAME_PATTERN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern to remove from the filename when creating the deterministic id</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="src.io.exif_util.exif_from_file">
 <code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">exif_from_file</code><span class="sig-paren">(</span><em class="sig-param">image_path</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.exif_from_file" title="Permalink to this definition">¶</a></dt>
@@ -516,6 +286,24 @@ The return type of the function must be compatible with <cite>col_dtype</cite>. 
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.exif_util.get_deterministic_id">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_deterministic_id</code><span class="sig-paren">(</span><em class="sig-param">exif</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_deterministic_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will create a unique deterministic ID from the EXIF metadata. The id is created by concatenating the
+timestamp and filename (without extension and “feltkode”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>exif</strong> (<em>dict</em>) – EXIF metadata contents</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Deterministic unique ID computed from the EXIF metadata</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1108,7 +896,7 @@ instance of <cite>Masker</cite> ready for masking.</p>
 <span id="masker"></span><h2>Masker<a class="headerlink" href="#module-src.Masker" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="src.Masker.Masker">
-<em class="property">class </em><code class="sig-prename descclassname">src.Masker.</code><code class="sig-name descname">Masker</code><span class="sig-paren">(</span><em class="sig-param">mask_dilation_pixels=0</em>, <em class="sig-param">max_image_height=10000</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.Masker" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.Masker.</code><code class="sig-name descname">Masker</code><span class="sig-paren">(</span><em class="sig-param">mask_dilation_pixels=0</em>, <em class="sig-param">max_num_pixels=10000</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Masker.Masker" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the masking functionality. Uses a pre-trained TensorFlow model to compute masks for images. Model
 configuration is done in <cite>config</cite>.</p>
 <dl class="field-list simple">
@@ -1117,9 +905,9 @@ configuration is done in <cite>config</cite>.</p>
 <li><p><strong>mask_dilation_pixels</strong> (<em>int</em>) – Approximate number of pixels for mask dilation. This will help ensure that an
 identified object is completely covered by the corresponding mask. Set
 <cite>mask_dilation_pixels = 0</cite> to disable mask dilation.</p></li>
-<li><p><strong>max_image_height</strong> (<em>int</em>) – Maximum height of images to be processed by the masking model. If the height of an image
-exceeds this value, it will be resized before the masker is applied. This will NOT change
-the resolution of the output image.</p></li>
+<li><p><strong>max_num_pixels</strong> (<em>int</em>) – Maximum number of pixels in images to be processed by the masking model. If the number of
+pixels exceeds this value, it will be resized before the masker is applied. This will NOT
+change the resolution of the output image.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1399,7 +1187,7 @@ in <cite>config</cite>.</p>
 <li><a class="reference internal" href="#db">db</a><ul>
 <li><a class="reference internal" href="#module-src.db.DatabaseClient">db.DatabaseClient</a></li>
 <li><a class="reference internal" href="#module-src.db.geometry">db.geometry</a></li>
-<li><a class="reference internal" href="#module-src.db.setup_table">db.setup_table</a></li>
+<li><a class="reference internal" href="#db-setup-table">db.setup_table</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#io">io</a><ul>
