@@ -19,6 +19,7 @@ from src.ImageProcessor import ImageProcessor
 
 # Exceptions to catch when processing an image
 PROCESSING_EXCEPTIONS = (
+    SystemError,
     tf.errors.InvalidArgumentError,
     tf.errors.UnknownError,
     tf.errors.NotFoundError,
@@ -185,12 +186,12 @@ def main():
     # Initialize
     start_datetime = datetime.now()
     args, tree_walker, image_processor, dataset_iterator = initialize()
-    n_imgs = "?" if config.lazy_paths else tree_walker.n_valid_images
+    n_imgs = "?" if config.lazy_paths else (tree_walker.n_valid_images + tree_walker.n_skipped_images)
 
     # Mask images
     time_at_iter_start = time.time()
     for i, paths in enumerate(tree_walker.walk()):
-        count_str = f"{i+1} of {n_imgs}"
+        count_str = f"{tree_walker.n_skipped_images + i + 1} of {n_imgs}"
         start_time = time.time()
         LOGGER.set_state(paths)
         LOGGER.info(__name__, LOG_SEP)

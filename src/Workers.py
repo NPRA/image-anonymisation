@@ -7,6 +7,9 @@ from src.io import exif_util
 from src.io.file_access_guard import wait_until_path_is_found
 
 
+ERROR_RETVAL = -1
+
+
 class BaseWorker:
     """
     Base class for asynchronous workers. Should be subclassed, and not used as-is.
@@ -19,6 +22,7 @@ class BaseWorker:
     def __init__(self, pool, paths):
         self.pool = pool
         self.paths = paths
+        self.n_starts = 0
 
         self.worker_exceptions = (AssertionError,)
         self.error_message = "Got error while processing image '{image_path}':\n{err}"
@@ -51,6 +55,7 @@ class BaseWorker:
         """
         Start the async worker. If `config.enable_async = False`, `self.async_func` will be called directly.
         """
+        self.n_starts += 1
         if config.enable_async:
             # Spawn an asynchronous worker
             self.async_worker = self.pool.apply_async(self.async_func, args=self.args)
@@ -61,6 +66,7 @@ class BaseWorker:
                 assert self.result_is_valid(self.async_worker), f"Invalid result: '{self.async_worker}'"
             except self.worker_exceptions as err:
                 self.handle_error(err)
+                self.async_worker = ERROR_RETVAL
 
     def get(self):
         """
@@ -77,7 +83,7 @@ class BaseWorker:
 
             except self.worker_exceptions as err:
                 self.handle_error(err)
-                return None
+                return ERROR_RETVAL
         else:
             # The execution was not run asynchronously, which means that the result is stored in `self.async_worker`.
             result = self.async_worker
@@ -99,7 +105,7 @@ class BaseWorker:
         LOGGER.set_state(self.paths)
         # Log the error
         LOGGER.error(__name__, self.error_message.format(image_path=self.paths.input_file, err=str(err)),
-                     save=True, email=True, email_mode="error")
+                     save=False, email=False)
         # Reset the state
         LOGGER.set_state(current_logger_state)
 

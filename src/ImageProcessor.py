@@ -5,7 +5,7 @@ import numpy as np
 
 import config
 from src.Logger import LOGGER
-from src.Workers import SaveWorker, EXIFWorker
+from src.Workers import SaveWorker, EXIFWorker, ERROR_RETVAL
 from src.io.file_checker import check_all_files_written
 from src.io.file_access_guard import wait_until_path_is_found
 
@@ -26,6 +26,7 @@ class ImageProcessor:
     def __init__(self, masker, max_num_async_workers=2):
         self.masker = masker
         self.n_completed = 0
+        self.max_worker_starts = 2
         self.workers = []
 
         if config.enable_async:
@@ -48,10 +49,10 @@ class ImageProcessor:
 
         :param paths: Paths object representing the image file.
         :type paths: src.io.TreeWalker.Paths
-        :param image:
-        :type image:
-        :param mask_results:
-        :type mask_results:
+        :param image: Input image
+        :type image: np.ndarray
+        :param mask_results: Results from `src.Masker.Masker.mask`
+        :type mask_results: dict
         """
         # Write the cache file indicating that the saving process has begun.
         paths.create_cache_file()
@@ -64,6 +65,13 @@ class ImageProcessor:
         self.workers.append(worker)
 
     def _wait_for_workers(self):
+        """
+        Wait for all dispatched workers to finish. If any of the workers raise an exception, it will be handled, and the
+        worker will be restarted (unless it has been started `self.max_worker_starts` times already). When a worker is
+        finished, the output files and archive files will be checked, the cache file will be removed, and if
+        `config.delete_input`, the input image will be removed.
+        """
+        failed_workers = []
         while self.workers:
             worker = self.workers.pop(0)
 
@@ -71,23 +79,69 @@ class ImageProcessor:
             exif_result = worker["EXIFWorker"].get()
             save_result = worker["SaveWorker"].get()
 
+            workers_restarted = False
+            if exif_result == ERROR_RETVAL:
+                workers_restarted = self._maybe_restart_worker(paths, worker["EXIFWorker"])
+            if save_result == ERROR_RETVAL:
+                workers_restarted = self._maybe_restart_worker(paths, worker["SaveWorker"])
+
+            if workers_restarted:
+                failed_workers.append(worker)
             # Check that all expected output files exist, and log an error if any files are missing.
-            all_ok = check_all_files_written(paths)
-            if all_ok:
-                # If we have an active database_client, add the EXIF data to the database client.
-                if self.database_client is not None and exif_result is not None:
-                    self.database_client.add_row(exif_result)
+            elif check_all_files_written(paths):
+                self._finish_image(paths, exif_result)
 
-                # Remove the cahce file
-                paths.remove_cache_file()
+        self.workers += failed_workers
 
-                # Delete the input file?
-                if config.delete_input:
-                    wait_until_path_is_found(paths.input_file)
-                    os.remove(paths.input_file)
-                    LOGGER.debug(__name__, f"Input file removed: {paths.input_file}")
+    def _maybe_restart_worker(self, paths, worker):
+        """
+        Restart the worker if it has been started less than `self.max_worker_starts` times previously. Otherwise, log an
+        error, and save the error image.
 
-                self.n_completed += 1
+        :param paths: Paths object representing the image file.
+        :type paths: src.io.TreeWalker.Paths
+        :param worker: Worker to maybe restart
+        :type worker: src.Workers.BaseWorker
+        :return: True if worker was restarted, False otherwise
+        :rtype: bool
+        """
+        if worker.n_starts > self.max_worker_starts:
+            LOGGER.error(__name__, f"{worker.__class__.__name__} failed for image: {paths.input_file}.", save=True, email=True,
+                         email_mode="error")
+            return False
+        else:
+            worker.start()
+            LOGGER.debug(__name__, f"Restarted {worker.__class__.__name__} for image: {paths.input_file}.")
+            return True
+
+    def _finish_image(self, paths, exif_result):
+        """
+        Finish processing for an image. This function will:
+
+        - (optionally) Write the EXIF data to the database. (If `config.write_exif_to_db == True`.)
+        - Remove the cache file for the image
+        - (optionally) Remove the input image. (If `config.delete_input == True`.)
+
+        :param paths: Paths object representing the image file.
+        :type paths: src.io.TreeWalker.Paths
+        :param exif_result: JSON metadata file contents. Will be used to write to the database if database writing is
+                            enabled.
+        :type exif_result: dict
+        """
+        # If we have an active database_client, add the EXIF data to the database client.
+        if self.database_client is not None and exif_result is not None:
+            self.database_client.add_row(exif_result)
+
+        # Remove the cahce file
+        paths.remove_cache_file()
+
+        # Delete the input file?
+        if config.delete_input:
+            wait_until_path_is_found(paths.input_file)
+            os.remove(paths.input_file)
+            LOGGER.debug(__name__, f"Input file removed: {paths.input_file}")
+
+        self.n_completed += 1
 
     def process_image(self, image, paths):
         """

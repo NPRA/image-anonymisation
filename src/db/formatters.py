@@ -102,8 +102,6 @@ def Mappenavn(json_data):
         hp=json_data["exif_hp"],
         meter=json_data["exif_meter"],
         feltkode=json_data["exif_feltkode"],
-        mappenavn=json_data["exif_mappenavn"],
-        filnavn=json_data["exif_filnavn"],
         strekningreferanse=json_data["exif_strekningreferanse"],
     )
 
