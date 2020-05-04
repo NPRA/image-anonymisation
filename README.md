@@ -68,7 +68,7 @@ You should now be able to create the environment with the same command as above.
 
 If you are unable to set the environment variables, you can specify the proxy to anaconda and pip directly.
 
-2. In `~/.condarc` add the following lines:
+1. In `~/.condarc` add the following lines:
     ```
     proxy_servers:
         https: <your_proxy>
