@@ -9,39 +9,14 @@ from config import db_config
 from src.db.DatabaseClient import DatabaseClient
 from src.db.columns import COLUMNS, COL, to_string
 
-METADATA_TABLE_NAME = "user_sdo_geom_metadata_values"
+# METADATA_TABLE_NAME = "user_sdo_geom_metadata_values"
+METADATA_TABLE_NAME = "MDSYS.USER_SDO_GEOM_METADATA"
 METADATA_COLUMNS = [
     COL(col_name="TABLE_NAME",  col_dtype="VARCHAR(32)",   get_value=None, not_null=False),
     COL(col_name="COLUMN_NAME", col_dtype="VARCHAR(32)",   get_value=None, not_null=False),
     COL(col_name="DIMINFO",     col_dtype="SDO_DIM_ARRAY", get_value=None, not_null=False),
     COL(col_name="SRID",        col_dtype="NUMBER",        get_value=None, not_null=False),
 ]
-
-
-def drop():
-    """
-    Drop the metadata table
-    """
-    with DatabaseClient.connect() as conn:
-        cursor = conn.cursor()
-        drop_sql = f"DROP TABLE {METADATA_TABLE_NAME}"
-        cursor.execute(drop_sql)
-        conn.commit()
-    print(f"Table successfully dropped with command\n{drop_sql}")
-
-
-def create():
-    create_table_sql = f"CREATE TABLE {METADATA_TABLE_NAME} ("
-    for col in METADATA_COLUMNS:
-        create_table_sql += to_string(col)
-    create_table_sql = create_table_sql[:-1] + "\n)"
-
-    with DatabaseClient.connect() as conn:
-        cursor = conn.cursor()
-        cursor.execute(create_table_sql)
-        conn.commit()
-
-    print(f"Table successfully created with command\n{create_table_sql}")
 
 
 def insert():
@@ -86,9 +61,4 @@ def _create_diminfo(conn):
 
 
 if __name__ == '__main__':
-    if "--drop" in sys.argv:
-        drop()
-    if "--create" in sys.argv:
-        create()
-    if "--insert" in sys.argv:
-        insert()
+    insert()
