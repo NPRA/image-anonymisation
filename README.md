@@ -51,9 +51,22 @@ to invoke the application instead.
 
 #### Proxy setup
 If Anaconda fails to create the environment above due to a HTTP error, you might need to configure Anaconda to use
-a proxy:
+a proxy. Set the following environment variables:
+```
+HTTPS_PROXY=<your_proxy>
+```
+and
+```
+HTTP_PROXY=<your_proxy>
+```
+(These are only required for installation and model downloading, and can therefore be removed after the environment has
+been created, and the model file has been downloaded.)
 
-1. Add `HTTPS_PROXY=<your_proxy>` to the system environment variables.
+You should now be able to create the environment with the same command as above.
+
+### Manual proxy configuration in conda and pip
+
+If you are unable to set the environment variables, you can specify the proxy to anaconda and pip directly.
 
 2. In `~/.condarc` add the following lines:
     ```
@@ -75,10 +88,10 @@ a proxy:
 
 5. The `pip`-packages will now have to be installed manually:
     ```Bash
-    pip install opencv-python==4.2.0.32 pillow==7.0.0 --proxy <your_proxy>
+    pip install cx-oracle==7.3.0 func-timeout==4.3.5 iso8601==0.1.12 m2r==0.2.1 opencv-python==4.2.0.32 pillow==7.0.0 --proxy <your_proxy>
     ```
 
-   The `webp` package requires a little more trickery. First, install `importlib_resources` and `conan`:
+   The `webp` package requires a little more work. First, install `importlib_resources` and `conan`:
     ```Bash
     pip install importlib_resources>=1.0.0  conan>=1.8.0 --proxy <your_proxy>
     ```
@@ -100,6 +113,7 @@ images will be written to an output directory with identical structure as the in
 executed as a python-module from the root directory:
 ```
 usage: python -m src.main [-h] [-i INPUT_FOLDER] [-o OUTPUT_FOLDER] [-a ARCHIVE_FOLDER]
+                          [-l LOG_FOLDER] [--skip-clear-cache]
 
 Image anonymisation
 
@@ -111,7 +125,11 @@ optional arguments:
                         Base directory for masked (output) images and metadata
                         files
   -a ARCHIVE_FOLDER, --archive-folder ARCHIVE_FOLDER
-                        Base directory for archiving original images.
+                        Optional base directory for archiving original images.
+  -l LOG_FOLDER, --log-folder LOG_FOLDER
+                        Optional path to directory of log file. The log file
+                        will be named <log\folder>\<timestamp> <hostname>.log
+  --skip-clear-cache    Disables the clearing of cache files at startup.
 ```
 
 Note: Make sure that the conda environment is activated before executing the command above.
