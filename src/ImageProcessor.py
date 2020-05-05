@@ -106,8 +106,8 @@ class ImageProcessor:
         :rtype: bool
         """
         if worker.n_starts > self.max_worker_starts:
-            LOGGER.error(__name__, f"{worker.__class__.__name__} failed for image: {paths.input_file}.", save=True, email=True,
-                         email_mode="error")
+            LOGGER.error(__name__, f"{worker.__class__.__name__} failed for image: {paths.input_file}.", save=True,
+                         email=True, email_mode="error")
             return False
         else:
             worker.start()
@@ -132,7 +132,7 @@ class ImageProcessor:
         if self.database_client is not None and exif_result is not None:
             self.database_client.add_row(exif_result)
 
-        # Remove the cahce file
+        # Remove the cache file
         paths.remove_cache_file()
 
         # Delete the input file?
