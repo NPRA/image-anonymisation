@@ -220,7 +220,8 @@ def main():
 
     # Summary
     summary_str = get_summary(tree_walker, image_processor.n_completed, start_datetime)
-    LOGGER.info(__name__, LOG_SEP + "\n" + summary_str, email=True, email_mode="finished")
+    LOGGER.info(__name__, LOG_SEP)
+    LOGGER.info(__name__, summary_str, email=True, email_mode="finished")
 
 
 if __name__ == '__main__':
