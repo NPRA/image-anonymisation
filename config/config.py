@@ -27,11 +27,11 @@ file_access_retry_seconds = 10
 #: This also applies to both reading input files, and writing output files.
 file_access_timeout_seconds = 60
 
-#: Format of datetime identifiers. See https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior for
-#: more information.
+#: Timestamp format. See https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior for more
+#: information.
 datetime_format = "%Y-%m-%d %H.%M.%S"
 
-#: Name of the log file. `{datetime}` will be replaced with a timestamp formatted as `datetime_format`. {hostname}
+#: Name of the log file. `{datetime}` will be replaced with a timestamp formatted as `datetime_format`. `{hostname}`
 #: will be replaced with the host name.
 log_file_name = "{datetime} {hostname}.log"
 
@@ -80,14 +80,14 @@ max_num_async_workers = 2
 
 #: Type of masking model. Currently, there are three available models with varying speed and accuracy.
 #: The slowest model produces the most accurate masks, while the masks from the medium model are slightly worse.
-#: The masks from the `Fast` model are currently not recommended due to poor quality. Must be either "Slow", "Medium" or
+#: The masks from the "Fast" model are currently not recommended due to poor quality. Must be either "Slow", "Medium" or
 #: "Fast". "Medium" is recommended.
 #: Default: "Medium"
 model_type = "Medium"
 
 #: Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
 #: by the corresponding mask. Set `mask_dilation_pixels = 0` to disable mask dilation.
-#: Default: 4
+#: Default: `4`
 mask_dilation_pixels = 4
 
 #: Maximum number of pixels in images to be processed by the masking model. If the number of pixels exceeds this value,
@@ -99,23 +99,23 @@ max_num_pixels = 5E7
 # Parameters controlling the appearance of the anonymised regions
 # ===============================================================
 
-#: "RGB tuple [0-255] indicating the masking color. Setting this option will override the
+#: "RGB tuple (0-255) indicating the masking color. Setting this option will override the
 #: colors specified below. Example: Setting `mask_color = (50, 50, 50)` will make all masks
 #: dark gray.
 mask_color = None
 
-#: Blurring coefficient [1-100] which specifies the degree of blurring to apply within the
+#: Blurring coefficient (1-100) which specifies the degree of blurring to apply within the
 #: mask. When this parameter is specified, the image will be blurred, and not masked with a
 #: specific color. Set `blur = None` to disable blurring, and use colored masks instead.
-#: Default: 15
+#: Default: `15`
 blur = 15
 
 #: Convert the image to grayscale before blurring? (Ignored if blurring is disabled)
-#: Default: True
+#: Default: `True`
 gray_blur = True
 
 #: Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark
-#: colors. NOTE: Requires gray_blur=True
+#: colors. NOTE: Requires `gray_blur=True`
 #: Default: True
 normalized_gray_blur = True
 
@@ -131,7 +131,7 @@ uncaught_exception_email = False
 #: Send an email if a processing error is encountered, but the program is able to continue
 processing_error_email = False
 
-#: Send an email if the anonymisation finishes normally.
+#: Send an email when the anonymisation finishes normally.
 finished_email = False
 
 
