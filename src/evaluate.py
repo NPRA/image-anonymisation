@@ -100,17 +100,17 @@ def get_results(coco, imgs_dir):
     masker = Masker()
     results = {}
 
-    for i, (input_path, _, filename) in enumerate(tree_walker.walk()):
+    for i, paths in enumerate(tree_walker.walk()):
         tic = time.time()
 
         img = next(dataset_iterator)
         mask_results = masker.mask(img)
-        image_id = filename_to_image_id[filename]
+        image_id = filename_to_image_id[paths.filename]
         results[image_id] = mask_results
 
         dt = time.time() - tic
         LOGGER.info(__name__, f"Processed image {i+1}/{tree_walker.n_valid_images} in {round(dt, 2)} s. "
-                              f"File: {filename}")
+                              f"File: {paths.filename}")
     return results
 
 
