@@ -3,10 +3,9 @@ import json
 import pytest
 import cx_Oracle as cxo
 from collections import namedtuple
-from uuid import uuid4
 
-from src.db.columns import COLUMNS, to_string
-from src.db.DatabaseClient import DatabaseClient
+from config import db_config
+from src.db.Table import Table
 
 
 TEST_DB_USER = "system"
@@ -14,10 +13,13 @@ TEST_DB_PWD = "password"
 TEST_DB_DSN = "localhost:1521/XE"
 CFG = namedtuple("db_config", ["user", "pwd", "dsn", "schema", "table_name"])
 
+TABLE = Table(db_config.table_name)
+COLUMNS = TABLE.columns
+
 
 @pytest.fixture
 def config_and_connect():
-    table_name = "test_" + str(uuid4()).replace("-", "_")
+    table_name = db_config.table_name
     cfg = CFG(user=TEST_DB_USER, pwd=TEST_DB_PWD, dsn=TEST_DB_DSN, schema=None, table_name=table_name)
 
     def connect(*_, **__):
@@ -58,7 +60,7 @@ def load_json_files(json_dir):
 def create_table(table_name, conn):
     create_table_sql = f"CREATE TABLE {table_name}("
     for col in COLUMNS:
-        create_table_sql += to_string(col)
+        create_table_sql += f"\n    {str(col)},"
     create_table_sql = create_table_sql[:-1] + "\n)"
 
     conn.cursor().execute(create_table_sql)
@@ -75,9 +77,9 @@ def check_row(row, expected_row):
     skip_dtypes = ["CLOB", "SDO_GEOMETRY", "DATE"]
 
     for i, col in enumerate(COLUMNS):
-        if col.col_dtype not in skip_dtypes:
+        if col.dtype not in skip_dtypes:
             value = row[i]
-            expected_value = expected_row[col.col_name]
+            expected_value = expected_row[col.name]
             assert value == expected_value, f"Value in database not equal to expected value. " \
                                             f"({value} != {expected_value})"
 
@@ -87,7 +89,7 @@ def check_results(conn, json_dicts, table_name):
     cursor.execute(f"SELECT * FROM {table_name}")
     count = 0
     for row, expected_dict in zip(cursor, json_dicts):
-        expected_row = DatabaseClient.create_row(expected_dict)
+        expected_row = TABLE.create_row(expected_dict)
         check_row(row, expected_row)
         count += 1
 

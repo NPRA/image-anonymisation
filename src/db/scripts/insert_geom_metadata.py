@@ -2,36 +2,34 @@
 Simple script for creating, dropping, and inserting into the SDO geometry metadata table.
 Use the command line arguments --create, --drop, --insert, to create, drop, and insert into the table.
 """
-
-import sys
-
 from config import db_config
 from src.db.DatabaseClient import DatabaseClient
-from src.db.columns import COLUMNS, COL, to_string
+from src.db.Table import Column, Table
 
-# METADATA_TABLE_NAME = "user_sdo_geom_metadata_values"
 METADATA_TABLE_NAME = "MDSYS.USER_SDO_GEOM_METADATA"
 METADATA_COLUMNS = [
-    COL(col_name="TABLE_NAME",  col_dtype="VARCHAR(32)",   get_value=None, not_null=False),
-    COL(col_name="COLUMN_NAME", col_dtype="VARCHAR(32)",   get_value=None, not_null=False),
-    COL(col_name="DIMINFO",     col_dtype="SDO_DIM_ARRAY", get_value=None, not_null=False),
-    COL(col_name="SRID",        col_dtype="NUMBER",        get_value=None, not_null=False),
+    Column(name="TABLE_NAME",  dtype="VARCHAR(32)",   formatter=None, extra=None),
+    Column(name="COLUMN_NAME", dtype="VARCHAR(32)",   formatter=None, extra=None),
+    Column(name="DIMINFO",     dtype="SDO_DIM_ARRAY", formatter=None, extra=None),
+    Column(name="SRID",        dtype="NUMBER",        formatter=None, extra=None),
 ]
 
 
 def insert():
+    table = Table(db_config.table_name)
+
     with DatabaseClient.connect() as conn:
         cursor = conn.cursor()
 
-        columns = ", ".join([c.col_name for c in METADATA_COLUMNS])
-        values = ", ".join([f":{c.col_name}" for c in METADATA_COLUMNS])
+        columns = ", ".join([c.name for c in METADATA_COLUMNS])
+        values = ", ".join([f":{c.name}" for c in METADATA_COLUMNS])
         insert_sql = f"INSERT INTO {METADATA_TABLE_NAME}({columns}) VALUES ({values})"
 
         diminfo = _create_diminfo(conn)
         rows = []
-        for col in COLUMNS:
-            if col.col_dtype == "SDO_GEOMETRY":
-                row = {"TABLE_NAME": db_config.table_name, "COLUMN_NAME": col.col_name, "DIMINFO": diminfo, "SRID": 4326}
+        for col in table.columns:
+            if col.dtype == "SDO_GEOMETRY":
+                row = {"TABLE_NAME": table.name, "COLUMN_NAME": col.name, "DIMINFO": diminfo, "SRID": 4326}
                 rows.append(row)
 
         cursor.execute(insert_sql, rows[0])

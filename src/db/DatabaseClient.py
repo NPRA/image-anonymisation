@@ -6,7 +6,7 @@ import config
 from config import db_config
 from src.Logger import LOGGER
 from src.db import geometry
-from src.db.columns import COLUMNS, ID_COLUMN_NAME
+from src.db.Table import Table
 
 DB_CACHE_DIR = os.path.join(config.CACHE_DIRECTORY, "db")
 
@@ -24,47 +24,7 @@ class DatabaseClient:
         self.max_n_accumulated_rows = max_n_accumulated_rows
         self.accumulated_rows = []
         self.cached_rows = []
-        self.insert_sql, self.update_sql = self.get_insert_and_update_sql()
-
-    @staticmethod
-    def get_insert_and_update_sql():
-        """
-        Get the SQL expression used to insert a row into the database
-
-        :return: `INSERT` SQL expression
-        :rtype: string
-        """
-        col_names = ", ".join([c.col_name for c in COLUMNS])
-        values = ", ".join([":" + c.col_name for c in COLUMNS])
-        insert_sql = f"INSERT INTO {db_config.table_name}({col_names}) VALUES ({values})"
-
-        col_names_equals_values = ", ".join([f"{c.col_name} = :{c.col_name}" for c in COLUMNS])
-        update_sql = f"UPDATE {db_config.table_name} " \
-                     f"SET {col_names_equals_values} " \
-                     f"WHERE {ID_COLUMN_NAME} = :{ID_COLUMN_NAME}"
-
-        return insert_sql, update_sql
-
-    @staticmethod
-    def create_row(json_dict):
-        """
-        Create a database row from the given `json_dict`. See `src.db.setup_table` for the list of columns.
-
-        :param json_dict: EXIF data
-        :type json_dict: dict
-        :return: Dict representing the database row.
-        :rtype: dict
-        """
-        out = {}
-        for col in COLUMNS:
-            try:
-                value = col.get_value(json_dict)
-            except Exception as err:
-                LOGGER.error(__name__, f"Got error '{type(err).__name__}: {err}' while getting value for database "
-                                       f"column {col.col_name}. Value will be set to None")
-                value = None
-            out[col.col_name] = value
-        return out
+        self.table = Table(db_config.table_name)
 
     @staticmethod
     def input_type_handler(cursor, value, num_elements):
@@ -98,7 +58,7 @@ class DatabaseClient:
         :param json_dict: EXIF data
         :type json_dict: dict
         """
-        row = self.create_row(json_dict)
+        row = self.table.create_row(json_dict)
         self.accumulated_rows.append(row)
         self._cache_row(row)
 
@@ -135,19 +95,19 @@ class DatabaseClient:
             # Attempt to insert the rows into the database. When we have `batcherrors = True`, the rows which do not
             # violate the unique constraint will be inserted normally. The rows which do violate the constraint will
             # not be inserted.
-            cursor.executemany(self.insert_sql, rows, batcherrors=True)
+            cursor.executemany(self.table.insert_sql, rows, batcherrors=True)
 
             # Get the indices of the rows where the insertion failed.
             error_indices = [e.offset for e in cursor.getbatcherrors()]
 
             # If we have any rows which caused an error.
             if error_indices:
-                LOGGER.warning(__name__, f"Found {len(error_indices)} rows where the {ID_COLUMN_NAME} already "
+                LOGGER.warning(__name__, f"Found {len(error_indices)} rows where the {self.table.pk_column} already "
                                          f"existed in the database. These will be updated.")
                 # Filter out the rows which caused errors
                 error_rows = [rows[i] for i in error_indices]
                 # Call an update on these rows
-                cursor.executemany(self.update_sql, error_rows)
+                cursor.executemany(self.table.update_sql, error_rows)
 
             # Counts
             n_updated = len(error_indices)
@@ -167,7 +127,7 @@ class DatabaseClient:
         :type row: dict
         """
         os.makedirs(DB_CACHE_DIR, exist_ok=True)
-        cache_filename = os.path.join(DB_CACHE_DIR, row[ID_COLUMN_NAME] + ".pkl")
+        cache_filename = os.path.join(DB_CACHE_DIR, row[self.table.pk_column] + ".pkl")
         self.cached_rows.append(cache_filename)
         with open(cache_filename, "wb") as f:
             pickle.dump(row, f)
