@@ -23,6 +23,11 @@ columns:
       dimension: 2
       srid: 4326
 
+  - name: Hoyde
+    dtype: NUMBER
+    formatter: Hoyde
+    extra: NOT NULL
+
   - name: FylkeNummer
     dtype: NUMBER
     formatter: FylkeNummer
