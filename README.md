@@ -203,8 +203,14 @@ port = <smtp port>
 ```
 
 ## EXIF data to database
-The `src.db` module can write the EXIF data extracted by the application, to an Oracle database. The username, password and dsn used to access the database
-must be specified in `config/db_config.py`:
+### Configuring the connection
+Create a file named `db_config.py` in the `config` directory. The file should contain the following variables:
+
+* `user`, `pwd`, `dsn`: Username, password and dsn used to access the database.
+* `table_name`: Table name.
+* `schema`: Schema for the database connection. (Can be `None`)
+
+The contents of `config/db_config.py` might look like this:
 
 ```
 user = "<username>" 
@@ -216,6 +222,53 @@ schema = None
 table_name = "<table name>"
 ```
 
+### Table specification
+The program expects to find the table layout in the YAML file `config/db_tables/<table_name>.yml`. The file should contain the following keys:
+
+* `pk_column`: The name of the `PRIMARY KEY` column.
+* `columns`: A list of columns, where each element has the keys:
+  * `name`: Name of the column.
+  * `dtype`: Oracle SQL datatype for the column.
+  * `formatter`: Name of a function in [formatters.py](src/db/formatters.py), which returns the column value from the given JSON-contents.
+  * `extra`: Extra column contstraints, such as `NOT NULL` or `PRIMARY KEY`.
+  * `spatial_metadata`: This is only required if `dtype` is `SDO_GEOMETRY`. Contains geometric metadata about the objects in the column.
+    Expected keys are:
+    * `dimension`: Number of dimensions. Must be `2` or `3`.
+    * `srid`: SRID for the object's coordinate system.
+
+For a table named `my_table`, the contents of `config/db_tables/<table_name>.yml` might look like:
+
+```
+pk_column: UUID
+columns:
+  # ID column. Used as primary key
+  - name: UUID
+    dtype: VARCHAR(255)
+    formatter: uuid
+    extra: PRIMARY KEY
+  
+  # Timestamp column
+  - name: Timestamp
+    dtype: DATE
+    formatter: timestamp
+    extra: NOT NULL
+  
+  # Optional position column
+  - name: Position
+    dtype: SDO_GEOMETRY
+    formatter: position
+    extra:
+    spatial_metadata:
+      dimension: 3
+      srid: 4326
+```
+
+Note that the example above expects to find the functions `uuid`, `timestamp` and `position`, in `src.db.formatters`.
+
+See [test_anonymisering_vegbilder.yml](config/db_tables/test_anonymisering_vegbilder.yml) and
+[test_anonymisering_vegbilder_2d.yml](config/db_tables/test_anonymisering_vegbilder_2d.yml) for other examples.
+
+### Writing to the database
 When the parameters above have been configured correctly, the EXIF data can be written to the database by using the `json_to_db` script:
 ```
 python -m src.db.json_to_db -i <base input folder>
