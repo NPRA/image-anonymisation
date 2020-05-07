@@ -150,4 +150,3 @@ tests/data/json_files
 !tests/data/fake/
 
 docs/_build/*
-!docs/_build/html

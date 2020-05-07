@@ -58,14 +58,14 @@ class Column:
 
 
 class Table:
-    def __init__(self, name):
-        """
-        Class representing a database table The information (primary key column, and columns) about the table should be
-        contained in a file named `<name>.yml` located in `config/db_tables`.
+    """
+    Class representing a database table The information (primary key column, and columns) about the table should be
+    contained in a file named `<name>.yml` located in `config/db_tables`.
 
-        :param name: Name of the table.
-        :type name: str
-        """
+    :param name: Name of the table.
+    :type name: str
+    """
+    def __init__(self, name):
         table_dict = config.get_db_table_dict(name)
         self.name = name
         self.pk_column = table_dict["pk_column"]

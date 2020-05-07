@@ -7,6 +7,9 @@ config
 .. automodule:: config
    :members:
 
+.. automodule:: config.config
+   :members:
+
 db
 =========================
 db.DatabaseClient
@@ -19,9 +22,9 @@ db.geometry
 .. automodule:: src.db.geometry
    :members:
 
-db.setup_table
+db.Table
 -------------------------
-.. automodule:: src.db.setup_table
+.. automodule:: src.db.Table
    :members:
 
 io

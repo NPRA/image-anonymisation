@@ -8,10 +8,10 @@ def get_db_table_dict(table_name):
     """
     Parse the yaml-file corresponding to the table named `table_name`, and return the contents as a dictionary.
 
-    :param table_name:
-    :type table_name:
-    :return:
-    :rtype:
+    :param table_name: Name of the table
+    :type table_name: str
+    :return: Contents of `<table_name>.yml`
+    :rtype: dict
     """
     table_file = os.path.join(PROJECT_ROOT, "config", "db_tables", f"{table_name}.yml")
     if not os.path.isfile(table_file):

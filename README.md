@@ -157,6 +157,7 @@ The user-specifiable configuration parameters can be found in [config/config.py]
 * `datetime_format`: Timestamp format. See https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior for more information.
 * `log_file_name`: Name of the log file. `{datetime}` will be replaced with a timestamp formatted as `datetime_format`. `{hostname}` will be replaced with the host name.
 * `log_level`: Logging level for the application. This controls the log level for terminal logging and file logging (if it is enabled). Must be one of {"DEBUG", "INFO", "WARNING", "ERROR"}.
+
 #### File I/O parameters
 * `remote_json`: Write the EXIF .json file to the output (remote) directory?
 * `local_json`: Write the EXIF .json file to the input (local) directory?
@@ -164,22 +165,27 @@ The user-specifiable configuration parameters can be found in [config/config.py]
 * `remote_mask`: Write mask file to the output (remote) directory?
 * `local_mask`: Write the mask file to the input (local) directory?
 * `archive_mask`: Write mask file to the archive directory?
+
 #### Parameters for asynchronous execution
 * `enable_async`: Enable asynchronous post-processing? When True, the file exports (anonymised image, mask file and JSON file) will be executed asynchronously in order to increase processing speed.
 * `max_num_async_workers`: Maximum number of asynchronous workers allowed to be active simultaneously. Should be <= (CPU core count - 1)
+
 #### Parameters for the masking model
 * `model_type`: Type of masking model. Currently, there are three available models with varying speed and accuracy. The slowest model produces the most accurate masks, while the masks from the medium model are slightly worse. The masks from the "Fast" model are currently not recommended due to poor quality. Must be either "Slow", "Medium" or "Fast". "Medium" is recommended. Default: "Medium"
 * `mask_dilation_pixels`: Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered by the corresponding mask. Set `mask_dilation_pixels = 0` to disable mask dilation. Default: `4`
 * `max_num_pixels`: Maximum number of pixels in images to be processed by the masking model. If the number of pixels exceeds this value, it will be resized before the masker is applied. This will NOT change the resolution of the output image.
+
 #### Parameters controlling the appearance of the anonymised regions
 * `mask_color`: "RGB tuple (0-255) indicating the masking color. Setting this option will override the colors specified below. Example: Setting `mask_color = (50, 50, 50)` will make all masks dark gray.
 * `blur`: Blurring coefficient (1-100) which specifies the degree of blurring to apply within the mask. When this parameter is specified, the image will be blurred, and not masked with a specific color. Set `blur = None` to disable blurring, and use colored masks instead. Default: `15`
 * `gray_blur`: Convert the image to grayscale before blurring? (Ignored if blurring is disabled) Default: `True`
 * `normalized_gray_blur`: Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark colors. NOTE: Requires `gray_blur=True` Default: True
+
 #### E-mail configuration
 * `uncaught_exception_email`: Send an email if the program exits abnormally due to an uncaught exception.
 * `processing_error_email`: Send an email if a processing error is encountered, but the program is able to continue
 * `finished_email`: Send an email when the anonymisation finishes normally.
+
 #### Database configuration
 * `write_exif_to_db`: Write the EXIF data to the database?
 * `db_max_n_accumulated_rows`: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
@@ -203,6 +209,7 @@ port = <smtp port>
 ```
 
 ## EXIF data to database
+
 ### Configuring the connection
 Create a file named `db_config.py` in the `config` directory. The file should contain the following variables:
 
@@ -238,7 +245,7 @@ The program expects to find the table layout in the YAML file `config/db_tables/
 
 For a table named `my_table`, the contents of `config/db_tables/<table_name>.yml` might look like:
 
-```
+```yaml
 pk_column: UUID
 columns:
   # ID column. Used as primary key
