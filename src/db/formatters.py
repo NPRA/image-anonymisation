@@ -83,7 +83,7 @@ def Posisjon_2d(json_data):
 def Hoyde(json_data):
     try:
         matches = WKT_GEOMETRY_REGEX.findall(json_data["exif_gpsposisjon"])
-        height = matches[0][3]
+        height = to_number(matches[0][3])
     except Exception as err:
         raise ValueError(f"Could not parse position string: {json_data['exif_gpsposisjon']}") from err
     return height
