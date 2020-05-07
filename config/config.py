@@ -39,6 +39,9 @@ log_file_name = "{datetime} {hostname}.log"
 #: enabled). Must be one of {"DEBUG", "INFO", "WARNING", "ERROR"}.
 log_level = "DEBUG"
 
+#: Version number for the application. Will be written to json files and database.
+version = "0.1"
+
 
 # ===================
 # File I/O parameters

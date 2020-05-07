@@ -92,3 +92,8 @@ columns:
     dtype: VARCHAR(255)
     formatter: Feltkode
     extra: NOT NULL
+
+  - name: Versjon
+    dtype: VARCHAR(16)
+    formatter: Versjon
+    extra:

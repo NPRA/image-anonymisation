@@ -204,14 +204,14 @@ class EXIFWorker(BaseWorker):
             PermissionError,
             OSError,
         )
-        self.args = (self.paths, mask_results, config.local_json, config.remote_json)
+        self.args = (self.paths, mask_results, config.local_json, config.remote_json, config.version)
         self.start()
 
     def result_is_valid(self, result):
         return isinstance(result, dict)
 
     @staticmethod
-    def async_func(paths, mask_results, local_json, remote_json):
+    def async_func(paths, mask_results, local_json, remote_json, version):
         """
         Run the EXIF processing: Read the EXIF data, add the required fields, and save it. File exports are controlled
         in `config`.
@@ -232,8 +232,8 @@ class EXIFWorker(BaseWorker):
         exif = exif_util.exif_from_file(paths.input_file)
         # Insert detected objects
         exif["detekterte_objekter"] = exif_util.get_detected_objects_dict(mask_results)
-        # Insert path to output image
-        # exif["anonymisert_bildefil"] = paths.output_file.replace(os.sep, "/")
+        # Insert the version number
+        exif["versjon"] = str(version)
 
         if local_json:
             # Write EXIF to input directory

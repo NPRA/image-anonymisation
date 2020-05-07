@@ -164,3 +164,7 @@ def Aar(json_data):
 
 def Feltkode(json_data):
     return json_data["exif_feltkode"]
+
+
+def Versjon(json_data):
+    return json_data.get("versjon", None)

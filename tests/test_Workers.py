@@ -129,4 +129,5 @@ EXPECTED_EXIF_KEYS = {
     "exif_xptitle",
     "bildeuuid",
     "detekterte_objekter",
+    "versjon",
 }
