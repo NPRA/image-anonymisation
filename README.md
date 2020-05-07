@@ -69,7 +69,7 @@ You should now be able to create the environment with the same command as above.
 If you are unable to set the environment variables, you can specify the proxy to anaconda and pip directly.
 
 1. In `~/.condarc` add the following lines:
-    ```
+    ```yaml
     proxy_servers:
         https: <your_proxy>
     ```
@@ -97,7 +97,7 @@ If you are unable to set the environment variables, you can specify the proxy to
     ```
 
    Now, `conan` has to be configured to use the proxy server. In `~/.conan/conan.conf` under `[proxies]`, add the lines:
-    ```
+    ```python
     http = <your_proxy>
     https = <your_proxy>  
     ```
@@ -197,11 +197,11 @@ with the flags `uncaught_exception_email`, `processing_error_email` and `finishe
 sender, receiver(s), and an SMTP-server in order to work. These can be specified by creating a file named `email_config.py` in the `config` directory, which
 contains the following:
 
-```
+```python
 # Sender's address
 from_address = "noreply@somedomain.com"
 # Receiver address(es)
-to_addresses = ["receiver1@domain.com", "receiver2@domain.com, ...]
+to_addresses = ["receiver1@domain.com", "receiver2@domain.com", ...]
 # SMTP-server address
 smtp_host = "<smtp server address>"
 # SMTP-server port
@@ -209,17 +209,14 @@ port = <smtp port>
 ```
 
 ## EXIF data to database
-
 ### Configuring the connection
 Create a file named `db_config.py` in the `config` directory. The file should contain the following variables:
-
 * `user`, `pwd`, `dsn`: Username, password and dsn used to access the database.
 * `table_name`: Table name.
 * `schema`: Schema for the database connection. (Can be `None`)
 
 The contents of `config/db_config.py` might look like this:
-
-```
+```python
 user = "<username>" 
 pwd = "<password>"
 dsn = "<dsn>"
@@ -244,7 +241,6 @@ The program expects to find the table layout in the YAML file `config/db_tables/
     * `srid`: SRID for the object's coordinate system.
 
 For a table named `my_table`, the contents of `config/db_tables/<table_name>.yml` might look like:
-
 ```yaml
 pk_column: UUID
 columns:
@@ -306,13 +302,13 @@ The evaluation script requires the `pycocotools` package. It can be installed wi
 ```Bash
 pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
 ```
-
 Note that the annotations for the evaluation dataset must be on the [COCO format](http://cocodataset.org/#format-data).
 
 ## Tests
 The `tests/` directory provides a large number of tests which can be used to check that the application works as expected. Use the `pytest` command
 to run the tests:
-```
+
+```Bash
 pytest tests
 ```
 Note that this will skip the tests marked as `slow` and `db`. Add the `--run-slow` to run the `slow` tests, and `--run-db` to run the `db` tests.
