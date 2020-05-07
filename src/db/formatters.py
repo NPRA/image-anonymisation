@@ -64,6 +64,22 @@ def Posisjon(json_data):
     return sdo_geometry
 
 
+def Posisjon_2d(json_data):
+    # See https://docs.oracle.com/database/121/SPATL/sdo_geometry-object-type.htm#SPATL489
+    # D = 2 (2 dimensions) | L = 0 (Default) | TT = 01 (Geometry type: Point)
+    gtype = 2001
+
+    try:
+        # Parse `exif_gpsposisjon` and create an SDOGeometry object from the results
+        matches = WKT_GEOMETRY_REGEX.findall(json_data["exif_gpsposisjon"])
+        srid, x, y, _ = matches[0]
+        sdo_geometry = geometry.SDOGeometry(gtype=gtype, srid=int(srid), point=[float(x), float(y)])
+    except Exception as err:
+        raise ValueError(f"Could not parse position string: {json_data['exif_gpsposisjon']}") from err
+
+    return sdo_geometry
+
+
 def FylkeNummer(json_data):
     return to_number(json_data["exif_fylke"])
 

@@ -3,6 +3,10 @@ from src.Logger import LOGGER
 from src.db import formatters
 
 
+class DatabaseTableError(Exception):
+    pass
+
+
 class Column:
     """
     Class representing a column in a table. The `Column.get_value` function is used to get the column value for a
@@ -16,18 +20,32 @@ class Column:
                       can be used to get the column value for a specific row from the given JSON dict. If `formatter` is
                       None, `Column.get_value` will be None.
     :type formatter: str | None
-    :param extra: Extra information about the column, e.g. "NOT NULL" or "PRIMARY KEY".
-    :type extra: str
+    :param extra: Optional extra information about the column, e.g. "NOT NULL" or "PRIMARY KEY".
+    :type extra: str | None
+    :param spatial_metadata: Metadata (dimensions, SRID) for the column. Only used when
+                             `dtype == "SDO_GEOMETRY"`
+    :type spatial_metadata: dict
     """
-    def __init__(self, name, dtype, formatter, extra):
+    def __init__(self, name, dtype, formatter, extra=None, spatial_metadata=None):
         self.name = name
         self.dtype = dtype
         self.extra = extra
 
         if formatter is not None:
+            # Get the formatting function
             self.get_value = getattr(formatters, formatter)
         else:
             self.get_value = None
+
+        if dtype == "SDO_GEOMETRY":
+            # Check the `spatial_metadata` dict.
+            if spatial_metadata is None:
+                raise DatabaseTableError(f"Empty 'spatial_metadata' for column '{name}'")
+            if "dimension" not in spatial_metadata:
+                raise DatabaseTableError(f"Missing key 'dimension' in 'spatial_metadata' for column '{name}'")
+            if "srid" not in spatial_metadata:
+                raise DatabaseTableError(f"Missing key 'srid' in 'spatial_metadata' for column '{name}'")
+            self.spatial_metadata = spatial_metadata
 
     def __str__(self):
         s = "{:20s} {:12}".format(self.name, self.dtype)

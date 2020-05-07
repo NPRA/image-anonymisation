@@ -25,11 +25,12 @@ def insert():
         values = ", ".join([f":{c.name}" for c in METADATA_COLUMNS])
         insert_sql = f"INSERT INTO {METADATA_TABLE_NAME}({columns}) VALUES ({values})"
 
-        diminfo = _create_diminfo(conn)
         rows = []
         for col in table.columns:
             if col.dtype == "SDO_GEOMETRY":
-                row = {"TABLE_NAME": table.name, "COLUMN_NAME": col.name, "DIMINFO": diminfo, "SRID": 4326}
+                diminfo = _create_diminfo(conn, dim=col.spatial_metadata["dimension"])
+                row = {"TABLE_NAME": table.name, "COLUMN_NAME": col.name, "DIMINFO": diminfo,
+                       "SRID": col.spatial_metadata["srid"]}
                 rows.append(row)
 
         cursor.execute(insert_sql, rows[0])
@@ -45,13 +46,15 @@ def _create_dim_element(dim_element_type, dim_name, lb, ub, tolerance):
     return obj
 
 
-def _create_diminfo(conn):
+def _create_diminfo(conn, dim):
     dim_element_type = conn.gettype("MDSYS.SDO_DIM_ELEMENT")
     elements = [
         _create_dim_element(dim_element_type, 'Longitude', -180, 180, 0.5),
         _create_dim_element(dim_element_type, 'Latitude', -90, 90, 0.5),
-        _create_dim_element(dim_element_type, 'Height', -1000, 3000, 0.5)
     ]
+    if dim == 3:
+        elements.append(_create_dim_element(dim_element_type, 'Height', -1000, 3000, 0.5))
+
     dim_array_type = conn.gettype("MDSYS.SDO_DIM_ARRAY")
     dim_array = dim_array_type.newobject()
     dim_array.extend(elements)

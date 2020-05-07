@@ -58,7 +58,11 @@ def get_geometry_converter(connection):
 
         if value.point is not None:
             obj.SDO_POINT = point_type.newobject()
-            obj.SDO_POINT.X, obj.SDO_POINT.Y, obj.SDO_POINT.Z = value.point
+            # Assign X and Y
+            obj.SDO_POINT.X, obj.SDO_POINT.Y = value.point[:2]
+            # Assign Z if we got a third coordinate
+            if len(value.point) > 2:
+                obj.SDO_POINT.Z = value.point[2]
 
         if value.elem_info is not None:
             obj.SDO_ELEM_INFO = element_info_type.newobject()

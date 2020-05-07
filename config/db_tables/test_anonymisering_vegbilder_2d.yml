@@ -17,10 +17,10 @@ columns:
 
   - name: Posisjon
     dtype: SDO_GEOMETRY
-    formatter: Posisjon
+    formatter: Posisjon_2d
     extra: NOT NULL
     spatial_metadata:
-      dimension: 3
+      dimension: 2
       srid: 4326
 
   - name: FylkeNummer
