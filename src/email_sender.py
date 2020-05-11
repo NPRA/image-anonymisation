@@ -35,8 +35,6 @@ def email_excepthook(etype, ex, tb):
     """
     # Send an email
     send_mail("critical", etype=etype, ex=ex, tb=tb, msg=None)
-    # Call the default excepthook.
-    sys.__excepthook__(etype, ex, tb)
 
 
 def send_mail(message_type, etype=None, ex=None, tb=None, msg=None):

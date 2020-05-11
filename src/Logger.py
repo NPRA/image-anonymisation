@@ -112,5 +112,5 @@ def config_string():
     return config_str
 
 
-
-
+def logger_excepthook(etype, ex, tb):
+    LOGGER.error(__name__, f"Uncaught exception:", exc_info=(etype, ex, tb), save=False, email=False)

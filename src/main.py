@@ -14,7 +14,7 @@ from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
 from src.io.file_checker import clear_cache
 from src.Masker import Masker
-from src.Logger import LOGGER, LOG_SEP, config_string
+from src.Logger import LOGGER, LOG_SEP, config_string, logger_excepthook
 from src.ImageProcessor import ImageProcessor
 
 # Exceptions to catch when processing an image
@@ -65,6 +65,18 @@ def check_config(args):
     assert config.log_level in valid_log_levels, f"config.log_level must be one of {valid_log_levels}"
 
 
+def set_excepthook(hooks):
+    def excepthook(etype, ex, tb):
+        # Call hooks
+        for hook in hooks:
+            hook(etype, ex, tb)
+        # Call the default excepthook.
+        sys.__excepthook__(etype, ex, tb)
+
+    # Register the custom hook
+    sys.excepthook = excepthook
+
+
 def initialize():
     """
     Get command line arguments, and initialize the TreeWalker and Masker.
@@ -73,10 +85,14 @@ def initialize():
              instance of `Masker` ready for masking.
     :rtype: argparse.Namespace, TreeWalker, Masker
     """
+    except_hooks = [logger_excepthook]
     if config.uncaught_exception_email:
         # Register a custom excepthook which sends an email on uncaught exceptions.
         from src.email_sender import email_excepthook
-        sys.excepthook = email_excepthook
+        except_hooks.append(email_excepthook)
+
+    # Set the exception hook(s)
+    set_excepthook(except_hooks)
 
     # Get arguments
     args = get_args()
