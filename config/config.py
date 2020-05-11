@@ -40,7 +40,7 @@ log_file_name = "{datetime} {hostname}.log"
 log_level = "DEBUG"
 
 #: Version number for the application. Will be written to json files and database.
-version = "0.1"
+application_version = "0.1"
 
 
 # ===================

@@ -1,7 +1,12 @@
 import yaml
+from datetime import datetime
 
 from .config import *
 from .constants import *
+
+config_last_edited = os.stat(os.path.join(PROJECT_ROOT, "config", "config.py")).st_mtime
+config_last_edited = datetime.fromtimestamp(config_last_edited).strftime("%Y%m%d")
+version = f"P{application_version}_K{config_last_edited}"
 
 
 def get_db_table_dict(table_name):
