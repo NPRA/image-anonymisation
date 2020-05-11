@@ -113,4 +113,14 @@ def config_string():
 
 
 def logger_excepthook(etype, ex, tb):
+    """
+    Excepthook which logs information about the exception as an ERROR.
+
+    :param etype: Exception type
+    :type etype:
+    :param ex: Exception instance
+    :type ex: BaseException
+    :param tb: Traceback object representing the exception's traceback
+    :type tb: traceback.traceback
+    """
     LOGGER.error(__name__, f"Uncaught exception:", exc_info=(etype, ex, tb), save=False, email=False)

@@ -66,6 +66,13 @@ def check_config(args):
 
 
 def set_excepthook(hooks):
+    """
+    Configure sys.excepthook to call all functions in `hooks` before calling the default excepthook.
+
+    :param hooks: List of hooks. Each element must be a function with three arguments: Exception type, exception
+                  instance, and traceback instance.
+    :type hooks: list of function
+    """
     def excepthook(etype, ex, tb):
         # Call hooks
         for hook in hooks:
@@ -85,7 +92,9 @@ def initialize():
              instance of `Masker` ready for masking.
     :rtype: argparse.Namespace, TreeWalker, Masker
     """
+    # Register the logging excepthook
     except_hooks = [logger_excepthook]
+
     if config.uncaught_exception_email:
         # Register a custom excepthook which sends an email on uncaught exceptions.
         from src.email_sender import email_excepthook
