@@ -94,6 +94,8 @@ def initialize():
         log_file = os.path.join(args.log_folder, log_file_name)
         LOGGER.set_log_file(log_file)
 
+    # Log the call
+    LOGGER.info(__name__, f"Call: {' '.join(sys.argv)}")
     # Log the current config.
     LOGGER.info(__name__, "\n" + config_string())
 

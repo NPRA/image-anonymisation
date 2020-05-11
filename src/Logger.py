@@ -11,9 +11,10 @@ class FileHandler(logging.StreamHandler):
         self.file_path = file_path
 
     def emit(self, record):
+        msg = self.formatter.format(record)
         try:
             with open(self.file_path, "a+") as f:
-                f.write(record.getMessage() + "\n")
+                f.write(msg + "\n")
         except (FileNotFoundError, OSError):
             print(f"Log file '{self.file_path}' not reachable.")
 
