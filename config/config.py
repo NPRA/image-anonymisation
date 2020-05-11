@@ -129,13 +129,13 @@ normalized_gray_blur = True
 # Note: E-mail sending requires additional configuration. This is documented in the README.
 
 #: Send an email if the program exits abnormally due to an uncaught exception.
-uncaught_exception_email = False
+uncaught_exception_email = True
 
 #: Send an email if a processing error is encountered, but the program is able to continue
-processing_error_email = False
+processing_error_email = True
 
 #: Send an email when the anonymisation finishes normally.
-finished_email = False
+finished_email = True
 
 
 # ======================
@@ -147,7 +147,7 @@ finished_email = False
 # responsible for the database writing.
 
 #: Write the EXIF data to the database?
-write_exif_to_db = False
+write_exif_to_db = True
 
 #: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
 db_max_n_accumulated_rows = 8
