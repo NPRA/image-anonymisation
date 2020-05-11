@@ -132,6 +132,31 @@ def test_main_with_interrupt(get_tmp_data_dir, get_args, get_config, timeout):
     check_files(tmp_dir, cfg, args)
 
 
+@pytest.mark.slow
+@pytest.mark.parametrize("enable_async", [
+    (True,),
+    (False,)
+])
+def test_main_deletes_input(get_tmp_data_dir, get_args, get_config, enable_async):
+    tmp_dir = get_tmp_data_dir(subdirs=["real"])
+
+    # Get the command line arguments
+    args = get_args(input_folder=os.path.join(tmp_dir, "real"), output_folder=os.path.join(tmp_dir, "out"),
+                    archive_folder=os.path.join(tmp_dir, "arch"), clear_cache=True)
+    # Get the config
+    cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), local_json=False, remote_json=True,
+                     local_mask=False, remote_mask=True, enable_async=enable_async, delete_input=True)
+
+    # Run the main function
+    run_main(cfg, args)
+    # Wait for the asynchronous export to complete
+    time.sleep(3)
+    # Check that all files were created/not created as expected
+    check_files(tmp_dir, cfg, args)
+    # Check that the 'real/bar' directory is removed.
+    assert not os.path.exists(os.path.join(tmp_dir, "real", "bar")), "Expected subdirectory 'bar' to be removed."
+
+
 def run_main(new_config, new_args):
     """
     Run `src.main.main` while mocking the command line arguments and the config.
