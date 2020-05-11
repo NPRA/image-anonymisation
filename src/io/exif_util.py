@@ -248,17 +248,58 @@ def process_reflink_info(contents):
     :return: Relevant information extracted from `contents`
     :rtype: dict
     """
+    out = {
+        "exif_reflinkinfo": None,
+        "exif_reflinkid": None,
+        "exif_reflinkposisjon": None,
+        "exif_roadident": None,
+        "exif_roll": None,
+        "exif_pitch": None,
+        "exif_geoidalseparation": None,
+        "exif_northrmserror": None,
+        "exif_eastrmserror": None,
+        "exif_downrmserror": None,
+        "exif_rollrmserror": None,
+        "exif_pitchrmserror": None,
+        "exif_headingrmserror": None,
+    }
+
     if contents is None:
         # If we got None, it means that the EXIF header did not contain  the `ReflinkInfo` XML.
         # So just return a dict with the required keys with None values.
-        out = {"exif_reflinkid": None, "exif_reflinkposisjon": None, "exif_reflinkinfo": None}
         return out
 
+    # Prettify XML
     contents = to_pretty_xml(contents)
-    info = xmltodict.parse(contents)["ReflinkInfo"]
-    out = {
-        "exif_reflinkid": info["ReflinkId"],
-        "exif_reflinkposisjon": info["ReflinkPosition"],
-        "exif_reflinkinfo": contents
-    }
+    # Set raw contents
+    out["exif_reflinkinfo"] = contents
+    # Parse XML
+    parsed_contents = xmltodict.parse(contents)
+
+    # Format of March 2020 update
+    if "ReflinkInfo" in parsed_contents:
+        reflink_info = parsed_contents["ReflinkInfo"]
+        out["exif_reflinkid"] = reflink_info["ReflinkId"]
+        out["exif_reflinkposisjon"] = reflink_info["ReflinkPosition"]
+
+    # Format of May 2020 update
+    elif "AdditionalInfoNorway2" in parsed_contents:
+        # From RoadInfo
+        road_info = parsed_contents["AdditionalInfoNorway2"]["RoadInfo"]
+        out["exif_reflinkid"] = road_info["ReflinkId"]
+        out["exif_reflinkposisjon"] = road_info["ReflinkPosition"]
+        out["exif_roadident"] = road_info["RoadIdent"]
+
+        # From GnssInfo
+        gnss_info = parsed_contents["AdditionalInfoNorway2"]["GnssInfo"]
+        out["exif_roll"] = gnss_info["Roll"]
+        out["exif_pitch"] = gnss_info["Pitch"]
+        out["exif_geoidalseparation"] = gnss_info["GeoidalSeparation"]
+        out["exif_northrmserror"] = gnss_info["NorthRmsError"]
+        out["exif_eastrmserror"] = gnss_info["EastRmsError"]
+        out["exif_downrmserror"] = gnss_info["DownRmsError"]
+        out["exif_rollrmserror"] = gnss_info["RollRmsError"]
+        out["exif_pitchrmserror"] = gnss_info["PitchRmsError"]
+        out["exif_headingrmserror"] = gnss_info["HeadingRmsError"]
+
     return out

@@ -26,6 +26,16 @@ EXPECTED_KEYS = {
     "exif_reflinkposisjon",
     "exif_reflinkinfo",
     "exif_xptitle",
+    "exif_roadident",
+    "exif_roll",
+    "exif_pitch",
+    "exif_geoidalseparation",
+    "exif_northrmserror",
+    "exif_eastrmserror",
+    "exif_downrmserror",
+    "exif_rollrmserror",
+    "exif_pitchrmserror",
+    "exif_headingrmserror",
     "bildeuuid",
 }
 
