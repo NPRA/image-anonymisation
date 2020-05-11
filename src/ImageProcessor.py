@@ -141,6 +141,9 @@ class ImageProcessor:
             os.remove(paths.input_file)
             LOGGER.debug(__name__, f"Input file removed: {paths.input_file}")
 
+            # Remove the input folder if it is empty and it's not the base input folder.
+            remove_empty_folders(start_dir=paths.input_dir, top_dir=paths.base_input_dir)
+
         self.n_completed += 1
 
     def process_image(self, image, paths):
@@ -178,3 +181,25 @@ class ImageProcessor:
             self.pool.close()
         if self.database_client is not None:
             self.database_client.close()
+
+
+def remove_empty_folders(start_dir, top_dir):
+    """
+    Bottom-up removal of empty folders. If `start_dir` is empty, it will be removed. If `start_dir`'s parent directory
+    is empty after removing `start_dir`, it too will be removed. This process i continued until a parent is non-empty,
+    or the current directory is equal to `top_dir`. (The `top_dir` directory will not be removed).
+
+    NOTE: Use full paths when using this function, to avoid problems when comparing the current directory to `top_dir`.
+
+    :param start_dir: Path to bottom directory to remove if empty.
+    :type start_dir: str
+    :param top_dir: Top directory. Only folders under this will be deleted.
+    :type top_dir:
+    """
+    assert start_dir.startswith(top_dir), f"remove_empty_folders: Invalid top directory '{top_dir}' for start " \
+                                          f"directory '{start_dir}'"
+    current_dir = start_dir
+    while not os.listdir(current_dir) and current_dir != top_dir:
+        os.rmdir(current_dir)
+        LOGGER.debug(__name__, f"Input folder removed: {current_dir}")
+        current_dir = os.path.dirname(current_dir)

@@ -57,7 +57,7 @@ def wait_until_path_is_found(paths, retry_interval=config.file_access_retry_seco
             raise PathNotReachableError(f"At least one of the paths in {paths} could not be reached in {timeout}s. "
                                         f"Aborting.")
         else:
-            LOGGER.info(__name__, f"At least one of the paths in {paths} could not be reached. Retrying.")
+            LOGGER.warning(__name__, f"At least one of the paths in {paths} could not be reached. Retrying.")
     return 0
 
 
