@@ -59,10 +59,3 @@ def wait_until_path_is_found(paths, retry_interval=config.file_access_retry_seco
         else:
             LOGGER.warning(__name__, f"At least one of the paths in {paths} could not be reached. Retrying.")
     return 0
-
-
-if __name__ == '__main__':
-    import logging
-    logging.basicConfig(level=logging.INFO, format=LOGGER.fmt, datefmt=LOGGER.datefmt)
-    path = r"D:\molde"
-    wait_until_path_is_found(path, retry_interval=2, timeout=30)
