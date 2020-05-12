@@ -42,21 +42,24 @@ def _get_config_file():
 def _load_from_config_file(config_file):
     default_config = _load_yml(DEFAULT_CONFIG_FILE)
     if config_file == DEFAULT_CONFIG_FILE:
+        # If we got the default config file, use its variables.
         config_vars = default_config
     else:
+        # Load the custom config file
         custom_config = _load_yml(config_file)
         config_vars = {}
+        # Iterate the keys from the default config file, and get the corresponding values from the custom config.
         for key in default_config.keys():
             if key not in custom_config:
                 raise RuntimeError(f"Configuration variable '{key}' not found in config file '{config_file}'")
             config_vars[key] = custom_config[key]
-
+    # Add the config variables to the config namespace
     globals().update(config_vars)
 
 
 # Get the config file from the command line arguments
 config_file = _get_config_file()
-# Load the contents of the config file to the current namespace
+# Load the contents of the config file to the config namespace
 _load_from_config_file(config_file)
 
 # Version tag
