@@ -40,6 +40,9 @@ def get_args():
                              "<log\\folder>\\<timestamp> <hostname>.log")
     parser.add_argument("--skip-clear-cache", dest="clear_cache", action="store_false",
                         help="Disables the clearing of cahce files at startup.")
+    parser.add_argument("-k", dest="config_file", default=None,
+                        help=f"Path to custom configuration file. See the README for details. Default is "
+                             f"{config.DEFAULT_CONFIG_FILE}")
     args = parser.parse_args()
     return args
 

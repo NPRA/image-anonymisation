@@ -1,6 +1,6 @@
 import os
 
-from config import config
+from config import model_type
 
 
 # =============================================================
@@ -16,7 +16,7 @@ MODEL_NAME = {
     "Slow": "mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28",
     "Medium": "mask_rcnn_resnet101_atrous_coco_2018_01_28",
     "Fast": "mask_rcnn_inception_v2_coco_2018_01_28",
-}[config.model_type]
+}[model_type]
 
 # Root directory for the project
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))

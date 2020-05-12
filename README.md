@@ -130,6 +130,8 @@ optional arguments:
                         Optional path to directory of log file. The log file
                         will be named <log\folder>\<timestamp> <hostname>.log
   --skip-clear-cache    Disables the clearing of cache files at startup.
+  -k CONFIG_FILE        Path to custom configuration file. See the README for
+                        details. Default is config\default_config.yml
 ```
 
 Note: Make sure that the conda environment is activated before executing the command above.
@@ -145,7 +147,7 @@ The HTML documentation can be built from the `docs` directory by running
 ```
 
 ## Configuration
-The user-specifiable configuration parameters can be found in [config/config.py](config/config.py). The available parameters are listed below.
+The user-specifiable configuration parameters can be found in [config/default_config.yml](config/default_config.yml). The available parameters are listed below.
 
 #### Miscellaneous configuration parameters
 * `draw_mask`: Apply the mask to the output image?
@@ -190,6 +192,11 @@ The user-specifiable configuration parameters can be found in [config/config.py]
 * `write_exif_to_db`: Write the EXIF data to the database?
 * `db_max_n_accumulated_rows`: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
 * `db_folder_name`: Format of the "Mappenavn" column in the database.
+
+### Custom configuration file
+The application supports custom configuration files with the same structure as `config/default_config.yml`.
+Note that custom configuration files should define all variables defined in `config/default_config.yml`.
+Use the `-k` argument to specify a custom config file. (See [Usage](#usage) for details.)
 
 ## Email notifications
 The application can send an email notification on an abnormal exit, a processing error, or on completion. These noticifations can be enabled/disabled

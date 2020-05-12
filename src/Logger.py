@@ -99,10 +99,9 @@ def config_string():
     :return: Config string
     :rtype: str
     """
-    start_line = 5
+    start_line = 0
 
-    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "config", "config.py")
-    with open(config_path, "r") as config_file:
+    with open(config.config_file, "r") as config_file:
         lines = config_file.readlines()
 
     lines = lines[start_line:]
