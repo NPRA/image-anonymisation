@@ -150,7 +150,7 @@ finished_email = True
 write_exif_to_db = True
 
 #: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
-db_max_n_accumulated_rows = 8
+db_max_n_accumulated_rows = 100
 
 #: Format of the "Mappenavn" column in the database.
 db_folder_name = "Vegbilder/{fylke}/{aar}/{strekningreferanse}/F{feltkode}_{aar}_{maaned}_{dag}"
