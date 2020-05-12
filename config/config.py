@@ -153,4 +153,4 @@ write_exif_to_db = True
 db_max_n_accumulated_rows = 100
 
 #: Format of the "Mappenavn" column in the database.
-db_folder_name = "Vegbilder/{fylke}/{aar}/{strekningreferanse}/F{feltkode}_{aar}_{maaned}_{dag}"
+db_folder_name = "Vegbilder/{aar}/{strekningreferanse}/F{feltkode}_{aar}_{maaned}_{dag}"

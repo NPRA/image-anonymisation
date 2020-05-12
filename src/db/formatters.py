@@ -166,5 +166,9 @@ def Feltkode(json_data):
     return json_data["exif_feltkode"]
 
 
+def VegIdentitet(json_data):
+    return json_data["exif_roadident"]
+    
+
 def Versjon(json_data):
     return json_data.get("versjon", None)
