@@ -114,7 +114,7 @@ def initialize():
     # Set log file
     if args.log_folder is not None:
         os.makedirs(args.log_folder, exist_ok=True)
-        log_file_name = config.log_file_name.format(datetime=datetime.now().strftime(config.datetime_format),
+        log_file_name = config.log_file_name.format(datetime=datetime.now().strftime("%Y-%m-%d_%H%M%S"),
                                                     hostname=gethostname())
         log_file = os.path.join(args.log_folder, log_file_name)
         LOGGER.set_log_file(log_file)

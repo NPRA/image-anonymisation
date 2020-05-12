@@ -31,9 +31,9 @@ file_access_timeout_seconds = 60
 #: information.
 datetime_format = "%Y-%m-%d %H.%M.%S"
 
-#: Name of the log file. `{datetime}` will be replaced with a timestamp formatted as `datetime_format`. `{hostname}`
+#: Name of the log file. `{datetime}` will be replaced with a timestamp formatted as `%Y-%m-%d_%H%M%S`. `{hostname}`
 #: will be replaced with the host name.
-log_file_name = "{datetime} {hostname}.log"
+log_file_name = "{datetime}_{hostname}.log"
 
 #: Logging level for the application. This controls the log level for terminal logging and file logging (if it is
 #: enabled). Must be one of {"DEBUG", "INFO", "WARNING", "ERROR"}.
