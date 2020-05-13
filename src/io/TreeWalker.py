@@ -84,6 +84,16 @@ class Paths:
     def error_output_file(self):
         return os.path.join(self.error_output_dir, self.filename)
 
+    @property
+    def relative_input_dir(self):
+        if self.input_dir == self.base_input_dir:
+            return ""
+        relative_input_dir = self.input_dir.replace(self.base_input_dir, "", 1)
+        relative_input_dir = relative_input_dir.replace(os.sep, "/")
+        if relative_input_dir.startswith("/"):
+            relative_input_dir = relative_input_dir[1:]
+        return relative_input_dir
+
     def create_cache_file(self):
         json_contents = {k: v for k, v in self.__dict__.items() if isinstance(k, str) or k is None}
         with open(self.cache_file, "w") as f:

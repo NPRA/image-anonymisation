@@ -128,6 +128,7 @@ def Mappenavn(json_data):
         meter=json_data["exif_meter"],
         feltkode=json_data["exif_feltkode"],
         strekningreferanse=json_data["exif_strekningreferanse"],
+        relative_input_dir=json_data["relative_input_dir"]
     )
 
     folder_name = config.db_folder_name.format(**format_values)

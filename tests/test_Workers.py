@@ -139,5 +139,6 @@ EXPECTED_EXIF_KEYS = {
     "exif_headingrmserror",
     "bildeuuid",
     "detekterte_objekter",
+    "relative_input_dir",
     "versjon",
 }

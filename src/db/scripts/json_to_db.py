@@ -18,9 +18,11 @@ def get_args():
     return parser.parse_args()
 
 
-def process_json(filename, cli):
-    with open(filename, "r") as f:
+def process_json(paths, cli):
+    with open(paths.input_file, "r") as f:
         contents = json.load(f)
+    if "relative_input_dir" not in contents:
+        contents["relative_input_dir"] = paths.relative_input_dir
     cli.add_row(contents)
 
 
@@ -31,7 +33,7 @@ def main():
 
     with DatabaseClient(max_n_accumulated_rows=32) as cli:
         for paths in tqdm(tree_walker.walk()):
-            process_json(paths.input_file, cli)
+            process_json(paths, cli)
 
 
 if __name__ == '__main__':

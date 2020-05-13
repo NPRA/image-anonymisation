@@ -77,7 +77,11 @@ class DatabaseClient:
 
             # Delete the cached files
             while self.cached_rows:
-                os.remove(self.cached_rows.pop(0))
+                cache_file = self.cached_rows.pop(0) 
+                if os.path.exists(cache_file):
+                    os.remove(cache_file)
+                else:
+                    LOGGER.warning(__name__, f"Could not find cache file to remove: {cache_file}")
 
         except cxo.DatabaseError as err:
             raise AssertionError(f"cx_Oracle.DatabaseError: {str(err)}")
