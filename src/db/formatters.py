@@ -17,9 +17,11 @@ def to_datetime(ts):
 
 
 def to_number(x):
-    if x is None or np.isnan(x):
+    if x is None:
         return None
     x = float(x)
+    if np.isnan(x):
+        return None
     return int(x) if x.is_integer() else x
 
 
