@@ -122,7 +122,7 @@ def Mappenavn(json_data):
         aar=timestamp.year,
         maaned=timestamp.month,
         dag=timestamp.day,
-        fylke=json_data["exif_fylke"],
+        fylke=json_data["exif_fylke"].zfill(2),
         vegkat=json_data["exif_vegkat"],
         vegstat=json_data["exif_vegstat"],
         vegnr=json_data["exif_vegnr"],
