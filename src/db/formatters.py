@@ -1,7 +1,7 @@
-import os
 import re
 import json
 import iso8601
+import numpy as np
 
 import config
 from src.db import geometry
@@ -17,7 +17,7 @@ def to_datetime(ts):
 
 
 def to_number(x):
-    if x is None:
+    if x is None or np.isnan(x):
         return None
     x = float(x)
     return int(x) if x.is_integer() else x
