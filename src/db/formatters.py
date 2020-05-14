@@ -8,7 +8,7 @@ from src.db import geometry
 from src.Logger import LOGGER
 from src.io.exif_util import get_deterministic_id
 
-WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d{4});POINT Z\(\s*(-?\d+\.?\d*) (-?\d+\.?\d*) (-?\d+\.?\d*)\s*\)")
+WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d{4});POINT Z\(\s*(-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan)\s*\)")
 
 
 def to_datetime(ts):
