@@ -13,7 +13,7 @@ columns:
   - name: Retning
     dtype: NUMBER
     formatter: Retning
-    extra: NOT NULL
+    extra:
 
   - name: Posisjon
     dtype: SDO_GEOMETRY
