@@ -71,7 +71,7 @@ class DatabaseClient:
         """
         try:
             # Insert the rows
-            self.insert_rows(self.accumulated_rows)
+            self.insert_or_update_rows(self.accumulated_rows)
             # Clear the list of accumulated rows
             self.accumulated_rows = []
 
@@ -86,7 +86,7 @@ class DatabaseClient:
         except cxo.DatabaseError as err:
             raise AssertionError(f"cx_Oracle.DatabaseError: {str(err)}")
 
-    def insert_rows(self, rows):
+    def insert_or_update_rows(self, rows):
         """
         Insert `rows` into the database.
 
@@ -96,22 +96,20 @@ class DatabaseClient:
         """
         with self.connect() as connection:
             cursor = connection.cursor()
-            # Attempt to insert the rows into the database. When we have `batcherrors = True`, the rows which do not
-            # violate the unique constraint will be inserted normally. The rows which do violate the constraint will
-            # not be inserted.
-            cursor.executemany(self.table.insert_sql, rows, batcherrors=True)
 
-            # Get the indices of the rows where the insertion failed.
-            error_indices = [e.offset for e in cursor.getbatcherrors()]
+            n_inserted, insert_errors = self._insert_rows(cursor, rows)
 
-            # If we have any rows which caused an error.
-            if error_indices:
-                LOGGER.warning(__name__, f"Found {len(error_indices)} rows where the {self.table.pk_column} already "
-                                         f"existed in the database. These will be updated.")
+            if insert_errors:
+                LOGGER.warning(__name__, f"INSERT failed for {len(insert_errors)} row(s)")
                 # Filter out the rows which caused errors
-                error_rows = [rows[i] for i in error_indices]
+                insert_error_rows = [rows[e.offset] for e in insert_errors]
                 # Call an update on these rows
-                cursor.executemany(self.table.update_sql, error_rows)
+                n_updated, update_errors = self._update_rows(cursor, insert_error_rows)
+
+                if update_errors:
+                    update_error_rows =
+
+
 
             # Counts
             n_updated = len(error_indices)
@@ -122,6 +120,25 @@ class DatabaseClient:
         LOGGER.info(__name__, f"Successfully inserted {n_inserted} rows into the database.")
         if n_updated > 0:
             LOGGER.info(__name__, f"Successfully updated {n_updated} rows in the database.")
+
+    def _insert_rows(self, cursor, rows):
+        LOGGER.info(__name__, f"Attempting to insert {len(rows)} row(s) into the database.")
+        # Attempt to insert the rows into the database. When we have `batcherrors = True`, the rows which do not
+        # violate the unique constraint will be inserted normally. The rows which do violate the constraint will
+        # not be inserted.
+        cursor.executemany(self.table.insert_sql, rows, batcherrors=True)
+        # Get the indices of the rows where the insertion failed.
+        errors = [e for e in cursor.getbatcherrors()]
+        n_inserted = len(rows) - len(errors)
+        return n_inserted, errors
+
+    def _update_rows(self, cursor, rows):
+        LOGGER.info(__name__, f"Attempting to update {len(rows)} row(s) in the database.")
+        cursor.executemany(self.table.update_sql, rows, batcherrors=True)
+        # Get the indices of the rows where the insertion failed.
+        errors = [e for e in cursor.getbatcherrors()]
+        n_updated = len(rows) - len(errors)
+        return n_updated, errors
 
     def _cache_row(self, row):
         """
