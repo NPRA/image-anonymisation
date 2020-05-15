@@ -8,7 +8,20 @@ from src.Logger import LOGGER
 from src.db import geometry
 from src.db.Table import Table
 
+# Cache directory for the cached rows
 DB_CACHE_DIR = os.path.join(config.CACHE_DIRECTORY, "db")
+# Error code for the uniqueness constraint.
+UNIQUENESS_ERROR_CODE = "ORA-00001"
+
+
+class DatabaseError(BaseException):
+    """ Generic exception for database errors. """
+    pass
+
+
+class DatabaseLimitExceeded(BaseException):
+    """ Exception which indicates that a limit is exceeded in the DatabaseClient. """
+    pass
 
 
 class DatabaseClient:
@@ -20,11 +33,15 @@ class DatabaseClient:
                                    database.
     :type max_n_accumulated_rows: int
     """
-    def __init__(self, max_n_accumulated_rows=8):
+    def __init__(self, max_n_accumulated_rows=8, max_n_errors=1000, max_cache_size=1000):
         self.max_n_accumulated_rows = max_n_accumulated_rows
+        self.max_n_errors = max_n_errors
+        self.max_cache_size = max_cache_size
         self.accumulated_rows = []
         self.cached_rows = []
         self.table = Table(db_config.table_name)
+        self.total_inserted = self.total_updated = self.total_errors = 0
+        self._ignore_error_check = False
 
     @staticmethod
     def input_type_handler(cursor, value, num_elements):
@@ -84,7 +101,7 @@ class DatabaseClient:
                     LOGGER.warning(__name__, f"Could not find cache file to remove: {cache_file}")
 
         except cxo.DatabaseError as err:
-            raise AssertionError(f"cx_Oracle.DatabaseError: {str(err)}")
+            raise DatabaseError(f"cx_Oracle.DatabaseError: {str(err)}")
 
     def insert_or_update_rows(self, rows):
         """
@@ -94,32 +111,53 @@ class DatabaseClient:
         `src.db.DatabaseClient.create_row`
         :type rows: list of dict
         """
+        self._check_total_errors()
+
         with self.connect() as connection:
             cursor = connection.cursor()
+            # Insert rows
+            insert_errors = self._insert_rows(cursor, rows)
+            
+            uniqueness_errors, other_errors = split_errors_on_code(insert_errors, UNIQUENESS_ERROR_CODE)
 
-            n_inserted, insert_errors = self._insert_rows(cursor, rows)
+            if other_errors:
+                other_error_rows = [rows[e.offset] for e in other_errors]
+                self.handle_errors(other_errors, other_error_rows, action="inserting into")
 
-            if insert_errors:
-                LOGGER.warning(__name__, f"INSERT failed for {len(insert_errors)} row(s)")
-                # Filter out the rows which caused errors
-                insert_error_rows = [rows[e.offset] for e in insert_errors]
-                # Call an update on these rows
-                n_updated, update_errors = self._update_rows(cursor, insert_error_rows)
-
-                if update_errors:
-                    update_error_rows =
-
-
-
-            # Counts
-            n_updated = len(error_indices)
-            n_inserted = len(rows) - n_updated
-            # Commit the changes
+            # Commit insertions
             connection.commit()
 
-        LOGGER.info(__name__, f"Successfully inserted {n_inserted} rows into the database.")
-        if n_updated > 0:
-            LOGGER.info(__name__, f"Successfully updated {n_updated} rows in the database.")
+            # Handle insert errors caused by uniqueness constraint.
+            if uniqueness_errors:
+                # Attempt to update the rows which could not be inserted.
+                uniqueness_error_rows = [rows[e.offset] for e in uniqueness_errors]
+                update_errors = self._update_rows(cursor, uniqueness_error_rows)
+                # Commit updates
+                connection.commit()
+                # Handle update errors
+                if update_errors:
+                    update_error_rows = [uniqueness_error_rows[e.offset] for e in update_errors]
+                    self.handle_errors(update_errors, update_error_rows, action="updating")
+
+    def handle_errors(self, errors, rows, action="writing to"):
+        """
+        Log errors caused when running `cursor.executemany`.
+
+        :param errors: Errors from `cursor.getbatcherrors`
+        :type errors: list
+        :param rows: Rows which caused the errors
+        :type rows: list of dict
+        :param action: Optional database action for the error message.
+        :type action: str
+        """
+        # Increment total error counter
+        self.total_errors += len(errors)
+
+        # Create an error message
+        msg = f"Got {len(errors)} error(s) while {action} the database:\n"
+        msg += "\n".join([err.message for err in errors])
+        # Log the error
+        LOGGER.error(__name__, msg, save=False, email=True, email_mode="error")
 
     def _insert_rows(self, cursor, rows):
         LOGGER.info(__name__, f"Attempting to insert {len(rows)} row(s) into the database.")
@@ -129,16 +167,27 @@ class DatabaseClient:
         cursor.executemany(self.table.insert_sql, rows, batcherrors=True)
         # Get the indices of the rows where the insertion failed.
         errors = [e for e in cursor.getbatcherrors()]
+
+        # Add number of inserted rows to total counter
         n_inserted = len(rows) - len(errors)
-        return n_inserted, errors
+        self.total_inserted += n_inserted
+
+        LOGGER.info(__name__, f"Successfully inserted {n_inserted} row(s) into the database.")
+        return errors
 
     def _update_rows(self, cursor, rows):
         LOGGER.info(__name__, f"Attempting to update {len(rows)} row(s) in the database.")
+        # Attempt to update the rows. When we have `batcherrors = True`, the valid rows will be updated normally.
         cursor.executemany(self.table.update_sql, rows, batcherrors=True)
-        # Get the indices of the rows where the insertion failed.
+        # Get the errors caused by the rows where the update failed.
         errors = [e for e in cursor.getbatcherrors()]
+
+        # Add number of updated rows to total counter
         n_updated = len(rows) - len(errors)
-        return n_updated, errors
+        self.total_updated += n_updated
+
+        LOGGER.info(__name__, f"Successfully updated {n_updated} row(s) in the database.")
+        return errors
 
     def _cache_row(self, row):
         """
@@ -152,6 +201,19 @@ class DatabaseClient:
         self.cached_rows.append(cache_filename)
         with open(cache_filename, "wb") as f:
             pickle.dump(row, f)
+
+    def _check_total_errors(self):
+        if self._ignore_error_check:
+            return
+
+        # Check total number of errors
+        if self.total_errors > self.max_n_errors:
+            raise DatabaseLimitExceeded(f"Limit for total number of errors exceeded in DatabaseClient "
+                                            f"({self.total_errors} > {self.max_n_errors})")
+        # Check cache size
+        if len(self.cached_rows) > self.max_cache_size:
+            raise DatabaseLimitExceeded(f"Limit for total number of cached rows exceeded in DatabaseClient "
+                                            f"({len(self.cached_rows)} > {self.max_cache_size})")
 
     def close(self):
         """
@@ -195,11 +257,35 @@ def clear_db_cache():
 
     # Attempt to insert the rows into the database
     with DatabaseClient() as cli:
+        cli._ignore_error_check = True
         try:
-            cli.insert_rows(rows)
+            cli.insert_or_update_rows(rows)
         except Exception as err:
-            raise RuntimeError(f"Got error '{err}' when inserting cached rows into the database.") from err
+            raise DatabaseError(f"Got error '{err}' when inserting cached rows into the database.") from err
 
     # Remove the cache files
     for cache_file in files:
         os.remove(cache_file)
+
+
+def split_errors_on_code(errors, code):
+    """
+    Split the list of database errors into two lists. The first list will contain errors with error code `code`.
+    The other list will contain the other errors
+
+    :param errors: Database errors
+    :type errors: list
+    :param code: Code to split on. E.g. "ORA-00001" for failed uniqueness constraint
+    :type code: str
+    :return: Two lists. The first list will contain errors with error code `code`. The other list will contain the
+             other errors
+    :rtype: tuple of list
+    """
+    errors_for_code = []
+    other_errors = []
+    for err in errors:
+        if err.message.startswith(code):
+            errors_for_code.append(err)
+        else:
+            other_errors.append(err)
+    return errors_for_code, other_errors

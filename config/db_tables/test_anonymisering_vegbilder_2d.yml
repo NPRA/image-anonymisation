@@ -1,6 +1,6 @@
-pk_column: UUID
+pk_column: ID
 columns:
-  - name: UUID
+  - name: ID
     dtype: VARCHAR(255)
     formatter: UUID
     extra: PRIMARY KEY
@@ -13,7 +13,7 @@ columns:
   - name: Retning
     dtype: NUMBER
     formatter: Retning
-    extra: NOT NULL
+    extra:
 
   - name: Posisjon
     dtype: SDO_GEOMETRY
@@ -26,7 +26,7 @@ columns:
   - name: Hoyde
     dtype: NUMBER
     formatter: Hoyde
-    extra: NOT NULL
+    extra:
 
   - name: FylkeNummer
     dtype: NUMBER
@@ -48,7 +48,7 @@ columns:
     formatter: Vegnummer
     extra: NOT NULL
 
-  - name: StrekningReferanse
+  - name: StrekningsBeskrivelse
     dtype: VARCHAR(255)
     formatter: StrekningReferanse
     extra: NOT NULL
@@ -98,7 +98,12 @@ columns:
     formatter: Feltkode
     extra: NOT NULL
 
+  - name: VegIdentitet
+    dtype: VARCHAR(255)
+    formatter: VegIdentitet
+    extra:
+
   - name: Versjon
-    dtype: VARCHAR(16)
+    dtype: VARCHAR(31)
     formatter: Versjon
     extra:

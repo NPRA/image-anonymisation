@@ -25,6 +25,10 @@ PROCESSING_EXCEPTIONS = (
     tf.errors.NotFoundError,
 )
 
+if config.write_exif_to_db:
+    from src.db.DatabaseClient import DatabaseError
+    PROCESSING_EXCEPTIONS = (DatabaseError, *PROCESSING_EXCEPTIONS)
+
 
 def get_args():
     """ Get the command-line arguments. """
@@ -189,25 +193,36 @@ def get_estimated_done(time_at_iter_start, n_imgs, n_masked):
     return est_done
 
 
-def get_summary(tree_walker, n_masked, start_datetime):
+def get_summary(tree_walker, image_processor, start_datetime):
     """
     Log a summary of the masking process.
 
     :param tree_walker: `TreeWalker` instance used in masking.
     :type tree_walker: TreeWalker
-    :param n_masked: Number of masked images
-    :type n_masked: int
+    :param image_processor: `src.ImageProcessor.ImageProcessor` instance used when processing the images.
+    :type image_processor: src.ImageProcessor.ImageProcessor
     :param start_datetime: Datetime object indicating when the program started.
     :type start_datetime: datetime.datetime
     """
-    summary = "\n".join([
+
+    lines = [
         "Anonymisation finished.",
-        f"Number of identified images: {tree_walker.n_valid_images + tree_walker.n_skipped_images}",
-        f"Number of masked images: {n_masked}",
-        f"Number of images skipped due to existing masks: {tree_walker.n_skipped_images}",
-        f"Number of images skipped due to errors: {tree_walker.n_valid_images - n_masked}",
-        f"Total time spent: {str(datetime.now() - start_datetime)}"
-    ])
+        f"Identified images: {tree_walker.n_valid_images + tree_walker.n_skipped_images}",
+        f"Images skipped due to existing masks: {tree_walker.n_skipped_images}",
+        f"Images skipped due to processing errors: {tree_walker.n_valid_images - image_processor.n_completed}",
+        f"Masked images: {image_processor.n_completed}",
+    ]
+
+    if image_processor.database_client is not None:
+        cli = image_processor.database_client
+        lines += [
+            f"Row(s) inserted into the database: {cli.total_inserted}",
+            f"Row(s) updated in the database: {cli.total_updated}",
+            f"Row(s) failed to insert/update in the database: {cli.total_errors}",
+        ]
+
+    lines.append(f"Total time spent: {str(datetime.now() - start_datetime)}")
+    summary = "\n".join(lines)
     return summary
 
 
@@ -249,7 +264,7 @@ def main():
     image_processor.close()
 
     # Summary
-    summary_str = get_summary(tree_walker, image_processor.n_completed, start_datetime)
+    summary_str = get_summary(tree_walker, image_processor, start_datetime)
     LOGGER.info(__name__, LOG_SEP)
     LOGGER.info(__name__, summary_str, email=True, email_mode="finished")
 

@@ -38,7 +38,9 @@ class ImageProcessor:
 
         if config.write_exif_to_db:
             from src.db.DatabaseClient import DatabaseClient
-            self.database_client = DatabaseClient(config.db_max_n_accumulated_rows)
+            self.database_client = DatabaseClient(max_n_accumulated_rows=config.db_max_n_accumulated_rows,
+                                                  max_n_errors=config.db_max_n_errors,
+                                                  max_cache_size=config.db_max_cache_size)
         else:
             self.database_client = None
 

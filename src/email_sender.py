@@ -77,8 +77,8 @@ def send_mail(message_type, etype=None, ex=None, tb=None, msg=None):
     try:
         with smtplib.SMTP(email_config.smtp_host, email_config.port) as smtp:
             smtp.sendmail(from_addr=email_config.from_address, to_addrs=email_config.to_addresses, msg=message)
-    except BaseException as err:
-        LOGGER.error(__name__, f"Got error {str(err)} when attempting to send e-mail with contents:\n{message}")
+    except Exception as err:
+        LOGGER.error(__name__, f"Got error '{str(err)}' when attempting to send e-mail.")
 
 
 def create_base_message(subject, msg=None):

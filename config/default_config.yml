@@ -148,5 +148,11 @@ write_exif_to_db: True
 #: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
 db_max_n_accumulated_rows: 100
 
+#: If the number of failed insertions/updates exceeds this number, a RuntimeError will be raised.
+db_max_n_errors: 1000
+
+#: If the number of cached rows exceeds this number, a RuntimeError will be raised.
+db_max_cache_size: 1000
+
 #: Format of the "Mappenavn" column in the database.
 db_folder_name: "Vegbilder/{aar}/{relative_input_dir}"
