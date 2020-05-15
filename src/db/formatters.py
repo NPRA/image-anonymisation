@@ -1,14 +1,14 @@
-import os
 import re
 import json
 import iso8601
+import numpy as np
 
 import config
 from src.db import geometry
 from src.Logger import LOGGER
 from src.io.exif_util import get_deterministic_id
 
-WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d{4});POINT Z\(\s*(-?\d+\.?\d*) (-?\d+\.?\d*) (-?\d+\.?\d*)\s*\)")
+WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d{4});POINT Z\(\s*(-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan)\s*\)")
 
 
 def to_datetime(ts):
@@ -20,6 +20,8 @@ def to_number(x):
     if x is None:
         return None
     x = float(x)
+    if np.isnan(x):
+        return None
     return int(x) if x.is_integer() else x
 
 
@@ -120,7 +122,7 @@ def Mappenavn(json_data):
         aar=timestamp.year,
         maaned=timestamp.month,
         dag=timestamp.day,
-        fylke=json_data["exif_fylke"],
+        fylke=json_data["exif_fylke"].zfill(2),
         vegkat=json_data["exif_vegkat"],
         vegstat=json_data["exif_vegstat"],
         vegnr=json_data["exif_vegnr"],
