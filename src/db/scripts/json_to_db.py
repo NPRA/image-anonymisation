@@ -23,9 +23,6 @@ def process_json(paths, cli):
         contents = json.load(f)
     if "relative_input_dir" not in contents:
         contents["relative_input_dir"] = paths.relative_input_dir
-    import numpy as np
-    if np.random.random() > 1:
-        contents["exif_fylke"] = None
     cli.add_row(contents)
 
 
@@ -36,10 +33,7 @@ def main():
 
     cli = DatabaseClient(max_n_accumulated_rows=2, max_cache_size=5, max_n_errors=1000)
     for paths in tqdm(tree_walker.walk()):
-        try:
-            process_json(paths, cli)
-        except AssertionError as err:
-            print(err)
+        process_json(paths, cli)
 
     cli.close()
 
