@@ -33,15 +33,18 @@ class DatabaseClient:
                                    database.
     :type max_n_accumulated_rows: int
     """
-    def __init__(self, max_n_accumulated_rows=8, max_n_errors=1000, max_cache_size=1000):
+    def __init__(self, max_n_accumulated_rows=8, max_n_errors=1000, max_cache_size=1000, table_name=None):
         self.max_n_accumulated_rows = max_n_accumulated_rows
         self.max_n_errors = max_n_errors
         self.max_cache_size = max_cache_size
         self.accumulated_rows = []
         self.cached_rows = []
-        self.table = Table(db_config.table_name)
         self.total_inserted = self.total_updated = self.total_errors = 0
         self._ignore_error_check = False
+
+        if table_name is None:
+            table_name = db_config.table_name
+        self.table = Table(table_name)
 
     @staticmethod
     def input_type_handler(cursor, value, num_elements):
@@ -209,11 +212,11 @@ class DatabaseClient:
         # Check total number of errors
         if self.total_errors > self.max_n_errors:
             raise DatabaseLimitExceeded(f"Limit for total number of errors exceeded in DatabaseClient "
-                                            f"({self.total_errors} > {self.max_n_errors})")
+                                        f"({self.total_errors} > {self.max_n_errors})")
         # Check cache size
         if len(self.cached_rows) > self.max_cache_size:
             raise DatabaseLimitExceeded(f"Limit for total number of cached rows exceeded in DatabaseClient "
-                                            f"({len(self.cached_rows)} > {self.max_cache_size})")
+                                        f"({len(self.cached_rows)} > {self.max_cache_size})")
 
     def close(self):
         """
