@@ -56,7 +56,7 @@ class BaseWorker:
         Start the async worker. If `config.enable_async = False`, `self.async_func` will be called directly.
         """
         self.n_starts += 1
-        if config.enable_async:
+        if self.pool is not None:
             # Spawn an asynchronous worker
             self.async_worker = self.pool.apply_async(self.async_func, args=self.args)
         else:
@@ -75,7 +75,7 @@ class BaseWorker:
         :return: Return value from `self.async_func`.
         :rtype:
         """
-        if config.enable_async:
+        if self.pool is not None:
             # Try to get the result from the asynchronous worker. If it raises an exception, handle the exception.
             try:
                 result = self.async_worker.get()
@@ -231,7 +231,10 @@ class EXIFWorker(BaseWorker):
         # Get the EXIF data
         exif = exif_util.exif_from_file(paths.input_file)
         # Insert detected objects
-        exif["detekterte_objekter"] = exif_util.get_detected_objects_dict(mask_results)
+        if mask_results is not None:
+            exif["detekterte_objekter"] = exif_util.get_detected_objects_dict(mask_results)
+        else:
+            exif["detekterte_objekter"] = None
         # Insert the version number
         exif["versjon"] = str(version)
         # Insert the relative input directory

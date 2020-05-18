@@ -104,8 +104,8 @@ class Table:
             try:
                 value = col.get_value(json_dict)
             except Exception as err:
-                LOGGER.error(__name__, f"Got error '{type(err).__name__}: {err}' while getting value for database "
-                                       f"column {col.name}. Value will be set to None")
+                LOGGER.warning(__name__, f"Got error '{type(err).__name__}: {err}' while getting value for database "
+                                         f"column {col.name}. Value will be set to None")
                 value = None
             out[col.name] = value
         return out

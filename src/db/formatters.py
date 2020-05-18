@@ -8,7 +8,7 @@ from src.db import geometry
 from src.Logger import LOGGER
 from src.io.exif_util import get_deterministic_id
 
-WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d{4});POINT Z\(\s*(-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan)\s*\)")
+WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d+);POINT Z\(\s*(-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan)\s*\)")
 
 
 def to_datetime(ts):
@@ -27,6 +27,40 @@ def to_number(x):
 
 def to_clob(d):
     return json.dumps(d, ensure_ascii=False)
+
+
+def to_position(wkt_position_string, dim):
+    assert dim in [2, 3]
+    # See https://docs.oracle.com/database/121/SPATL/sdo_geometry-object-type.htm#SPATL489
+    # D = 2 or 3 (2 or 3 dimensions) | L = 0 (Default) | TT = 01 (Geometry type: Point)
+    gtype = int(str(dim) + "001")
+    try:
+        # Parse the WKT string and create an SDOGeometry object from the results
+        matches = WKT_GEOMETRY_REGEX.findall(wkt_position_string)
+        srid, x, y, z = matches[0]
+        point_list = [float(x), float(y)]
+        if dim == 3:
+            point_list.append(float(z))
+        sdo_geometry = geometry.SDOGeometry(gtype=gtype, srid=int(srid), point=point_list)
+    except Exception as err:
+        raise ValueError(f"Could not parse position string: {wkt_position_string}") from err
+    return sdo_geometry
+
+
+def to_height(wkt_position_string):
+    try:
+        matches = WKT_GEOMETRY_REGEX.findall(wkt_position_string)
+        height = to_number(matches[0][3])
+    except Exception as err:
+        raise ValueError(f"Could not parse position string: {wkt_position_string}") from err
+    return height
+
+
+def get_value_for_multiple_keys(json_data, keys):
+    for key in keys:
+        if key in json_data:
+            return json_data[key]
+    raise KeyError(f"None of the keys {keys} were found in the JSON dict.")
 
 
 def UUID(json_data):
@@ -51,44 +85,23 @@ def Retning(json_data):
 
 
 def Posisjon(json_data):
-    # See https://docs.oracle.com/database/121/SPATL/sdo_geometry-object-type.htm#SPATL489
-    # D = 3 (3 dimensions) | L = 0 (Default) | TT = 01 (Geometry type: Point)
-    gtype = 3001
-
-    try:
-        # Parse `exif_gpsposisjon` and create an SDOGeometry object from the results
-        matches = WKT_GEOMETRY_REGEX.findall(json_data["exif_gpsposisjon"])
-        srid, x, y, z = matches[0]
-        sdo_geometry = geometry.SDOGeometry(gtype=gtype, srid=int(srid), point=[float(x), float(y), float(z)])
-    except Exception as err:
-        raise ValueError(f"Could not parse position string: {json_data['exif_gpsposisjon']}") from err
-
-    return sdo_geometry
+    return to_position(json_data["exif_gpsposisjon"], dim=3)
 
 
 def Posisjon_2d(json_data):
-    # See https://docs.oracle.com/database/121/SPATL/sdo_geometry-object-type.htm#SPATL489
-    # D = 2 (2 dimensions) | L = 0 (Default) | TT = 01 (Geometry type: Point)
-    gtype = 2001
-
-    try:
-        # Parse `exif_gpsposisjon` and create an SDOGeometry object from the results
-        matches = WKT_GEOMETRY_REGEX.findall(json_data["exif_gpsposisjon"])
-        srid, x, y, _ = matches[0]
-        sdo_geometry = geometry.SDOGeometry(gtype=gtype, srid=int(srid), point=[float(x), float(y)])
-    except Exception as err:
-        raise ValueError(f"Could not parse position string: {json_data['exif_gpsposisjon']}") from err
-
-    return sdo_geometry
+    return to_position(json_data["exif_gpsposisjon"], dim=2)
 
 
 def Hoyde(json_data):
-    try:
-        matches = WKT_GEOMETRY_REGEX.findall(json_data["exif_gpsposisjon"])
-        height = to_number(matches[0][3])
-    except Exception as err:
-        raise ValueError(f"Could not parse position string: {json_data['exif_gpsposisjon']}") from err
-    return height
+    return to_height(json_data["exif_gpsposisjon"])
+
+
+def SenterlinjePosisjon_2d(json_data):
+    return to_position(json_data["senterlinjeposisjon"], dim=2)
+
+
+def SenterlinjeHoyde(json_data):
+    return to_height(json_data["senterlinjeposisjon"])
 
 
 def FylkeNummer(json_data):
@@ -149,11 +162,11 @@ def JsonData(json_data):
 
 
 def ReflinkID(json_data):
-    return to_number(json_data["exif_reflinkid"])
+    return get_value_for_multiple_keys(json_data, keys=["exif_reflinkid", "veglenkeid"])
 
 
 def ReflinkPosisjon(json_data):
-    return to_number(json_data["exif_reflinkposisjon"])
+    return get_value_for_multiple_keys(json_data, keys=["exif_reflinkposisjon", "veglenkepos"])
 
 
 def DetekterteObjekter(json_data):
