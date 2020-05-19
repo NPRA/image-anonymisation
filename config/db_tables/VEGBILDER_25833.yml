@@ -57,7 +57,7 @@ columns:
     extra: NOT NULL
 
   - name: HP
-    dtype: NUMBER
+    dtype: VARCHAR(255)
     formatter: HP
     extra:
 
