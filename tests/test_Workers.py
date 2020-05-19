@@ -117,6 +117,8 @@ EXPECTED_EXIF_KEYS = {
     "exif_vegstat",
     "exif_vegnr",
     "exif_hp",
+    "exif_strekning",
+    "exif_delstrekning",
     "exif_meter",
     "exif_feltkode",
     "exif_mappenavn",
@@ -137,8 +139,9 @@ EXPECTED_EXIF_KEYS = {
     "exif_rollrmserror",
     "exif_pitchrmserror",
     "exif_headingrmserror",
-    "bildeuuid",
+    "bildeid",
     "detekterte_objekter",
     "relative_input_dir",
     "versjon",
+    "senterlinjeposisjon"
 }
