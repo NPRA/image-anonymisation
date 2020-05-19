@@ -1,8 +1,8 @@
 pk_column: UUID
 columns:
-  - name: UUID
+  - name: ID
     dtype: VARCHAR(255)
-    formatter: UUID
+    formatter: ID
     extra: PRIMARY KEY
 
   - name: Tidspunkt

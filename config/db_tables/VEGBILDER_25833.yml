@@ -2,7 +2,7 @@ pk_column: ID
 columns:
   - name: ID
     dtype: VARCHAR(255)
-    formatter: UUID
+    formatter: ID
     extra: PRIMARY KEY
 
   - name: Tidspunkt
@@ -30,16 +30,11 @@ columns:
 
   - name: SenterlinjePosisjon
     dtype: SDO_GEOMETRY
-    formatter: SenterlinjePosisjon_2d
+    formatter: SenterlinjePosisjon
     extra: NOT NULL
     spatial_metadata:
-      dimension: 2
+      dimension: 3
       srid: 25833
-
-  - name: SenterlinjeHoyde
-    dtype: NUMBER
-    formatter: Hoyde
-    extra:
 
   - name: FylkeNummer
     dtype: NUMBER

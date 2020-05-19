@@ -63,9 +63,9 @@ def get_value_for_multiple_keys(json_data, keys):
     raise KeyError(f"None of the keys {keys} were found in the JSON dict.")
 
 
-def UUID(json_data):
+def ID(json_data):
     # Try to get 'bildeuuid' from the json_data.
-    image_id = json_data.get("bildeuuid", None)
+    image_id = json_data.get("bildeid", None)
 
     # If 'bilde_id' could not be found in the json_data. Create it from the contents.
     if image_id is None:
@@ -94,6 +94,10 @@ def Posisjon_2d(json_data):
 
 def Hoyde(json_data):
     return to_height(json_data["exif_gpsposisjon"])
+
+
+def SenterlinjePosisjon(json_data):
+    return to_position(json_data["senterlinjeposisjon"], dim=3)
 
 
 def SenterlinjePosisjon_2d(json_data):
