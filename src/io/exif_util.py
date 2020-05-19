@@ -106,6 +106,8 @@ def get_exif(img):
     # Get a deterministic ID from the exif data.
     exif_data["bildeid"] = get_deterministic_id(exif_data)
 
+    exif_data["senterlinjeposisjon"] = None
+
     return exif_data
 
 
