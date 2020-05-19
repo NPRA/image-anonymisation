@@ -107,8 +107,8 @@ def main():
             augment_json(paths, json_dict)
             database_client.add_row(json_dict)
         except PROCESSING_EXCEPTIONS as err:
-            LOGGER.error(f"Got error '{type(err).__name__}: {str(err)}' when writing JSON to Database. "
-                         f"File: {paths.input_file}")
+            LOGGER.error(__name__, f"Got error '{type(err).__name__}: {str(err)}' when writing JSON to Database. "
+                                   f"File: {paths.input_file}")
 
     LOGGER.info(__name__, LOG_SEP)
     LOGGER.info(__name__, "Writing remaining files to Database")
