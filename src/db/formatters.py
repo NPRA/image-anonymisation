@@ -124,6 +124,18 @@ def Vegnummer(json_data):
     return to_number(json_data["exif_vegnr"])
 
 
+def HP(json_data):
+    return to_number(json_data["exif_hp"])
+
+
+def Strekning(json_data):
+    return to_number(json_data["exif_strekning"])
+
+
+def Delstrekning(json_data):
+    return to_number(json_data["exif_delstrekning"])
+
+
 def StrekningReferanse(json_data):
     return json_data["exif_strekningreferanse"]
 

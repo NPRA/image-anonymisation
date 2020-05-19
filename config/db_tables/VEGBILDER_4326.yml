@@ -48,6 +48,21 @@ columns:
     formatter: Vegnummer
     extra: NOT NULL
 
+  - name: HP
+    dtype: NUMBER
+    formatter: HP
+    extra:
+
+  - name: Strekning
+    dtype: NUMBER
+    formatter: Strekning
+    extra:
+
+  - name: Delstrekning
+    dtype: NUMBER
+    formatter: Delstrekning
+    extra:
+
   - name: StrekningsBeskrivelse
     dtype: VARCHAR(255)
     formatter: StrekningReferanse
