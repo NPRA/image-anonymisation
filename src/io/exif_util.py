@@ -37,8 +37,12 @@ REDACT_XML_REPLACE_STRINGS = [f"<{tag}>FJERNET</{tag}" for tag in REDACT_XML_TAG
 
 #: Timestamp format for the deterministic id
 ID_TIMESTAMP_FORMATTER = "%Y-%m-%dT%H.%M.%S.%f"
+
 #: Pattern to remove from the filename when creating the deterministic id
 ID_REMOVE_FROM_FILENAME_PATTERN = re.compile(r"_f\d+")
+
+#: Pattern for extracting strekning/delstrekning from strings on the form `SxDy`
+STREKNING_PATTERN = re.compile(r"S(\d+)D(\d+)\b")
 
 
 def exif_from_file(image_path):
@@ -187,6 +191,8 @@ def process_image_properties(contents):
     if exif_vegstat not in LOVLIG_VEGSTATUS or exif_vegkat not in LOVLIG_VEGKATEGORI:
         LOGGER.info(__name__, f"VCRoad={exif_veg} følger ikke KAT+STAT+vegnr syntaks: {mappenavn}")
 
+    hp, strekning, delstrekning = process_strekning(image_properties["VegComValues"]["VCHP"])
+
     out = {
         "exif_tid": timestamp,
         "exif_dato": date,
@@ -198,7 +204,9 @@ def process_image_properties(contents):
         "exif_vegkat": exif_vegkat,
         "exif_vegstat": exif_vegstat,
         "exif_vegnr": exif_vegnr,
-        "exif_hp": image_properties["VegComValues"]["VCHP"],
+        "exif_hp": hp,
+        "exif_strekning": strekning,
+        "exif_delstrekning": delstrekning,
         "exif_meter": image_properties["VegComValues"]["VCMeter"],
         "exif_feltkode": image_properties["VegComValues"]["VCLane"],
         "exif_mappenavn": "/".join(mapper[0:-1]),
@@ -207,6 +215,20 @@ def process_image_properties(contents):
         "exif_imageproperties": contents
     }
     return out
+
+
+def process_strekning(vchp):
+    # Look for SxDy pattern
+    matches = STREKNING_PATTERN.findall(vchp)
+    if matches:
+        hp = None
+        strekning = matches[0][0]
+        delstrekning = matches[0][1]
+    else:
+        hp = vchp
+        strekning = None
+        delstrekning = None
+    return hp, strekning, delstrekning
 
 
 def to_pretty_xml(contents_bytes):
