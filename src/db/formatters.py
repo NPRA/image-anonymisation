@@ -178,11 +178,11 @@ def JsonData(json_data):
 
 
 def ReflinkID(json_data):
-    return get_value_for_multiple_keys(json_data, keys=["exif_reflinkid", "veglenkeid"])
+    return to_number(get_value_for_multiple_keys(json_data, keys=["exif_reflinkid", "veglenkeid"]))
 
 
 def ReflinkPosisjon(json_data):
-    return get_value_for_multiple_keys(json_data, keys=["exif_reflinkposisjon", "veglenkepos"])
+    return to_number(get_value_for_multiple_keys(json_data, keys=["exif_reflinkposisjon", "veglenkepos"]))
 
 
 def DetekterteObjekter(json_data):
