@@ -33,10 +33,12 @@ class DatabaseClient:
                                    database.
     :type max_n_accumulated_rows: int
     """
-    def __init__(self, max_n_accumulated_rows=8, max_n_errors=1000, max_cache_size=1000, table_name=None):
+    def __init__(self, max_n_accumulated_rows=8, max_n_errors=1000, max_cache_size=1000, table_name=None,
+                 enable_cache=True):
         self.max_n_accumulated_rows = max_n_accumulated_rows
         self.max_n_errors = max_n_errors
         self.max_cache_size = max_cache_size
+        self.enable_cache = enable_cache
         self.accumulated_rows = []
         self.cached_rows = []
         self.total_inserted = self.total_updated = self.total_errors = 0
@@ -80,7 +82,9 @@ class DatabaseClient:
         """
         row = self.table.create_row(json_dict)
         self.accumulated_rows.append(row)
-        self._cache_row(row)
+
+        if self.enable_cache:
+            self._cache_row(row)
 
         if len(self.accumulated_rows) >= self.max_n_accumulated_rows:
             self.insert_accumulated_rows()
@@ -95,13 +99,14 @@ class DatabaseClient:
             # Clear the list of accumulated rows
             self.accumulated_rows = []
 
-            # Delete the cached files
-            while self.cached_rows:
-                cache_file = self.cached_rows.pop(0) 
-                if os.path.exists(cache_file):
-                    os.remove(cache_file)
-                else:
-                    LOGGER.warning(__name__, f"Could not find cache file to remove: {cache_file}")
+            if self.enable_cache:
+                # Delete the cached files
+                while self.cached_rows:
+                    cache_file = self.cached_rows.pop(0)
+                    if os.path.exists(cache_file):
+                        os.remove(cache_file)
+                    else:
+                        LOGGER.warning(__name__, f"Could not find cache file to remove: {cache_file}")
 
         except cxo.DatabaseError as err:
             raise DatabaseError(f"cx_Oracle.DatabaseError: {str(err)}")
