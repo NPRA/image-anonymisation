@@ -81,6 +81,30 @@ def initialize():
     return tree_walker, database_client
 
 
+def get_summary(tree_walker, database_client, start_datetime):
+    """
+    Log a summary of the masking process.
+
+    :param tree_walker: `TreeWalker` instance used in masking.
+    :type tree_walker: TreeWalker
+    :param database_client:
+    :type database_client:
+    :param start_datetime: Datetime object indicating when the program started.
+    :type start_datetime: datetime.datetime
+    """
+
+    lines = [
+        "Script finished.",
+        f"Files found: {tree_walker.n_valid_images}",
+        f"Row(s) inserted into the database: {database_client.total_inserted}",
+        f"Row(s) updated in the database: {database_client.total_updated}",
+        f"Row(s) failed to insert/update in the database: {database_client.total_errors}",
+        f"Total time spent: {str(datetime.now() - start_datetime)}"
+    ]
+    summary = "\n".join(lines)
+    return summary
+
+
 def load_json(paths):
     wait_until_path_is_found(paths.input_file)
     with open(paths.input_file, "r", encoding="utf-8") as f:
@@ -95,6 +119,7 @@ def augment_json(paths, json_dict):
 
 def main():
     tree_walker, database_client = initialize()
+    start_datetime = datetime.now()
 
     for i, paths in enumerate(tree_walker.walk()):
         count_str = f"{i + 1} of {tree_walker.n_valid_images}"
@@ -113,6 +138,10 @@ def main():
     LOGGER.info(__name__, LOG_SEP)
     LOGGER.info(__name__, "Writing remaining files to Database")
     database_client.close()
+
+    summary_str = get_summary(tree_walker, database_client, start_datetime)
+    LOGGER.info(__name__, LOG_SEP)
+    LOGGER.info(__name__, summary_str)
 
 
 if __name__ == '__main__':
