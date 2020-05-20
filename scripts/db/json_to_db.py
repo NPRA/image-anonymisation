@@ -83,7 +83,7 @@ def initialize():
 
 def load_json(paths):
     wait_until_path_is_found(paths.input_file)
-    with open(paths.input_file, "r") as f:
+    with open(paths.input_file, "r", encoding="utf-8") as f:
         json_dict = json.load(f)
     return json_dict
 
