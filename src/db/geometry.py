@@ -49,6 +49,9 @@ def get_geometry_converter(connection):
 
     # Conversion function
     def _converter(value):
+        if value is None:
+            return None
+
         # Create object
         obj = geometry_obj_type.newobject()
 

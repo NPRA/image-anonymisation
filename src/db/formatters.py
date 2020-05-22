@@ -69,7 +69,7 @@ def ID(json_data):
 
     # If 'bilde_id' could not be found in the json_data. Create it from the contents.
     if image_id is None:
-        LOGGER.warning(__name__, "Could not find 'bildeuuid' in JSON data. The ID will be created from the contents of "
+        LOGGER.warning(__name__, "Could not find 'bildeid' in JSON data. The ID will be created from the contents of "
                                  "the JSON data instead.")
         image_id = get_deterministic_id(json_data)
 
