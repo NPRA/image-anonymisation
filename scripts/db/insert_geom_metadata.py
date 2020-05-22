@@ -33,7 +33,7 @@ def insert():
                        "SRID": col.spatial_metadata["srid"]}
                 rows.append(row)
 
-        cursor.execute(insert_sql, rows[0])
+        cursor.executemany(insert_sql, rows)
         conn.commit()
 
 
