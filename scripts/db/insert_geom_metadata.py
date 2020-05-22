@@ -54,13 +54,17 @@ def _create_dim_element(dim_element_type, dim_name, lb, ub, tolerance):
 
 def _create_diminfo(conn, dim):
     dim_element_type = conn.gettype("MDSYS.SDO_DIM_ELEMENT")
-    elements = [
-        _create_dim_element(dim_element_type, 'Longitude', -180, 180, 0.5),
-        _create_dim_element(dim_element_type, 'Latitude', -90, 90, 0.5),
-    ]
-    if dim == 3:
-        elements.append(_create_dim_element(dim_element_type, 'Height', -1000, 3000, 0.5))
-
+    if dim == 2:
+        elements = [
+            _create_dim_element(dim_element_type, 'Longitude', -180, 180, 0.5),
+            _create_dim_element(dim_element_type, 'Latitude', -90, 90, 0.5),
+        ]
+    else:
+        elements = [
+            _create_dim_element(dim_element_type, 'X', -100000, 1120000, 0.01),
+            _create_dim_element(dim_element_type, 'Y', 6430000, 7960000, 0.01),
+            _create_dim_element(dim_element_type, 'Z', -99999, 3000, 0.0001),
+        ]
     dim_array_type = conn.gettype("MDSYS.SDO_DIM_ARRAY")
     dim_array = dim_array_type.newobject()
     dim_array.extend(elements)
