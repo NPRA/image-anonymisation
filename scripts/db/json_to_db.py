@@ -76,7 +76,8 @@ def initialize():
     database_client = DatabaseClient(table_name=args.table_name,
                                      max_n_accumulated_rows=config.db_max_n_accumulated_rows,
                                      max_n_errors=config.db_max_n_errors,
-                                     max_cache_size=config.db_max_cache_size)
+                                     max_cache_size=config.db_max_cache_size,
+                                     enable_cache=False)
 
     return tree_walker, database_client
 
