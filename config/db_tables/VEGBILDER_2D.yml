@@ -37,9 +37,9 @@ columns:
       srid: 25833
 
   - name: SenterlinjeHoyde
-      dtype: NUMBER
-      formatter: SenterlinjeHoyde
-      extra:
+    dtype: NUMBER
+    formatter: SenterlinjeHoyde
+    extra:
 
   - name: FylkeNummer
     dtype: NUMBER
