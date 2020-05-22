@@ -18,7 +18,7 @@ METADATA_COLUMNS = [
 
 
 def insert():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Simple script for inserting metadata into the SDO geometry metadata table.")
     parser.add_argument("-t", "--table-name", dest="table_name", default=db_config.table_name,
                         help="Database table name.")
     args = parser.parse_args()

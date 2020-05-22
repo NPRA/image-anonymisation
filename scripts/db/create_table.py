@@ -11,7 +11,9 @@ from src.db.DatabaseClient import DatabaseClient
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Create the specified table. If the `--drop` argument is specified, "
+                                                 "a `DROP TABLE <table name>` will be executed before the table is "
+                                                 "created.")
     parser.add_argument("--drop", action="store_true", help="Drop the current table before creating a new one")
     parser.add_argument("-t", "--table-name", default=db_config.table_name,
                         help="Database table name. Default is db_config.table_name")
