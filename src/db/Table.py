@@ -92,7 +92,7 @@ class Table:
 
     def create_row(self, json_dict):
         """
-        Create a database row from the given `json_dict`. See `src.db.setup_table` for the list of columns.
+        Create a database row from the given `json_dict`.
 
         :param json_dict: EXIF data
         :type json_dict: dict

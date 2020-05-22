@@ -17,12 +17,13 @@ class SDOGeometry:
     :param ordinates: SDO_ORDINATES
     :type ordinates: list of (int | float) | None
     """
-    def __init__(self, gtype=None, srid=None, point=None, elem_info=None, ordinates=None):
+    def __init__(self, gtype=None, srid=None, point=None, elem_info=None, ordinates=None, is_null=False):
         self.gtype = gtype
         self.srid = srid
         self.point = point
         self.elem_info = elem_info
         self.ordinates = ordinates
+        self.is_null = is_null
 
     def __str__(self):
         return "SDOGeometry({})".format(", ".join(f"{k}={v}" for k, v in self.__dict__.items()))
@@ -49,7 +50,7 @@ def get_geometry_converter(connection):
 
     # Conversion function
     def _converter(value):
-        if value is None:
+        if value is None or value.is_null:
             return None
 
         # Create object

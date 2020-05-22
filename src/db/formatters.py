@@ -31,6 +31,10 @@ def to_clob(d):
 
 def to_position(wkt_position_string, dim):
     assert dim in [2, 3]
+
+    if wkt_position_string is None:
+        return geometry.SDOGeometry(is_null=True)
+
     # See https://docs.oracle.com/database/121/SPATL/sdo_geometry-object-type.htm#SPATL489
     # D = 2 or 3 (2 or 3 dimensions) | L = 0 (Default) | TT = 01 (Geometry type: Point)
     gtype = int(str(dim) + "001")
