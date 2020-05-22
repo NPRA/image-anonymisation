@@ -2,6 +2,8 @@
 Simple script for creating, dropping, and inserting into the SDO geometry metadata table.
 Use the command line arguments --create, --drop, --insert, to create, drop, and insert into the table.
 """
+import argparse
+
 from config import db_config
 from src.db.DatabaseClient import DatabaseClient
 from src.db.Table import Column, Table
@@ -16,7 +18,11 @@ METADATA_COLUMNS = [
 
 
 def insert():
-    table = Table(db_config.table_name)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--table-name", dest="table_name", default=db_config.table_name,
+                        help="Database table name.")
+    args = parser.parse_args()
+    table = Table(args.table_name)
 
     with DatabaseClient.connect() as conn:
         cursor = conn.cursor()
