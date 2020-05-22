@@ -15,23 +15,10 @@ columns:
     formatter: Retning
     extra:
 
-  - name: Posisjon
-    dtype: SDO_GEOMETRY
-    formatter: Posisjon_2d
-    extra: NOT NULL
-    spatial_metadata:
-      dimension: 2
-      srid: 4326
-
-  - name: Hoyde
-    dtype: NUMBER
-    formatter: Hoyde
-    extra:
-
   - name: SenterlinjePosisjon
     dtype: SDO_GEOMETRY
     formatter: SenterlinjePosisjon
-    extra: NOT NULL
+    extra:
     spatial_metadata:
       dimension: 3
       srid: 25833
@@ -70,11 +57,6 @@ columns:
     dtype: NUMBER
     formatter: Delstrekning
     extra:
-
-  - name: StrekningsBeskrivelse
-    dtype: VARCHAR(255)
-    formatter: StrekningReferanse
-    extra: NOT NULL
 
   - name: Meter
     dtype: NUMBER
