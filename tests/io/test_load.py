@@ -18,9 +18,9 @@ def test_load_image():
     # Corrupted .jpg file
     with pytest.raises(AssertionError):
         load_image(os.path.join(IMG_DIR, "corrupted.jpg"))
+
     # No EXIF data
-    with pytest.raises(AssertionError):
-        load_image(os.path.join(IMG_DIR, "test_2.jpg"))
+    load_image(os.path.join(IMG_DIR, "test_2.jpg"))
 
     img, exif = load_image(os.path.join(IMG_DIR, "åæø", "test_1.jpg"), read_exif=False)
     assert exif is None, f"Expected exif to be None when read_exif=False"

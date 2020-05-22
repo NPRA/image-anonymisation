@@ -18,7 +18,7 @@ columns:
   - name: Posisjon
     dtype: SDO_GEOMETRY
     formatter: Posisjon_2d
-    extra: NOT NULL
+    extra:
     spatial_metadata:
       dimension: 2
       srid: 4326
@@ -27,6 +27,14 @@ columns:
     dtype: NUMBER
     formatter: Hoyde
     extra:
+
+  - name: SenterlinjePosisjon
+    dtype: SDO_GEOMETRY
+    formatter: SenterlinjePosisjon
+    extra:
+    spatial_metadata:
+      dimension: 3
+      srid: 25833
 
   - name: FylkeNummer
     dtype: NUMBER
@@ -48,10 +56,20 @@ columns:
     formatter: Vegnummer
     extra: NOT NULL
 
-  - name: StrekningsBeskrivelse
+  - name: HP
     dtype: VARCHAR(255)
-    formatter: StrekningReferanse
-    extra: NOT NULL
+    formatter: HP
+    extra:
+
+  - name: Strekning
+    dtype: NUMBER
+    formatter: Strekning
+    extra:
+
+  - name: Delstrekning
+    dtype: NUMBER
+    formatter: Delstrekning
+    extra:
 
   - name: Meter
     dtype: NUMBER
@@ -106,4 +124,9 @@ columns:
   - name: Versjon
     dtype: VARCHAR(31)
     formatter: Versjon
+    extra:
+
+  - name: ExifKvalitet
+    dtype: NUMBER
+    formatter: ExifKvalitet
     extra:

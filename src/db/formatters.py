@@ -52,6 +52,9 @@ def to_position(wkt_position_string, dim):
 
 
 def to_height(wkt_position_string):
+    if wkt_position_string is None:
+        return None
+
     try:
         matches = WKT_GEOMETRY_REGEX.findall(wkt_position_string)
         height = to_number(matches[0][3])
@@ -208,3 +211,7 @@ def VegIdentitet(json_data):
 
 def Versjon(json_data):
     return json_data.get("versjon", None)
+
+
+def ExifKvalitet(json_data):
+    return to_number(json_data.get("exif_kvalitet", None))

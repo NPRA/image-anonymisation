@@ -8,6 +8,7 @@ import multiprocessing
 
 from src.Workers import SaveWorker, EXIFWorker
 from src.io.TreeWalker import Paths
+from src.io.exif_util import EXIF_TEMPLATE
 
 from tests.helpers import check_file_exists
 
@@ -105,43 +106,4 @@ def test_EXIFWorker(get_config, get_image_info, remote_json, local_json, enable_
     check_file_exists(paths.output_json, invert=not remote_json)
 
 
-EXPECTED_EXIF_KEYS = {
-    "exif_tid",
-    "exif_dato",
-    "exif_speed",
-    "exif_heading",
-    "exif_gpsposisjon",
-    "exif_strekningsnavn",
-    "exif_fylke",
-    "exif_vegkat",
-    "exif_vegstat",
-    "exif_vegnr",
-    "exif_hp",
-    "exif_strekning",
-    "exif_delstrekning",
-    "exif_meter",
-    "exif_feltkode",
-    "exif_mappenavn",
-    "exif_filnavn",
-    "exif_strekningreferanse",
-    "exif_imageproperties",
-    "exif_reflinkid",
-    "exif_reflinkposisjon",
-    "exif_reflinkinfo",
-    "exif_xptitle",
-    "exif_roadident",
-    "exif_roll",
-    "exif_pitch",
-    "exif_geoidalseparation",
-    "exif_northrmserror",
-    "exif_eastrmserror",
-    "exif_downrmserror",
-    "exif_rollrmserror",
-    "exif_pitchrmserror",
-    "exif_headingrmserror",
-    "bildeid",
-    "detekterte_objekter",
-    "relative_input_dir",
-    "versjon",
-    "senterlinjeposisjon"
-}
+EXPECTED_EXIF_KEYS = set(EXIF_TEMPLATE.keys())

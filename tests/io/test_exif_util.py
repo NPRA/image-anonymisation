@@ -4,43 +4,7 @@ import numpy as np
 
 from src.io import exif_util
 
-EXPECTED_KEYS = {
-    "exif_tid",
-    "exif_dato",
-    "exif_speed",
-    "exif_heading",
-    "exif_gpsposisjon",
-    "exif_strekningsnavn",
-    "exif_fylke",
-    "exif_vegkat",
-    "exif_vegstat",
-    "exif_vegnr",
-    "exif_hp",
-    "exif_strekning",
-    "exif_delstrekning",
-    "exif_meter",
-    "exif_feltkode",
-    "exif_mappenavn",
-    "exif_filnavn",
-    "exif_strekningreferanse",
-    "exif_imageproperties",
-    "exif_reflinkid",
-    "exif_reflinkposisjon",
-    "exif_reflinkinfo",
-    "exif_xptitle",
-    "exif_roadident",
-    "exif_roll",
-    "exif_pitch",
-    "exif_geoidalseparation",
-    "exif_northrmserror",
-    "exif_eastrmserror",
-    "exif_downrmserror",
-    "exif_rollrmserror",
-    "exif_pitchrmserror",
-    "exif_headingrmserror",
-    "bildeid",
-    "senterlinjeposisjon"
-}
+EXPECTED_KEYS = set(exif_util.EXIF_TEMPLATE.keys())
 
 
 def test_exif_from_file(get_tmp_data_dir):
@@ -53,8 +17,9 @@ def test_exif_from_file(get_tmp_data_dir):
 def test_get_exif_bad_img(get_tmp_data_dir):
     tmp_dir = get_tmp_data_dir(subdirs=["fake"])
     image_path = os.path.join(tmp_dir, "fake", "test_2.jpg")
-    with pytest.raises(AssertionError):
-        exif_util.exif_from_file(image_path)
+
+    exif = exif_util.exif_from_file(image_path)
+    assert exif["exif_kvalitet"] == exif_util.EXIF_QUALITIES["nonexistent"]
 
 
 def test_get_detected_objects_dict():

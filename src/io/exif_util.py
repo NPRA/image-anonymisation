@@ -1,7 +1,6 @@
 """From: https://github.com/vegvesen/vegbilder/blob/master/trinn1_lagmetadata/vegbilder_lesexif.py"""
 import os
 import re
-import uuid
 import json
 import iso8601
 import xmltodict
@@ -9,6 +8,7 @@ import xml.dom.minidom
 import numpy as np
 from PIL import Image
 from PIL.ExifTags import TAGS
+from datetime import datetime
 
 import config
 from src.Logger import LOGGER
@@ -44,6 +44,55 @@ ID_REMOVE_FROM_FILENAME_PATTERN = re.compile(r"_f\d+")
 #: Pattern for extracting strekning/delstrekning from strings on the form `SxDy`
 STREKNING_PATTERN = re.compile(r"S(\d+)D(\d+)\b")
 
+EXIF_QUALITIES = {
+    "good": "2",
+    "missing_values": "1",
+    "nonexistent": "0",
+}
+
+#: Template dictionary for the EXIF contents.
+EXIF_TEMPLATE = {
+    "exif_tid": None,
+    "exif_dato": None,
+    "exif_speed": None,
+    "exif_heading": None,
+    "exif_gpsposisjon": None,
+    "exif_strekningsnavn": None,
+    "exif_fylke": None,
+    "exif_vegkat": None,
+    "exif_vegstat": None,
+    "exif_vegnr": None,
+    "exif_hp": None,
+    "exif_strekning": None,
+    "exif_delstrekning": None,
+    "exif_meter": None,
+    "exif_feltkode": None,
+    "exif_mappenavn": None,
+    "exif_filnavn": None,
+    "exif_strekningreferanse": None,
+    "exif_imageproperties": None,
+    "exif_reflinkinfo": None,
+    "exif_reflinkid": None,
+    "exif_reflinkposisjon": None,
+    "exif_roadident": None,
+    "exif_roll": None,
+    "exif_pitch": None,
+    "exif_geoidalseparation": None,
+    "exif_northrmserror": None,
+    "exif_eastrmserror": None,
+    "exif_downrmserror": None,
+    "exif_rollrmserror": None,
+    "exif_pitchrmserror": None,
+    "exif_headingrmserror": None,
+    "exif_xptitle": None,
+    "exif_kvalitet": None,
+    "bildeid": None,
+    "senterlinjeposisjon": None,
+    "detekterte_objekter": None,
+    "versjon": None,
+    "relative_input_dir": None,
+}
+
 
 def exif_from_file(image_path):
     """
@@ -55,7 +104,7 @@ def exif_from_file(image_path):
     :rtype: dict
     """
     pil_img = Image.open(image_path)
-    exif = get_exif(pil_img)
+    exif = get_exif(pil_img, image_path=image_path)
     return exif
 
 
@@ -78,7 +127,7 @@ def get_detected_objects_dict(mask_results):
     return objs
 
 
-def get_exif(img):
+def get_exif(img, image_path=None):
     """
     Parse the EXIF data from `img`.
 
@@ -87,32 +136,33 @@ def get_exif(img):
     :return: EXIF data
     :rtype: dict
     """
+    # Make a copy of the template dictionary. Values from the EXIF header will be inserted into this dict.
+    parsed_exif = EXIF_TEMPLATE.copy()
+
+    # Get the EXIF data
     exif = img._getexif()
-    assert exif is not None, f"No EXIF data found for image."
 
-    # Convert the integer keys in the exif dict to text
-    labeled = label_exif(exif)
-
-    # Process the `ImageProperties` XML
-    image_properties_xml = labeled.get("ImageProperties", None)
-    assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
-    exif_data = process_image_properties(image_properties_xml)
-
-    # Process the `ReflinkInfo` XML if it is available
-    reflink_info_xml = labeled.get("ReflinkInfo", None)
-    reflink_info = process_reflink_info(reflink_info_xml)
-    exif_data = dict(exif_data, **reflink_info)
-
-    # Title of image.
-    XPTitle = labeled.get("XPTitle", b"").decode("utf16")
-    exif_data['exif_xptitle'] = XPTitle
+    if exif is not None:
+        # Convert the integer keys in the exif dict to text
+        labeled = label_exif(exif)
+        # Process the `ImageProperties` XML
+        image_properties_xml = labeled.get("ImageProperties", None)
+        assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
+        process_image_properties(image_properties_xml, parsed_exif)
+        # Process the `ReflinkInfo` XML if it is available
+        reflink_info_xml = labeled.get("ReflinkInfo", None)
+        process_reflink_info(reflink_info_xml, parsed_exif)
+        # Title of image.
+        XPTitle = labeled.get("XPTitle", b"").decode("utf16")
+        parsed_exif["exif_xptitle"] = XPTitle
+    else:
+        LOGGER.warning(__name__, "No EXIF data found for image. Attempting to reconstruct data from image path.")
+        if image_path is not None:
+            get_metadata_from_path(image_path, parsed_exif)
 
     # Get a deterministic ID from the exif data.
-    exif_data["bildeid"] = get_deterministic_id(exif_data)
-
-    exif_data["senterlinjeposisjon"] = None
-
-    return exif_data
+    parsed_exif["bildeid"] = get_deterministic_id(parsed_exif)
+    return parsed_exif
 
 
 def get_deterministic_id(exif):
@@ -125,6 +175,9 @@ def get_deterministic_id(exif):
     :return: Deterministic unique ID computed from the EXIF metadata
     :rtype: str
     """
+    if exif["exif_tid"] is None or exif["exif_filnavn"] is None:
+        return None
+
     timestamp = iso8601.parse_date(exif["exif_tid"]).strftime(ID_TIMESTAMP_FORMATTER)
     filename = os.path.splitext(exif["exif_filnavn"])[0]
     # Remove "feltkode" from filename.
@@ -146,7 +199,7 @@ def label_exif(exif):
     return {TAGS.get(key): value for key, value in exif.items()}
 
 
-def process_image_properties(contents):
+def process_image_properties(contents, parsed_exif):
     """
     Process the `ImageProperties` XML from the EXIF header
 
@@ -159,9 +212,16 @@ def process_image_properties(contents):
     contents = redact_image_properties(contents)
     image_properties = xmltodict.parse(contents)["ImageProperties"]
 
+    # Set a "default" quality. This will be adjusted if we encounter missing values
+    quality = EXIF_QUALITIES["good"]
+
     # Position
-    geo_tag = image_properties["GeoTag"]
-    ewkt = f"srid=4326;POINT Z( {geo_tag['dLongitude']} {geo_tag['dLatitude']} {geo_tag['dAltitude']} )"
+    geo_tag = image_properties.get("GeoTag", None)
+    if geo_tag is not None:
+        ewkt = f"srid=4326;POINT Z( {geo_tag['dLongitude']} {geo_tag['dLatitude']} {geo_tag['dAltitude']} )"
+    else:
+        ewkt = None
+        quality = EXIF_QUALITIES["missing_values"]
 
     # Speed and heading
     heading = image_properties.get("Heading", None)
@@ -193,28 +253,27 @@ def process_image_properties(contents):
 
     hp, strekning, delstrekning = process_strekning(image_properties["VegComValues"]["VCHP"])
 
-    out = {
-        "exif_tid": timestamp,
-        "exif_dato": date,
-        "exif_speed": speed,
-        "exif_heading": heading,
-        "exif_gpsposisjon": ewkt,
-        "exif_strekningsnavn": image_properties["VegComValues"]["VCArea"],
-        "exif_fylke": image_properties["VegComValues"]["VCCountyNo"],
-        "exif_vegkat": exif_vegkat,
-        "exif_vegstat": exif_vegstat,
-        "exif_vegnr": exif_vegnr,
-        "exif_hp": hp,
-        "exif_strekning": strekning,
-        "exif_delstrekning": delstrekning,
-        "exif_meter": image_properties["VegComValues"]["VCMeter"],
-        "exif_feltkode": image_properties["VegComValues"]["VCLane"],
-        "exif_mappenavn": "/".join(mapper[0:-1]),
-        "exif_filnavn": mapper[-1],
-        "exif_strekningreferanse": "/".join(mapper[-4:-2]),
-        "exif_imageproperties": contents
-    }
-    return out
+    # Set values
+    parsed_exif["exif_tid"] = timestamp
+    parsed_exif["exif_dato"] = date
+    parsed_exif["exif_speed"] = speed
+    parsed_exif["exif_heading"] = heading
+    parsed_exif["exif_gpsposisjon"] = ewkt
+    parsed_exif["exif_strekningsnavn"] = image_properties["VegComValues"]["VCArea"]
+    parsed_exif["exif_fylke"] = image_properties["VegComValues"]["VCCountyNo"]
+    parsed_exif["exif_vegkat"] = exif_vegkat
+    parsed_exif["exif_vegstat"] = exif_vegstat
+    parsed_exif["exif_vegnr"] = exif_vegnr
+    parsed_exif["exif_hp"] = hp
+    parsed_exif["exif_strekning"] = strekning
+    parsed_exif["exif_delstrekning"] = delstrekning
+    parsed_exif["exif_meter"] = image_properties["VegComValues"]["VCMeter"]
+    parsed_exif["exif_feltkode"] = image_properties["VegComValues"]["VCLane"]
+    parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
+    parsed_exif["exif_filnavn"] = mapper[-1]
+    parsed_exif["exif_strekningreferanse"] = "/".join(mapper[-4:-2])
+    parsed_exif["exif_imageproperties"] = contents
+    parsed_exif["exif_kvalitet"] = quality
 
 
 def process_strekning(vchp):
@@ -260,7 +319,7 @@ def redact_image_properties(contents):
     return contents
 
 
-def process_reflink_info(contents):
+def process_reflink_info(contents, parsed_exif):
     """
     Process the `ReflinkInfo` XML from the EXIF header.
 
@@ -270,58 +329,99 @@ def process_reflink_info(contents):
     :return: Relevant information extracted from `contents`
     :rtype: dict
     """
-    out = {
-        "exif_reflinkinfo": None,
-        "exif_reflinkid": None,
-        "exif_reflinkposisjon": None,
-        "exif_roadident": None,
-        "exif_roll": None,
-        "exif_pitch": None,
-        "exif_geoidalseparation": None,
-        "exif_northrmserror": None,
-        "exif_eastrmserror": None,
-        "exif_downrmserror": None,
-        "exif_rollrmserror": None,
-        "exif_pitchrmserror": None,
-        "exif_headingrmserror": None,
-    }
-
     if contents is None:
         # If we got None, it means that the EXIF header did not contain  the `ReflinkInfo` XML.
         # So just return a dict with the required keys with None values.
-        return out
+        return
 
     # Prettify XML
     contents = to_pretty_xml(contents)
     # Set raw contents
-    out["exif_reflinkinfo"] = contents
+    parsed_exif["exif_reflinkinfo"] = contents
     # Parse XML
     parsed_contents = xmltodict.parse(contents)
 
     # Format of March 2020 update
     if "ReflinkInfo" in parsed_contents:
         reflink_info = parsed_contents["ReflinkInfo"]
-        out["exif_reflinkid"] = reflink_info["ReflinkId"]
-        out["exif_reflinkposisjon"] = reflink_info["ReflinkPosition"]
+        parsed_exif["exif_reflinkid"] = reflink_info["ReflinkId"]
+        parsed_exif["exif_reflinkposisjon"] = reflink_info["ReflinkPosition"]
 
     # Format of May 2020 update
     elif "AdditionalInfoNorway2" in parsed_contents:
         # From RoadInfo
         road_info = parsed_contents["AdditionalInfoNorway2"]["RoadInfo"]
-        out["exif_reflinkid"] = road_info["ReflinkId"]
-        out["exif_reflinkposisjon"] = road_info["ReflinkPosition"]
-        out["exif_roadident"] = road_info["RoadIdent"]
+        parsed_exif["exif_reflinkid"] = road_info["ReflinkId"]
+        parsed_exif["exif_reflinkposisjon"] = road_info["ReflinkPosition"]
+        parsed_exif["exif_roadident"] = road_info["RoadIdent"]
 
         # From GnssInfo
         gnss_info = parsed_contents["AdditionalInfoNorway2"]["GnssInfo"]
-        out["exif_roll"] = gnss_info["Roll"]
-        out["exif_pitch"] = gnss_info["Pitch"]
-        out["exif_geoidalseparation"] = gnss_info["GeoidalSeparation"]
-        out["exif_northrmserror"] = gnss_info["NorthRmsError"]
-        out["exif_eastrmserror"] = gnss_info["EastRmsError"]
-        out["exif_downrmserror"] = gnss_info["DownRmsError"]
-        out["exif_rollrmserror"] = gnss_info["RollRmsError"]
-        out["exif_pitchrmserror"] = gnss_info["PitchRmsError"]
-        out["exif_headingrmserror"] = gnss_info["HeadingRmsError"]
+        parsed_exif["exif_roll"] = gnss_info["Roll"]
+        parsed_exif["exif_pitch"] = gnss_info["Pitch"]
+        parsed_exif["exif_geoidalseparation"] = gnss_info["GeoidalSeparation"]
+        parsed_exif["exif_northrmserror"] = gnss_info["NorthRmsError"]
+        parsed_exif["exif_eastrmserror"] = gnss_info["EastRmsError"]
+        parsed_exif["exif_downrmserror"] = gnss_info["DownRmsError"]
+        parsed_exif["exif_rollrmserror"] = gnss_info["RollRmsError"]
+        parsed_exif["exif_pitchrmserror"] = gnss_info["PitchRmsError"]
+        parsed_exif["exif_headingrmserror"] = gnss_info["HeadingRmsError"]
 
-    return out
+
+def get_metadata_from_path(image_path, parsed_exif):
+    # Set the quality
+    parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["nonexistent"]
+
+    # Use os.stat to get a timestamp.
+    file_stat = os.stat(image_path)
+    time_created = datetime.fromtimestamp(min([file_stat.st_mtime, file_stat.st_ctime]))
+    parsed_exif["exif_tid"] = time_created.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    parsed_exif["exif_dato"] = time_created.strftime("%Y-%m-%d")
+
+    # Process the elements in the image path
+    path_elements = image_path.split(os.sep)
+    for elem in path_elements:
+        _get_metadata_from_path_element(elem, parsed_exif)
+
+    # Set the filename
+    parsed_exif["exif_filnavn"] = path_elements[-1]
+
+
+HP_REGEX = re.compile(r"hp(\d+)", re.IGNORECASE)
+FELT_REGEX = re.compile(r"f(\d)", re.IGNORECASE)
+VEG_REGEX = re.compile(f"([{''.join(LOVLIG_VEGKATEGORI)}])([{''.join(LOVLIG_VEGSTATUS)}])(\d+)", re.IGNORECASE)
+METER_REGEX = re.compile(r"(?<!k)m(\d+)")
+KILOMETER_REGEX = re.compile(r"km(\d{2})[_,\.](\d{3})")
+FYLKE_REGEX = re.compile(r"^(\d{2})\b")
+LOVLIGE_FYLKER = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "14", "15", "16", "17", "18",
+                  "19", "20", "50"]
+
+
+def _get_metadata_from_path_element(elem, parsed_exif):
+    hp_matches = HP_REGEX.findall(elem)
+    if hp_matches:
+        parsed_exif["exif_hp"] = hp_matches[0]
+
+    fylke_matches = FYLKE_REGEX.findall(elem)
+    if fylke_matches:
+        for m in fylke_matches:
+            if m in LOVLIGE_FYLKER:
+                parsed_exif["exif_fylke"] = m
+
+    felt_matches = FELT_REGEX.findall(elem)
+    if felt_matches:
+        parsed_exif["exif_feltkode"] = felt_matches[0][0]
+
+    veg_matches = VEG_REGEX.match(elem)
+    if veg_matches:
+        parsed_exif["exif_vegkat"] = veg_matches[0][0].upper()
+        parsed_exif["exif_vegstat"] = veg_matches[0][1].upper()
+        parsed_exif["exif_vegnr"] = veg_matches[0][2:]
+        
+    meter_match = METER_REGEX.findall(elem)
+    kilometer_match = KILOMETER_REGEX.findall(elem)
+    if meter_match:
+        parsed_exif["exif_meter"] = str(int(meter_match[0]))
+    elif kilometer_match:
+        meter = 1000 * int(kilometer_match[0][0]) + int(kilometer_match[0][1])
+        parsed_exif["exif_meter"] = str(meter)
