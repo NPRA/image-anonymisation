@@ -277,9 +277,6 @@ columns:
 
 Note that the example above expects to find the functions `uuid`, `timestamp` and `position`, in `src.db.formatters`.
 
-See [test_anonymisering_vegbilder.yml](config/db_tables/test_anonymisering_vegbilder.yml) and
-[test_anonymisering_vegbilder_2d.yml](config/db_tables/test_anonymisering_vegbilder_2d.yml) for other examples.
-
 ### Writing to the database
 When the parameters above have been configured correctly, the EXIF data can be written to the database by using the `json_to_db` script:
 ```
