@@ -58,217 +58,26 @@
 </dl>
 </dd></dl>
 
-<span class="target" id="module-config.config"></span><p>Configuration variables.</p>
-<dl class="data">
-<dt id="config.config.draw_mask">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">draw_mask</code><em class="property"> = True</em><a class="headerlink" href="#config.config.draw_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the mask to the output image?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.delete_input">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">delete_input</code><em class="property"> = False</em><a class="headerlink" href="#config.config.delete_input" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete the original image from the input directory when the masking is completed?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.force_remask">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">force_remask</code><em class="property"> = False</em><a class="headerlink" href="#config.config.force_remask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Recompute masks even though a .webp file exists in the input folder.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.lazy_paths">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">lazy_paths</code><em class="property"> = False</em><a class="headerlink" href="#config.config.lazy_paths" title="Permalink to this definition">¶</a></dt>
-<dd><p>When <cite>lazy_paths = True</cite>, traverse the file tree during the masking process.
-Otherwise, all paths will be identified and stored before the masking starts.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.file_access_retry_seconds">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">file_access_retry_seconds</code><em class="property"> = 10</em><a class="headerlink" href="#config.config.file_access_retry_seconds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of seconds to wait before (re)trying to access a file/directory which cannot currently be reached. This
-applies to both reading input files, and writing output files.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.file_access_timeout_seconds">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">file_access_timeout_seconds</code><em class="property"> = 60</em><a class="headerlink" href="#config.config.file_access_timeout_seconds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Total number of seconds to wait before giving up on accessing a file/directory which cannot currently be reached.
-This also applies to both reading input files, and writing output files.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.datetime_format">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">datetime_format</code><em class="property"> = '%Y-%m-%d %H.%M.%S'</em><a class="headerlink" href="#config.config.datetime_format" title="Permalink to this definition">¶</a></dt>
-<dd><p>Timestamp format. See <a class="reference external" href="https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior">https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior</a> for more
-information.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.log_file_name">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">log_file_name</code><em class="property"> = '{datetime} {hostname}.log'</em><a class="headerlink" href="#config.config.log_file_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Name of the log file. <cite>{datetime}</cite> will be replaced with a timestamp formatted as <cite>datetime_format</cite>. <cite>{hostname}</cite>
-will be replaced with the host name.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.log_level">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">log_level</code><em class="property"> = 'DEBUG'</em><a class="headerlink" href="#config.config.log_level" title="Permalink to this definition">¶</a></dt>
-<dd><p>Logging level for the application. This controls the log level for terminal logging and file logging (if it is
-enabled). Must be one of {“DEBUG”, “INFO”, “WARNING”, “ERROR”}.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.remote_json">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">remote_json</code><em class="property"> = True</em><a class="headerlink" href="#config.config.remote_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the EXIF .json file to the output (remote) directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.local_json">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">local_json</code><em class="property"> = False</em><a class="headerlink" href="#config.config.local_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the EXIF .json file to the input (local) directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.archive_json">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">archive_json</code><em class="property"> = False</em><a class="headerlink" href="#config.config.archive_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the EXIF .json file to the archive directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.remote_mask">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">remote_mask</code><em class="property"> = True</em><a class="headerlink" href="#config.config.remote_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write mask file to the output (remote) directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.local_mask">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">local_mask</code><em class="property"> = False</em><a class="headerlink" href="#config.config.local_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the mask file to the input (local) directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.archive_mask">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">archive_mask</code><em class="property"> = False</em><a class="headerlink" href="#config.config.archive_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write mask file to the archive directory?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.enable_async">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">enable_async</code><em class="property"> = True</em><a class="headerlink" href="#config.config.enable_async" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enable asynchronous post-processing? When True, the file exports (anonymised image, mask file and JSON file) will be
-executed asynchronously in order to increase processing speed.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.max_num_async_workers">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">max_num_async_workers</code><em class="property"> = 2</em><a class="headerlink" href="#config.config.max_num_async_workers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maximum number of asynchronous workers allowed to be active simultaneously. Should be &lt;= (CPU core count - 1)</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.model_type">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">model_type</code><em class="property"> = 'Medium'</em><a class="headerlink" href="#config.config.model_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Type of masking model. Currently, there are three available models with varying speed and accuracy.
-The slowest model produces the most accurate masks, while the masks from the medium model are slightly worse.
-The masks from the “Fast” model are currently not recommended due to poor quality. Must be either “Slow”, “Medium” or
-“Fast”. “Medium” is recommended.
-Default: “Medium”</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.mask_dilation_pixels">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">mask_dilation_pixels</code><em class="property"> = 4</em><a class="headerlink" href="#config.config.mask_dilation_pixels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered
-by the corresponding mask. Set <cite>mask_dilation_pixels = 0</cite> to disable mask dilation.
-Default: <cite>4</cite></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.max_num_pixels">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">max_num_pixels</code><em class="property"> = 50000000.0</em><a class="headerlink" href="#config.config.max_num_pixels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maximum number of pixels in images to be processed by the masking model. If the number of pixels exceeds this value,
-it will be resized before the masker is applied. This will NOT change the resolution of the output image.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.mask_color">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">mask_color</code><em class="property"> = None</em><a class="headerlink" href="#config.config.mask_color" title="Permalink to this definition">¶</a></dt>
-<dd><p>“RGB tuple (0-255) indicating the masking color. Setting this option will override the
-colors specified below. Example: Setting <cite>mask_color = (50, 50, 50)</cite> will make all masks
-dark gray.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.blur">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">blur</code><em class="property"> = 15</em><a class="headerlink" href="#config.config.blur" title="Permalink to this definition">¶</a></dt>
-<dd><p>Blurring coefficient (1-100) which specifies the degree of blurring to apply within the
-mask. When this parameter is specified, the image will be blurred, and not masked with a
-specific color. Set <cite>blur = None</cite> to disable blurring, and use colored masks instead.
-Default: <cite>15</cite></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.gray_blur">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">gray_blur</code><em class="property"> = True</em><a class="headerlink" href="#config.config.gray_blur" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the image to grayscale before blurring? (Ignored if blurring is disabled)
-Default: <cite>True</cite></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.normalized_gray_blur">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">normalized_gray_blur</code><em class="property"> = True</em><a class="headerlink" href="#config.config.normalized_gray_blur" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark
-colors. NOTE: Requires <cite>gray_blur=True</cite>
-Default: True</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.uncaught_exception_email">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">uncaught_exception_email</code><em class="property"> = False</em><a class="headerlink" href="#config.config.uncaught_exception_email" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an email if the program exits abnormally due to an uncaught exception.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.processing_error_email">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">processing_error_email</code><em class="property"> = False</em><a class="headerlink" href="#config.config.processing_error_email" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an email if a processing error is encountered, but the program is able to continue</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.finished_email">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">finished_email</code><em class="property"> = False</em><a class="headerlink" href="#config.config.finished_email" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an email when the anonymisation finishes normally.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.write_exif_to_db">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">write_exif_to_db</code><em class="property"> = True</em><a class="headerlink" href="#config.config.write_exif_to_db" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the EXIF data to the database?</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.db_max_n_accumulated_rows">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">db_max_n_accumulated_rows</code><em class="property"> = 2</em><a class="headerlink" href="#config.config.db_max_n_accumulated_rows" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maximum number of rows to accumulate locally before writing all accumulated rows to the database.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="config.config.db_folder_name">
-<code class="sig-prename descclassname">config.config.</code><code class="sig-name descname">db_folder_name</code><em class="property"> = 'Vegbilder/{fylke}/{aar}/{strekningreferanse}/F{feltkode}_{aar}_{maaned}_{dag}'</em><a class="headerlink" href="#config.config.db_folder_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format of the “Mappenavn” column in the database.</p>
-</dd></dl>
-
 </div>
 <div class="section" id="db">
 <h2>db<a class="headerlink" href="#db" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="module-src.db.DatabaseClient">
 <span id="db-databaseclient"></span><h3>db.DatabaseClient<a class="headerlink" href="#module-src.db.DatabaseClient" title="Permalink to this headline">¶</a></h3>
+<dl class="exception">
+<dt id="src.db.DatabaseClient.DatabaseError">
+<em class="property">exception </em><code class="sig-prename descclassname">src.db.DatabaseClient.</code><code class="sig-name descname">DatabaseError</code><a class="headerlink" href="#src.db.DatabaseClient.DatabaseError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic exception for database errors.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="src.db.DatabaseClient.DatabaseLimitExceeded">
+<em class="property">exception </em><code class="sig-prename descclassname">src.db.DatabaseClient.</code><code class="sig-name descname">DatabaseLimitExceeded</code><a class="headerlink" href="#src.db.DatabaseClient.DatabaseLimitExceeded" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception which indicates that a limit is exceeded in the DatabaseClient.</p>
+</dd></dl>
+
 <dl class="class">
 <dt id="src.db.DatabaseClient.DatabaseClient">
-<em class="property">class </em><code class="sig-prename descclassname">src.db.DatabaseClient.</code><code class="sig-name descname">DatabaseClient</code><span class="sig-paren">(</span><em class="sig-param">max_n_accumulated_rows=8</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.db.DatabaseClient.</code><code class="sig-name descname">DatabaseClient</code><span class="sig-paren">(</span><em class="sig-param">max_n_accumulated_rows=8</em>, <em class="sig-param">max_n_errors=1000</em>, <em class="sig-param">max_cache_size=1000</em>, <em class="sig-param">table_name=None</em>, <em class="sig-param">enable_cache=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class used to handle database writes. Connection parameters are specified in <cite>src.db.db_config</cite>. This class can also
 be instantiated as a context manager.</p>
 <dl class="field-list simple">
@@ -318,8 +127,8 @@ written to the database. The buffer will then be cleared.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="src.db.DatabaseClient.DatabaseClient.insert_rows">
-<code class="sig-name descname">insert_rows</code><span class="sig-paren">(</span><em class="sig-param">rows</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.insert_rows" title="Permalink to this definition">¶</a></dt>
+<dt id="src.db.DatabaseClient.DatabaseClient.insert_or_update_rows">
+<code class="sig-name descname">insert_or_update_rows</code><span class="sig-paren">(</span><em class="sig-param">rows</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.insert_or_update_rows" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert <cite>rows</cite> into the database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -328,6 +137,21 @@ written to the database. The buffer will then be cleared.</p>
 </dl>
 <p><cite>src.db.DatabaseClient.create_row</cite>
 :type rows: list of dict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.db.DatabaseClient.DatabaseClient.handle_errors">
+<code class="sig-name descname">handle_errors</code><span class="sig-paren">(</span><em class="sig-param">errors</em>, <em class="sig-param">rows</em>, <em class="sig-param">action='writing to'</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.DatabaseClient.handle_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log errors caused when running <cite>cursor.executemany</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>errors</strong> (<em>list</em>) – Errors from <cite>cursor.getbatcherrors</cite></p></li>
+<li><p><strong>rows</strong> (<em>list of dict</em>) – Rows which caused the errors</p></li>
+<li><p><strong>action</strong> (<em>str</em>) – Optional database action for the error message.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -345,12 +169,34 @@ written to the database. The buffer will then be cleared.</p>
 cache files will be deleted.</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="src.db.DatabaseClient.split_errors_on_code">
+<code class="sig-prename descclassname">src.db.DatabaseClient.</code><code class="sig-name descname">split_errors_on_code</code><span class="sig-paren">(</span><em class="sig-param">errors</em>, <em class="sig-param">code</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.DatabaseClient.split_errors_on_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split the list of database errors into two lists. The first list will contain errors with error code <cite>code</cite>.
+The other list will contain the other errors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>errors</strong> (<em>list</em>) – Database errors</p></li>
+<li><p><strong>code</strong> (<em>str</em>) – Code to split on. E.g. “ORA-00001” for failed uniqueness constraint</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Two lists. The first list will contain errors with error code <cite>code</cite>. The other list will contain the
+other errors</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple of list</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-src.db.geometry">
 <span id="db-geometry"></span><h3>db.geometry<a class="headerlink" href="#module-src.db.geometry" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="src.db.geometry.SDOGeometry">
-<em class="property">class </em><code class="sig-prename descclassname">src.db.geometry.</code><code class="sig-name descname">SDOGeometry</code><span class="sig-paren">(</span><em class="sig-param">gtype=None</em>, <em class="sig-param">srid=None</em>, <em class="sig-param">point=None</em>, <em class="sig-param">elem_info=None</em>, <em class="sig-param">ordinates=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.geometry.SDOGeometry" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.db.geometry.</code><code class="sig-name descname">SDOGeometry</code><span class="sig-paren">(</span><em class="sig-param">gtype=None</em>, <em class="sig-param">srid=None</em>, <em class="sig-param">point=None</em>, <em class="sig-param">elem_info=None</em>, <em class="sig-param">ordinates=None</em>, <em class="sig-param">is_null=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.geometry.SDOGeometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Intermediate class to represent SDO_GEOMETRY objects. If an object of this class is inserted with a
 <cite>src.db.DatabaseClient.connect</cite> connection, it will be converted to an SDO_GEOMETRY object before insertion.
 Conversion is done using the converter returned by <cite>src.db.geometry.get_geometry_converter</cite>.
@@ -443,7 +289,7 @@ contained in a file named <cite>&lt;name&gt;.yml</cite> located in <cite>config/
 <dl class="method">
 <dt id="src.db.Table.Table.create_row">
 <code class="sig-name descname">create_row</code><span class="sig-paren">(</span><em class="sig-param">json_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#src.db.Table.Table.create_row" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a database row from the given <cite>json_dict</cite>. See <cite>src.db.setup_table</cite> for the list of columns.</p>
+<dd><p>Create a database row from the given <cite>json_dict</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>json_dict</strong> (<em>dict</em>) – EXIF data</p>
@@ -514,6 +360,18 @@ contained in a file named <cite>&lt;name&gt;.yml</cite> located in <cite>config/
 <dd><p>Pattern to remove from the filename when creating the deterministic id</p>
 </dd></dl>
 
+<dl class="data">
+<dt id="src.io.exif_util.STREKNING_PATTERN">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">STREKNING_PATTERN</code><em class="property"> = re.compile('S(\\d+)D(\\d+)\\b')</em><a class="headerlink" href="#src.io.exif_util.STREKNING_PATTERN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for extracting strekning/delstrekning from strings on the form <cite>SxDy</cite></p>
+</dd></dl>
+
+<dl class="data">
+<dt id="src.io.exif_util.EXIF_TEMPLATE">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">EXIF_TEMPLATE</code><em class="property"> = {'bildeid': None, 'detekterte_objekter': None, 'exif_dato': None, 'exif_delstrekning': None, 'exif_downrmserror': None, 'exif_eastrmserror': None, 'exif_feltkode': None, 'exif_filnavn': None, 'exif_fylke': None, 'exif_geoidalseparation': None, 'exif_gpsposisjon': None, 'exif_heading': None, 'exif_headingrmserror': None, 'exif_hp': None, 'exif_imageproperties': None, 'exif_kvalitet': None, 'exif_mappenavn': None, 'exif_meter': None, 'exif_northrmserror': None, 'exif_pitch': None, 'exif_pitchrmserror': None, 'exif_reflinkid': None, 'exif_reflinkinfo': None, 'exif_reflinkposisjon': None, 'exif_roadident': None, 'exif_roll': None, 'exif_rollrmserror': None, 'exif_speed': None, 'exif_strekning': None, 'exif_strekningreferanse': None, 'exif_strekningsnavn': None, 'exif_tid': None, 'exif_vegkat': None, 'exif_vegnr': None, 'exif_vegstat': None, 'exif_xptitle': None, 'relative_input_dir': None, 'senterlinjeposisjon': None, 'versjon': None}</em><a class="headerlink" href="#src.io.exif_util.EXIF_TEMPLATE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template dictionary for the EXIF contents.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="src.io.exif_util.exif_from_file">
 <code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">exif_from_file</code><span class="sig-paren">(</span><em class="sig-param">image_path</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.exif_from_file" title="Permalink to this definition">¶</a></dt>
@@ -533,7 +391,7 @@ contained in a file named <cite>&lt;name&gt;.yml</cite> located in <cite>config/
 
 <dl class="function">
 <dt id="src.io.exif_util.get_exif">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_exif</code><span class="sig-paren">(</span><em class="sig-param">img</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_exif" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_exif</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">image_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_exif" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse the EXIF data from <cite>img</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -585,7 +443,7 @@ timestamp and filename (without extension and “feltkode”).</p>
 
 <dl class="function">
 <dt id="src.io.exif_util.process_image_properties">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">process_image_properties</code><span class="sig-paren">(</span><em class="sig-param">contents</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.process_image_properties" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">process_image_properties</code><span class="sig-paren">(</span><em class="sig-param">contents</em>, <em class="sig-param">parsed_exif</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.process_image_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process the <cite>ImageProperties</cite> XML from the EXIF header</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -636,7 +494,7 @@ timestamp and filename (without extension and “feltkode”).</p>
 
 <dl class="function">
 <dt id="src.io.exif_util.process_reflink_info">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">process_reflink_info</code><span class="sig-paren">(</span><em class="sig-param">contents</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.process_reflink_info" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">process_reflink_info</code><span class="sig-paren">(</span><em class="sig-param">contents</em>, <em class="sig-param">parsed_exif</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.process_reflink_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process the <cite>ReflinkInfo</cite> XML from the EXIF header.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1077,6 +935,23 @@ multiprocessing pool.</p>
 
 </dd></dl>
 
+<dl class="function">
+<dt id="src.ImageProcessor.remove_empty_folders">
+<code class="sig-prename descclassname">src.ImageProcessor.</code><code class="sig-name descname">remove_empty_folders</code><span class="sig-paren">(</span><em class="sig-param">start_dir</em>, <em class="sig-param">top_dir</em><span class="sig-paren">)</span><a class="headerlink" href="#src.ImageProcessor.remove_empty_folders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bottom-up removal of empty folders. If <cite>start_dir</cite> is empty, it will be removed. If <cite>start_dir</cite>’s parent directory
+is empty after removing <cite>start_dir</cite>, it too will be removed. This process i continued until a parent is non-empty,
+or the current directory is equal to <cite>top_dir</cite>. (The <cite>top_dir</cite> directory will not be removed).</p>
+<p>NOTE: Use full paths when using this function, to avoid problems when comparing the current directory to <cite>top_dir</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_dir</strong> (<em>str</em>) – Path to bottom directory to remove if empty.</p></li>
+<li><p><strong>top_dir</strong> – Top directory. Only folders under this will be deleted.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-src.main">
 <span id="main"></span><h2>main<a class="headerlink" href="#module-src.main" title="Permalink to this headline">¶</a></h2>
@@ -1090,6 +965,18 @@ multiprocessing pool.</p>
 <dt id="src.main.check_config">
 <code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">check_config</code><span class="sig-paren">(</span><em class="sig-param">args</em><span class="sig-paren">)</span><a class="headerlink" href="#src.main.check_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that the specified configuration variables are valid.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.main.set_excepthook">
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">set_excepthook</code><span class="sig-paren">(</span><em class="sig-param">hooks</em><span class="sig-paren">)</span><a class="headerlink" href="#src.main.set_excepthook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure sys.excepthook to call all functions in <cite>hooks</cite> before calling the default excepthook.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>hooks</strong> (<em>list of function</em>) – List of hooks. Each element must be a function with three arguments: Exception type, exception
+instance, and traceback instance.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -1130,13 +1017,13 @@ instance of <cite>Masker</cite> ready for masking.</p>
 
 <dl class="function">
 <dt id="src.main.get_summary">
-<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">get_summary</code><span class="sig-paren">(</span><em class="sig-param">tree_walker</em>, <em class="sig-param">n_masked</em>, <em class="sig-param">start_datetime</em><span class="sig-paren">)</span><a class="headerlink" href="#src.main.get_summary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.main.</code><code class="sig-name descname">get_summary</code><span class="sig-paren">(</span><em class="sig-param">tree_walker</em>, <em class="sig-param">image_processor</em>, <em class="sig-param">start_datetime</em><span class="sig-paren">)</span><a class="headerlink" href="#src.main.get_summary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log a summary of the masking process.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tree_walker</strong> (<a class="reference internal" href="#src.io.TreeWalker.TreeWalker" title="src.io.TreeWalker.TreeWalker"><em>TreeWalker</em></a>) – <cite>TreeWalker</cite> instance used in masking.</p></li>
-<li><p><strong>n_masked</strong> (<em>int</em>) – Number of masked images</p></li>
+<li><p><strong>image_processor</strong> (<a class="reference internal" href="#src.ImageProcessor.ImageProcessor" title="src.ImageProcessor.ImageProcessor"><em>src.ImageProcessor.ImageProcessor</em></a>) – <cite>src.ImageProcessor.ImageProcessor</cite> instance used when processing the images.</p></li>
 <li><p><strong>start_datetime</strong> (<em>datetime.datetime</em>) – Datetime object indicating when the program started.</p></li>
 </ul>
 </dd>
@@ -1406,7 +1293,7 @@ boolean.</p>
 
 <dl class="method">
 <dt id="src.Workers.EXIFWorker.async_func">
-<em class="property">static </em><code class="sig-name descname">async_func</code><span class="sig-paren">(</span><em class="sig-param">paths</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">local_json</em>, <em class="sig-param">remote_json</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.EXIFWorker.async_func" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">async_func</code><span class="sig-paren">(</span><em class="sig-param">paths</em>, <em class="sig-param">mask_results</em>, <em class="sig-param">local_json</em>, <em class="sig-param">remote_json</em>, <em class="sig-param">version</em><span class="sig-paren">)</span><a class="headerlink" href="#src.Workers.EXIFWorker.async_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the EXIF processing: Read the EXIF data, add the required fields, and save it. File exports are controlled
 in <cite>config</cite>.</p>
 <dl class="field-list simple">

@@ -191,6 +191,8 @@ The user-specifiable configuration parameters can be found in [config/default_co
 #### Database configuration
 * `write_exif_to_db`: Write the EXIF data to the database?
 * `db_max_n_accumulated_rows`: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
+* `db_max_n_errors`: If the number of failed insertions/updates exceeds this number, a RuntimeError will be raised.
+* `db_max_cache_size`: If the number of cached rows exceeds this number, a RuntimeError will be raised.
 * `db_folder_name`: Format of the "Mappenavn" column in the database.
 
 ### Custom configuration file
@@ -281,35 +283,11 @@ See [test_anonymisering_vegbilder.yml](config/db_tables/test_anonymisering_vegbi
 ### Writing to the database
 When the parameters above have been configured correctly, the EXIF data can be written to the database by using the `json_to_db` script:
 ```
-python -m src.db.json_to_db -i <base input folder>
+python -m scripts.db.json_to_db -i <base input folder>
 ```
 This will recursively traverse `<base input folder>`, read all .json files, and write the contents to the specified database.
 
 Database writing can also be done automatically during anonymisation. This is enabled by setting `write_exif_to_db = True` in `config.py`.
-
-## Evaluating the current model
-The anonymisation model can be evaluated by running the evaluation script:
-```
-usage: python -m src.evaluate [-h] [-i INPUT_FOLDER] [-a ANNOTATION_FILE] [--accumulate]
-
-Evaluate the anonymisation model.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT_FOLDER, -input-folder INPUT_FOLDER
-                        Base directory of images to use for evaluation.
-  -a ANNOTATION_FILE, -annotation-file ANNOTATION_FILE
-                        Path to a .json file containing the ground-truth
-                        annotations. The file must be formatted according to
-                        the COCO annotation file guidelines.
-  --accumulate          Accumulate the results for all images?
-```
-
-The evaluation script requires the `pycocotools` package. It can be installed with:
-```Bash
-pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
-```
-Note that the annotations for the evaluation dataset must be on the [COCO format](http://cocodataset.org/#format-data).
 
 ## Tests
 The `tests/` directory provides a large number of tests which can be used to check that the application works as expected. Use the `pytest` command
@@ -336,3 +314,19 @@ To start the test database, run:
 ```
 
 Note that the tests marked with `db` will fail if the test database is not running.
+
+## Extra scripts
+The following extra scripts are available:
+* `scripts.create_json`: Traverses a directory tree and creates JSON-files for all `.jpg` files found in the tree.
+* `scripts.check_folders`: Traverses a set of input/output/archive folders and checks that all files are present/not present, as specified in the config file.
+* `scripts.evaluate`: Evaluates the current model on a specified testing dataset. Requires `pycocotools` to be installed.
+* `scripts.db.create_table`: Creates the specified database table.
+* `scripts.db.insert_geom_metadata`: Inserts the appropriate metadata for the specified table into the `MDSYS.USER_GEOM_METADATA` view.
+* `scripts.db.json_to_db`: Traverses a directory tree and writes the contents of all found `.json` files to the specified database table.
+
+Each script can be invoked by running:
+```
+python -m <script> <args>
+```
+Use the `-h` argument to get a description for each script, and a list of possible arguments.
+

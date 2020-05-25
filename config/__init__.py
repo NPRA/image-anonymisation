@@ -4,7 +4,7 @@ import argparse
 from datetime import datetime
 
 
-DEFAULT_CONFIG_FILE = os.path.join("config", "default_config.yml")
+DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "default_config.yml")
 
 
 def _load_yml(file_path):

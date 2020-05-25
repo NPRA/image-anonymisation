@@ -183,6 +183,8 @@ optional arguments:
                         Optional path to directory of log file. The log file
                         will be named &lt;log\folder&gt;\&lt;timestamp&gt; &lt;hostname&gt;.log
   --skip-clear-cache    Disables the clearing of cache files at startup.
+  -k CONFIG_FILE        Path to custom configuration file. See the README for
+                        details. Default is config\default_config.yml
 </pre></div>
 </div>
 <p>Note: Make sure that the conda environment is activated before executing the command above.</p>
@@ -201,7 +203,7 @@ The latter also works when conda is not initialized in the shell, as long as the
 </div>
 <div class="section" id="configuration">
 <h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
-<p>The user-specifiable configuration parameters can be found in <a class="reference external" href="config/config.py">config/config.py</a>. The available parameters are listed below.</p>
+<p>The user-specifiable configuration parameters can be found in <a class="reference external" href="config/default_config.yml">config/default_config.yml</a>. The available parameters are listed below.</p>
 <div class="section" id="miscellaneous-configuration-parameters">
 <h4>Miscellaneous configuration parameters<a class="headerlink" href="#miscellaneous-configuration-parameters" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
@@ -264,8 +266,16 @@ The latter also works when conda is not initialized in the shell, as long as the
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">write_exif_to_db</span></code>: Write the EXIF data to the database?</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">db_max_n_accumulated_rows</span></code>: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">db_max_n_errors</span></code>: If the number of failed insertions/updates exceeds this number, a RuntimeError will be raised.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">db_max_cache_size</span></code>: If the number of cached rows exceeds this number, a RuntimeError will be raised.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">db_folder_name</span></code>: Format of the “Mappenavn” column in the database.</p></li>
 </ul>
+<div class="section" id="custom-configuration-file">
+<h5>Custom configuration file<a class="headerlink" href="#custom-configuration-file" title="Permalink to this headline">¶</a></h5>
+<p>The application supports custom configuration files with the same structure as <code class="docutils literal notranslate"><span class="pre">config/default_config.yml</span></code>.
+Note that custom configuration files should define all variables defined in <code class="docutils literal notranslate"><span class="pre">config/default_config.yml</span></code>.
+Use the <code class="docutils literal notranslate"><span class="pre">-k</span></code> argument to specify a custom config file. (See <a class="reference external" href="#usage">Usage</a> for details.)</p>
+</div>
 </div>
 </div>
 <div class="section" id="email-notifications">
@@ -351,35 +361,11 @@ Expected keys are:</p>
 <p>See <a class="reference external" href="config/db_tables/test_anonymisering_vegbilder.yml">test_anonymisering_vegbilder.yml</a> and
 <a class="reference external" href="config/db_tables/test_anonymisering_vegbilder_2d.yml">test_anonymisering_vegbilder_2d.yml</a> for other examples.</p>
 <p>When the parameters above have been configured correctly, the EXIF data can be written to the database by using the <code class="docutils literal notranslate"><span class="pre">json_to_db</span></code> script:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>python -m src.db.json_to_db -i &lt;base input folder&gt;
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>python -m scripts.db.json_to_db -i &lt;base input folder&gt;
 </pre></div>
 </div>
 <p>This will recursively traverse <code class="docutils literal notranslate"><span class="pre">&lt;base</span> <span class="pre">input</span> <span class="pre">folder&gt;</span></code>, read all .json files, and write the contents to the specified database.</p>
 <p>Database writing can also be done automatically during anonymisation. This is enabled by setting <code class="docutils literal notranslate"><span class="pre">write_exif_to_db</span> <span class="pre">=</span> <span class="pre">True</span></code> in <code class="docutils literal notranslate"><span class="pre">config.py</span></code>.</p>
-</div>
-<div class="section" id="evaluating-the-current-model">
-<h3>Evaluating the current model<a class="headerlink" href="#evaluating-the-current-model" title="Permalink to this headline">¶</a></h3>
-<p>The anonymisation model can be evaluated by running the evaluation script:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">usage: python -m src.evaluate [-h] [-i INPUT_FOLDER] [-a ANNOTATION_FILE] [--accumulate]</span>
-
-Evaluate the anonymisation model.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT_FOLDER, -input-folder INPUT_FOLDER
-                        Base directory of images to use for evaluation.
-  -a ANNOTATION_FILE, -annotation-file ANNOTATION_FILE
-                        Path to a .json file containing the ground-truth
-                        annotations. The file must be formatted according to
-                        the COCO annotation file guidelines.
-  --accumulate          Accumulate the results for all images?
-</pre></div>
-</div>
-<p>The evaluation script requires the <code class="docutils literal notranslate"><span class="pre">pycocotools</span></code> package. It can be installed with:</p>
-<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>pip install git+https://github.com/philferriere/cocoapi.git#subdirectory<span class="o">=</span>PythonAPI
-</pre></div>
-</div>
-<p>Note that the annotations for the evaluation dataset must be on the <a class="reference external" href="http://cocodataset.org/#format-data">COCO format</a>.</p>
 </div>
 <div class="section" id="tests">
 <h3>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h3>
@@ -401,6 +387,23 @@ to run the tests:</p>
 </pre></div>
 </div>
 <p>Note that the tests marked with <code class="docutils literal notranslate"><span class="pre">db</span></code> will fail if the test database is not running.</p>
+</div>
+<div class="section" id="extra-scripts">
+<h3>Extra scripts<a class="headerlink" href="#extra-scripts" title="Permalink to this headline">¶</a></h3>
+<p>The following scripts are available:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">scripts.create_json</span></code>: Traverses a directory tree and creates JSON-files for all <code class="docutils literal notranslate"><span class="pre">.jpg</span></code> files found in the tree.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scripts.check_folders</span></code>: Traverses a set of input/output/archive folders and checks that all files are present/not present, as specified in the config file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scripts.evaluate</span></code>: Evaluates the current model on a specified testing dataset. Requires <code class="docutils literal notranslate"><span class="pre">pycocotools</span></code> to be installed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scripts.db.create_table</span></code>: Creates the specified database table.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scripts.db.insert_geom_metadata</span></code>: Inserts the appropriate metadata for the specified table into the <code class="docutils literal notranslate"><span class="pre">MDSYS.USER_GEOM_METADATA</span></code> view.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scripts.db.json_to_db</span></code>: Traverses a directory tree and writes the contents of all found <code class="docutils literal notranslate"><span class="pre">.json</span></code> files to the specified database table.</p></li>
+</ul>
+<p>Each script can be invoked by running:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>python -m &lt;script&gt; &lt;args&gt;
+</pre></div>
+</div>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">-h</span></code> argument to get a description for each script, and a list of possible arguments.</p>
 </div>
 </div>
 </div>
@@ -439,13 +442,16 @@ to run the tests:</p>
 <li><a class="reference internal" href="#parameters-for-the-masking-model">Parameters for the masking model</a></li>
 <li><a class="reference internal" href="#parameters-controlling-the-appearance-of-the-anonymised-regions">Parameters controlling the appearance of the anonymised regions</a></li>
 <li><a class="reference internal" href="#e-mail-configuration">E-mail configuration</a></li>
-<li><a class="reference internal" href="#database-configuration">Database configuration</a></li>
+<li><a class="reference internal" href="#database-configuration">Database configuration</a><ul>
+<li><a class="reference internal" href="#custom-configuration-file">Custom configuration file</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#email-notifications">Email notifications</a></li>
 <li><a class="reference internal" href="#exif-data-to-database">EXIF data to database</a></li>
-<li><a class="reference internal" href="#evaluating-the-current-model">Evaluating the current model</a></li>
 <li><a class="reference internal" href="#tests">Tests</a></li>
+<li><a class="reference internal" href="#extra-scripts">Extra scripts</a></li>
 </ul>
 </li>
 </ul>
