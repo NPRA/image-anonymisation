@@ -132,7 +132,7 @@ def Vegnummer(json_data):
 
 
 def HP(json_data):
-    return json_data["exif_hp"]
+    return to_number(json_data["exif_hp"])
 
 
 def Strekning(json_data):
