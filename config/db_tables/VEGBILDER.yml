@@ -23,18 +23,23 @@ columns:
       dimension: 2
       srid: 4326
 
-  - name: Hoyde
+  - name: PosisjonHoyde
     dtype: NUMBER
     formatter: Hoyde
     extra:
 
   - name: SenterlinjePosisjon
     dtype: SDO_GEOMETRY
-    formatter: SenterlinjePosisjon
+    formatter: SenterlinjePosisjon_2d
     extra:
     spatial_metadata:
-      dimension: 3
+      dimension: 2
       srid: 25833
+
+  - name: SenterlinjeHoyde
+    dtype: NUMBER
+    formatter: SenterlinjeHoyde
+    extra:
 
   - name: FylkeNummer
     dtype: NUMBER
@@ -57,7 +62,7 @@ columns:
     extra: NOT NULL
 
   - name: HP
-    dtype: VARCHAR(255)
+    dtype: NUMBER
     formatter: HP
     extra:
 
@@ -124,4 +129,9 @@ columns:
   - name: Versjon
     dtype: VARCHAR(31)
     formatter: Versjon
+    extra:
+
+  - name: ExifKvalitet
+    dtype: NUMBER
+    formatter: ExifKvalitet
     extra:
