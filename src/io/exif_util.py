@@ -400,28 +400,28 @@ LOVLIGE_FYLKER = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "1
 def _get_metadata_from_path_element(elem, parsed_exif):
     hp_matches = HP_REGEX.findall(elem)
     if hp_matches:
-        parsed_exif["exif_hp"] = hp_matches[0]
+        parsed_exif["exif_hp"] = hp_matches[0].lstrip("0")
 
     fylke_matches = FYLKE_REGEX.findall(elem)
     if fylke_matches:
         for m in fylke_matches:
             if m in LOVLIGE_FYLKER:
-                parsed_exif["exif_fylke"] = m
+                parsed_exif["exif_fylke"] = m.lstrip("0")
 
     felt_matches = FELT_REGEX.findall(elem)
     if felt_matches:
-        parsed_exif["exif_feltkode"] = felt_matches[0][0]
+        parsed_exif["exif_feltkode"] = felt_matches[0][0].lstrip("0")
 
     veg_matches = VEG_REGEX.match(elem)
     if veg_matches:
         parsed_exif["exif_vegkat"] = veg_matches[0][0].upper()
         parsed_exif["exif_vegstat"] = veg_matches[0][1].upper()
-        parsed_exif["exif_vegnr"] = veg_matches[0][2:]
+        parsed_exif["exif_vegnr"] = veg_matches[0][2:].lstrip("0")
         
     meter_match = METER_REGEX.findall(elem)
     kilometer_match = KILOMETER_REGEX.findall(elem)
     if meter_match:
-        parsed_exif["exif_meter"] = str(int(meter_match[0]))
+        parsed_exif["exif_meter"] = meter_match[0].lstrip("0")
     elif kilometer_match:
         meter = 1000 * int(kilometer_match[0][0]) + int(kilometer_match[0][1])
         parsed_exif["exif_meter"] = str(meter)
