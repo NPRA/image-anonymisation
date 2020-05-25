@@ -1,7 +1,7 @@
 pk_column: ID
 columns:
   - name: ID
-    dtype: VARCHAR(255)
+    dtype: VARCHAR(256)
     formatter: ID
     extra: PRIMARY KEY
 
@@ -47,12 +47,12 @@ columns:
     extra: NOT NULL
 
   - name: Vegkategori
-    dtype: VARCHAR(255)
+    dtype: VARCHAR(8)
     formatter: Vegkategori
     extra: NOT NULL
 
   - name: Vegstatus
-    dtype: VARCHAR(255)
+    dtype: VARCHAR(8)
     formatter: Vegstatus
     extra: NOT NULL
 
@@ -82,12 +82,12 @@ columns:
     extra: NOT NULL
 
   - name: Mappenavn
-    dtype: VARCHAR(255)
+    dtype: VARCHAR(256)
     formatter: Mappenavn
     extra: NOT NULL
 
   - name: Filnavn
-    dtype: VARCHAR(255)
+    dtype: VARCHAR(64)
     formatter: Filnavn
     extra: NOT NULL
 
@@ -117,12 +117,12 @@ columns:
     extra: NOT NULL
 
   - name: Feltkode
-    dtype: VARCHAR(255)
+    dtype: VARCHAR(8)
     formatter: Feltkode
     extra: NOT NULL
 
   - name: VegIdentitet
-    dtype: VARCHAR(255)
+    dtype: VARCHAR(64)
     formatter: VegIdentitet
     extra:
 
