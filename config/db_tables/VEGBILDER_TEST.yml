@@ -130,3 +130,8 @@ columns:
     dtype: VARCHAR(31)
     formatter: Versjon
     extra:
+
+  - name: ExifKvalitet
+    dtype: NUMBER
+    formatter: ExifKvalitet
+    extra:
