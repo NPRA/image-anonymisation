@@ -178,7 +178,7 @@ The user-specifiable configuration parameters can be found in [config/default_co
 * `max_num_pixels`: Maximum number of pixels in images to be processed by the masking model. If the number of pixels exceeds this value, it will be resized before the masker is applied. This will NOT change the resolution of the output image.
 
 #### Parameters controlling the appearance of the anonymised regions
-* `mask_color`: "RGB tuple (0-255) indicating the masking color. Setting this option will override the colors specified below. Example: Setting `mask_color = (50, 50, 50)` will make all masks dark gray.
+* `mask_color`: "RGB tuple (0-255) indicating the masking color. Setting this option will override the colors specified below. Example: Setting `mask_color = [50, 50, 50]` will make all masks dark gray.
 * `blur`: Blurring coefficient (1-100) which specifies the degree of blurring to apply within the mask. When this parameter is specified, the image will be blurred, and not masked with a specific color. Set `blur = None` to disable blurring, and use colored masks instead. Default: `15`
 * `gray_blur`: Convert the image to grayscale before blurring? (Ignored if blurring is disabled) Default: `True`
 * `normalized_gray_blur`: Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark colors. NOTE: Requires `gray_blur=True` Default: True
