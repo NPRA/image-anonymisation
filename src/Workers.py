@@ -237,8 +237,6 @@ class EXIFWorker(BaseWorker):
             exif["detekterte_objekter"] = None
         # Insert the version number
         exif["versjon"] = str(version)
-        # Insert the relative input directory
-        exif["relative_input_dir"] = paths.relative_input_dir
 
         if local_json:
             # Write EXIF to input directory

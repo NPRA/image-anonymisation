@@ -38,6 +38,14 @@ log_level: "DEBUG"
 #: Version number for the application. Will be written to json files and database.
 application_version: "0.1"
 
+#: Formatter for `mappenavn` in the JSON-file. `relative_input_dir` is the path to the folder containing the image,
+#: relative to `exif_top_dir` below. For instance, if the image is located at `C:\Foo\Bar\Baz\Hello\World.jpg`, and
+#: `exif_top_dir = Bar`, then `relative_input_dir` will be `Baz\Hello`.
+exif_mappenavn: "Vegbilder\\{relative_input_dir}"
+
+#: Top directory for `relative_input_dir`. See above for an explanation.
+exif_top_dir: TilSladding
+
 
 # ===================
 # File I/O parameters
@@ -153,6 +161,3 @@ db_max_n_errors: 1000
 
 #: If the number of cached rows exceeds this number, a RuntimeError will be raised.
 db_max_cache_size: 1000
-
-#: Format of the "Mappenavn" column in the database.
-db_folder_name: "Vegbilder/{aar}/{relative_input_dir}"

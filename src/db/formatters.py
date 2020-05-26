@@ -152,28 +152,7 @@ def Meter(json_data):
 
 
 def Mappenavn(json_data):
-    # db_folder_name = "Vegbilder/{fylke}/{aar}/{strekningreferanse}/F{feltkode}_{aar}_{maaned}_{dag}"
-    timestamp = Tidspunkt(json_data)
-    format_values = dict(
-        aar=timestamp.year,
-        maaned=timestamp.month,
-        dag=timestamp.day,
-        fylke=json_data["exif_fylke"].zfill(2),
-        vegkat=json_data["exif_vegkat"],
-        vegstat=json_data["exif_vegstat"],
-        vegnr=json_data["exif_vegnr"],
-        hp=json_data["exif_hp"],
-        meter=json_data["exif_meter"],
-        feltkode=json_data["exif_feltkode"],
-        strekningreferanse=json_data["exif_strekningreferanse"],
-        relative_input_dir=json_data["relative_input_dir"]
-    )
-
-    folder_name = config.db_folder_name.format(**format_values)
-
-    assert "{" not in folder_name and "}" not in folder_name, f"Invalid `Mappenavn`: {config.db_folder_name} -> " \
-                                                              f"{folder_name}."
-    return folder_name
+    return json_data["mappenavn"]
 
 
 def Filnavn(json_data):

@@ -113,11 +113,6 @@ def load_json(paths):
     return json_dict
 
 
-def augment_json(paths, json_dict):
-    if "relative_input_dir" not in json_dict:
-        json_dict["relative_input_dir"] = paths.relative_input_dir
-
-
 def main():
     tree_walker, database_client = initialize()
     start_datetime = datetime.now()
@@ -130,7 +125,6 @@ def main():
 
         try:
             json_dict = load_json(paths)
-            augment_json(paths, json_dict)
             database_client.add_row(json_dict)
         except PROCESSING_EXCEPTIONS as err:
             LOGGER.error(__name__, f"Got error '{type(err).__name__}: {str(err)}' when writing JSON to Database. "

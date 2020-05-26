@@ -44,6 +44,9 @@ ID_REMOVE_FROM_FILENAME_PATTERN = re.compile(r"_f\d+")
 #: Pattern for extracting strekning/delstrekning from strings on the form `SxDy`
 STREKNING_PATTERN = re.compile(r"S(\d+)D(\d+)\b")
 
+#: Pattern for extracting kryss-info from filename
+KRYSS_PATTERN = re.compile(r"_S(\d+)D(\d+)_m(\d+)_([KS])D(\d+)")
+
 EXIF_QUALITIES = {
     "good": "2",
     "missing_values": "1",
@@ -65,6 +68,9 @@ EXIF_TEMPLATE = {
     "exif_hp": None,
     "exif_strekning": None,
     "exif_delstrekning": None,
+    "exif_ankerpunkt": None,
+    "exif_kryssdel": None,
+    "exif_sideanleggsdel": None,
     "exif_meter": None,
     "exif_feltkode": None,
     "exif_mappenavn": None,
@@ -90,7 +96,7 @@ EXIF_TEMPLATE = {
     "senterlinjeposisjon": None,
     "detekterte_objekter": None,
     "versjon": None,
-    "relative_input_dir": None,
+    "mappenavn": None,
 }
 
 
@@ -127,7 +133,7 @@ def get_detected_objects_dict(mask_results):
     return objs
 
 
-def get_exif(img, image_path=None):
+def get_exif(img, image_path):
     """
     Parse the EXIF data from `img`.
 
@@ -162,6 +168,8 @@ def get_exif(img, image_path=None):
 
     # Get a deterministic ID from the exif data.
     parsed_exif["bildeid"] = get_deterministic_id(parsed_exif)
+    # Insert the folder name
+    parsed_exif["mappenavn"] = get_mappenavn(image_path, parsed_exif)
     return parsed_exif
 
 
@@ -186,6 +194,36 @@ def get_deterministic_id(exif):
     deterministic_id = timestamp + "_" + filename
     return deterministic_id
 
+
+def get_mappenavn(image_path, exif):
+    dirs = image_path.split(os.sep)[:-1]
+    if config.exif_top_dir in dirs:
+        rel_path = os.sep.join(dirs[(dirs.index(config.exif_top_dir) + 1):])
+    else:
+        LOGGER.warning(__name__, f"Top directory '{config.exif_top_dir}' not found in image path '{image_path}'. "
+                                 f"'rel_path' will be empty")
+        rel_path = ""
+
+    timestamp = iso8601.parse_date(exif["exif_tid"])
+    format_values = dict(
+        aar=timestamp.year,
+        maaned=timestamp.month,
+        dag=timestamp.day,
+        fylke=str(exif["exif_fylke"]).zfill(2),
+        vegkat=exif["exif_vegkat"],
+        vegstat=exif["exif_vegstat"],
+        vegnr=exif["exif_vegnr"],
+        hp=exif["exif_hp"],
+        meter=exif["exif_meter"],
+        feltkode=exif["exif_feltkode"],
+        strekningreferanse=exif["exif_strekningreferanse"],
+        relative_input_dir=rel_path
+    )
+    folder_name = config.exif_mappenavn.format(**format_values)
+    assert "{" not in folder_name and "}" not in folder_name, f"Invalid `Mappenavn`: {config.db_folder_name} -> " \
+                                                              f"{folder_name}."
+    return folder_name
+    
 
 def label_exif(exif):
     """
@@ -251,7 +289,9 @@ def process_image_properties(contents, parsed_exif):
     if exif_vegstat not in LOVLIG_VEGSTATUS or exif_vegkat not in LOVLIG_VEGKATEGORI:
         LOGGER.info(__name__, f"VCRoad={exif_veg} følger ikke KAT+STAT+vegnr syntaks: {mappenavn}")
 
-    hp, strekning, delstrekning = process_strekning(image_properties["VegComValues"]["VCHP"])
+    hp, strekning, delstrekning, ankerpunkt, kryssdel, sideanleggsdel = process_strekning_and_kryss(
+        vchp=image_properties["VegComValues"]["VCHP"], filename=mapper[-1]
+    )
 
     # Set values
     parsed_exif["exif_tid"] = timestamp
@@ -267,6 +307,9 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_hp"] = hp
     parsed_exif["exif_strekning"] = strekning
     parsed_exif["exif_delstrekning"] = delstrekning
+    parsed_exif["exif_ankerpunkt"] = ankerpunkt
+    parsed_exif["exif_kryssdel"] = kryssdel
+    parsed_exif["exif_sideanleggsdel"] = sideanleggsdel
     parsed_exif["exif_meter"] = image_properties["VegComValues"]["VCMeter"]
     parsed_exif["exif_feltkode"] = image_properties["VegComValues"]["VCLane"]
     parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
@@ -276,18 +319,45 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_kvalitet"] = quality
 
 
-def process_strekning(vchp):
+def process_strekning_and_kryss(vchp, filename):
+    # Look for kryss-info in filename
+    kryss_matches = KRYSS_PATTERN.findall(filename)
+    if kryss_matches:
+        return _kryss(kryss_matches[0])
+
     # Look for SxDy pattern
-    matches = STREKNING_PATTERN.findall(vchp)
-    if matches:
-        hp = None
-        strekning = matches[0][0]
-        delstrekning = matches[0][1]
+    strekning_delstrekning_matches = STREKNING_PATTERN.findall(vchp)
+    if strekning_delstrekning_matches:
+        return _strekning_delstrekning(strekning_delstrekning_matches[0])
+
+    # Fallback to old HP-standard
+    return _hp(vchp)
+
+
+def _kryss(matches):
+    # Get metadata for a "kryss"
+    strekning = matches[0]
+    delstrekning = matches[1]
+    ankerpunkt = matches[2]
+    if matches[3] == "K":
+        kryssdel = matches[4]
+        sideanleggsdel = None
     else:
-        hp = vchp.lstrip("0")
-        strekning = None
-        delstrekning = None
-    return hp, strekning, delstrekning
+        sideanleggsdel = matches[4]
+        kryssdel = None
+    return None, strekning, delstrekning, ankerpunkt, kryssdel, sideanleggsdel
+
+
+def _strekning_delstrekning(matches):
+    # Get strekning/delstrekning metadata
+    strekning = matches[0]
+    delstrekning = matches[1]
+    return None, strekning, delstrekning, None, None, None
+
+
+def _hp(vchp):
+    # HP metadata.
+    return vchp.lstrip("0"), None, None, None, None, None
 
 
 def to_pretty_xml(contents_bytes):

@@ -159,6 +159,9 @@ The user-specifiable configuration parameters can be found in [config/default_co
 * `datetime_format`: Timestamp format. See https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior for more information.
 * `log_file_name`: Name of the log file. `{datetime}` will be replaced with a timestamp formatted as `datetime_format`. `{hostname}` will be replaced with the host name.
 * `log_level`: Logging level for the application. This controls the log level for terminal logging and file logging (if it is enabled). Must be one of {"DEBUG", "INFO", "WARNING", "ERROR"}.
+* `application_version`: Version number for the application. Will be written to JSON files and database.
+* `exif_mappenavn`: Formatter for `mappenavn` in the JSON file. `relative_input_dir` is the path to the folder containing the image, relative to `exif_top_dir` below. For instance, if the image is located at `C:\Foo\Bar\Baz\Hello\World.jpg`, and `exif_top_dir = Bar`, then `relative_input_dir` will be `Baz\Hello`.
+* `exif_top_dir`: Top directory for `relative_input_dir`. See above for an explanation.
 
 #### File I/O parameters
 * `remote_json`: Write the EXIF .json file to the output (remote) directory?
@@ -193,7 +196,6 @@ The user-specifiable configuration parameters can be found in [config/default_co
 * `db_max_n_accumulated_rows`: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
 * `db_max_n_errors`: If the number of failed insertions/updates exceeds this number, a RuntimeError will be raised.
 * `db_max_cache_size`: If the number of cached rows exceeds this number, a RuntimeError will be raised.
-* `db_folder_name`: Format of the "Mappenavn" column in the database.
 
 ### Custom configuration file
 The application supports custom configuration files with the same structure as `config/default_config.yml`.
