@@ -8,7 +8,7 @@ draw_mask: True
 #: Delete the original image from the input directory when the masking is completed?
 delete_input: False
 
-#: Recompute masks even though a .webp file exists in the input folder.
+#: Recompute masks even though a .webp file exists in the output folder.
 force_remask: False
 
 #: When `lazy_paths: True`, traverse the file tree during the masking process.

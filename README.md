@@ -113,7 +113,7 @@ images will be written to an output directory with identical structure as the in
 executed as a python-module from the root directory:
 ```
 usage: python -m src.main [-h] [-i INPUT_FOLDER] [-o OUTPUT_FOLDER] [-a ARCHIVE_FOLDER]
-                          [-l LOG_FOLDER] [--skip-clear-cache]
+                          [-l LOG_FOLDER] [--skip-clear-cache] [-k CONFIG_FILE]
 
 Image anonymisation
 
@@ -152,7 +152,7 @@ The user-specifiable configuration parameters can be found in [config/default_co
 #### Miscellaneous configuration parameters
 * `draw_mask`: Apply the mask to the output image?
 * `delete_input`: Delete the original image from the input directory when the masking is completed?
-* `force_remask`: Recompute masks even though a .webp file exists in the input folder.
+* `force_remask`: Recompute masks even though a .webp file exists in the output folder.
 * `lazy_paths`: When `lazy_paths = True`, traverse the file tree during the masking process. Otherwise, all paths will be identified and stored before the masking starts.
 * `file_access_retry_seconds`: Number of seconds to wait before (re)trying to access a file/directory which cannot currently be reached. This applies to both reading input files, and writing output files.
 * `file_access_timeout_seconds`: Total number of seconds to wait before giving up on accessing a file/directory which cannot currently be reached. This also applies to both reading input files, and writing output files.
