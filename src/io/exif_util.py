@@ -240,11 +240,11 @@ def process_image_properties(contents, parsed_exif):
     exif_veg = image_properties["VegComValues"]["VCRoad"]
 
     if len(exif_veg) >= 3:
-        exif_vegnr = exif_veg[2:]
+        exif_vegnr = exif_veg[2:].lstrip("0")
         exif_vegstat = exif_veg[1]
         exif_vegkat = exif_veg[0]
     else:
-        exif_vegnr = exif_veg
+        exif_vegnr = exif_veg.lstrip("0")
         exif_vegstat = None
         exif_vegkat = None
 
@@ -284,7 +284,7 @@ def process_strekning(vchp):
         strekning = matches[0][0]
         delstrekning = matches[0][1]
     else:
-        hp = vchp
+        hp = vchp.lstrip("0")
         strekning = None
         delstrekning = None
     return hp, strekning, delstrekning
