@@ -272,7 +272,7 @@ columns:
     formatter: position
     extra:
     spatial_metadata:
-      dimension: 3
+      dimension: 2
       srid: 4326
       dim_elements:
         - name: Longitude
