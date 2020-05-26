@@ -34,7 +34,7 @@ def insert():
         rows = []
         for col in table.columns:
             if col.dtype == "SDO_GEOMETRY":
-                diminfo = _create_diminfo(conn, dim=col.spatial_metadata["dimension"])
+                diminfo = _create_diminfo(conn, col.spatial_metadata)
                 row = {"TABLE_NAME": table.name, "COLUMN_NAME": col.name, "DIMINFO": diminfo,
                        "SRID": col.spatial_metadata["srid"]}
                 rows.append(row)
@@ -52,22 +52,19 @@ def _create_dim_element(dim_element_type, dim_name, lb, ub, tolerance):
     return obj
 
 
-def _create_diminfo(conn, dim):
+def _create_diminfo(conn, spatial_metadata):
     dim_element_type = conn.gettype("MDSYS.SDO_DIM_ELEMENT")
-    if dim == 2:
-        elements = [
-            _create_dim_element(dim_element_type, 'Longitude', -180, 180, 0.5),
-            _create_dim_element(dim_element_type, 'Latitude', -90, 90, 0.5),
-        ]
-    else:
-        elements = [
-            _create_dim_element(dim_element_type, 'X', -100000, 1120000, 0.01),
-            _create_dim_element(dim_element_type, 'Y', 6430000, 7960000, 0.01),
-            _create_dim_element(dim_element_type, 'Z', -99999, 3000, 0.0001),
-        ]
+
+    dim_elements = []
+    for dim_element_data in spatial_metadata["dim_elements"]:
+        dim_element = _create_dim_element(dim_element_type, dim_name=dim_element_data["name"],
+                                          lb=dim_element_data["min"], ub=dim_element_data["max"],
+                                          tolerance=dim_element_data["tol"])
+        dim_elements.append(dim_element)
+
     dim_array_type = conn.gettype("MDSYS.SDO_DIM_ARRAY")
     dim_array = dim_array_type.newobject()
-    dim_array.extend(elements)
+    dim_array.extend(dim_elements)
     return dim_array
 
 

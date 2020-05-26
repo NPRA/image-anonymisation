@@ -20,8 +20,18 @@ columns:
     formatter: Posisjon_2d
     extra:
     spatial_metadata:
-      dimension: 2
       srid: 4326
+      dimension: 2
+      dim_elements:
+        - name: Longitude
+          min: -180
+          max: 180
+          tol: 0.5
+
+        - name: Latitude
+          min: -90
+          max: 90
+          tol: 0.5
 
   - name: PosisjonHoyde
     dtype: NUMBER
@@ -33,8 +43,18 @@ columns:
     formatter: SenterlinjePosisjon_2d
     extra:
     spatial_metadata:
-      dimension: 2
       srid: 25833
+      dimension: 2
+      dim_elements:
+        - name: X
+          min: -100000
+          max: 1120000
+          tol: 0.01
+
+        - name: Y
+          min: 6430000
+          max: 7960000
+          tol: 0.01
 
   - name: SenterlinjeHoyde
     dtype: NUMBER

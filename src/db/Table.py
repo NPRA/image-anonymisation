@@ -45,6 +45,8 @@ class Column:
                 raise DatabaseTableError(f"Missing key 'dimension' in 'spatial_metadata' for column '{name}'")
             if "srid" not in spatial_metadata:
                 raise DatabaseTableError(f"Missing key 'srid' in 'spatial_metadata' for column '{name}'")
+            if "dim_elements" not in spatial_metadata:
+                raise DatabaseTableError(f"Missing key 'dim_elements' in 'spatial_metadata' for column '{name}'")
             self.spatial_metadata = spatial_metadata
 
     def __str__(self):

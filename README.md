@@ -248,8 +248,9 @@ The program expects to find the table layout in the YAML file `config/db_tables/
     Expected keys are:
     * `dimension`: Number of dimensions. Must be `2` or `3`.
     * `srid`: SRID for the object's coordinate system.
+    * `dim_elements`: A list where each element has `name`, `min`, `max` and `tol`. The elements are used to create the `DIMINFO` array in the spatial metadata table.
 
-For a table named `my_table`, the contents of `config/db_tables/<table_name>.yml` might look like:
+For a table named `my_table`, the contents of `config/db_tables/my_table.yml` might look like:
 ```yaml
 pk_column: UUID
 columns:
@@ -273,6 +274,16 @@ columns:
     spatial_metadata:
       dimension: 3
       srid: 4326
+      dim_elements:
+        - name: Longitude
+          min: -180
+          max: 180
+          tol: 0.5
+
+        - name: Latitude
+          min: -90
+          max: 90
+          tol: 0.5  
 ```
 
 Note that the example above expects to find the functions `uuid`, `timestamp` and `position`, in `src.db.formatters`.
