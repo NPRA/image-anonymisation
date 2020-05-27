@@ -143,6 +143,18 @@ def Delstrekning(json_data):
     return to_number(json_data["exif_delstrekning"])
 
 
+def Ankerpunkt(json_data):
+    return to_number(json_data["exif_ankerpunkt"])
+
+
+def Kryssdel(json_data):
+    return to_number(json_data["exif_kryssdel"])
+
+
+def Sideanleggsdel(json_data):
+    return to_number(json_data["exif_sideanleggsdel"])
+
+
 def StrekningReferanse(json_data):
     return json_data["exif_strekningreferanse"]
 

@@ -96,6 +96,21 @@ columns:
     formatter: Delstrekning
     extra:
 
+  - name: Ankerpunkt
+    dtype: NUMBER
+    formatter: Ankerpunkt
+    extra:
+
+  - name: Kryssdel
+    dtype: NUMBER
+    formatter: Kryssdel
+    extra:
+
+  - name: Sideanleggsdel
+    dtype: NUMBER
+    formatter: Sideanleggsdel
+    extra:
+
   - name: Meter
     dtype: NUMBER
     formatter: Meter
