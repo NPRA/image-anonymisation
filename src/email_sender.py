@@ -16,9 +16,9 @@ except ImportError:
     email_config = None
 
 
-CRITICAL_SUBJECT = "[image-anonymisation]: Execution stopped due to uncaught {etype}."
-ERROR_SUBJECT = "[image-anonymisation]: Processing error encountered."
-FINISHED_SUBJECT = "[image-anonymisation]: Anonymisation finished."
+CRITICAL_SUBJECT = "[image-anonymisation] {hostname} : Execution stopped due to uncaught {etype}."
+ERROR_SUBJECT = "[image-anonymisation] {hostname} : Processing error encountered."
+FINISHED_SUBJECT = "[image-anonymisation] {hostname} : Anonymisation finished."
 
 
 def email_excepthook(etype, ex, tb):
@@ -64,11 +64,11 @@ def send_mail(message_type, etype=None, ex=None, tb=None, msg=None):
     # Determine subject
     if message_type == "critical":
         msg = "".join(traceback.format_exception(etype, ex, tb))
-        subject = CRITICAL_SUBJECT.format(etype=etype.__name__)
+        subject = CRITICAL_SUBJECT.format(etype=etype.__name__, hostname=gethostname())
     elif message_type == "error":
-        subject = ERROR_SUBJECT
+        subject = ERROR_SUBJECT.format(hostname=gethostname())
     elif message_type == "finished":
-        subject = FINISHED_SUBJECT
+        subject = FINISHED_SUBJECT.format(hostname=gethostname())
     else:
         raise ValueError(f"Function `email.send_mail` got invalid message type: {message_type}")
     # Create the message
