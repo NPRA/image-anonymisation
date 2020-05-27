@@ -207,6 +207,7 @@ def get_summary(tree_walker, image_processor, start_datetime):
 
     lines = [
         "Anonymisation finished.",
+        f"Input folder: {tree_walker.input_folder}",
         f"Identified images: {tree_walker.n_valid_images + tree_walker.n_skipped_images}",
         f"Images skipped due to existing masks: {tree_walker.n_skipped_images}",
         f"Images skipped due to processing errors: {tree_walker.n_valid_images - image_processor.n_completed}",
