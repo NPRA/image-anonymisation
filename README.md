@@ -221,20 +221,21 @@ port = <smtp port>
 
 ## EXIF data to database
 ### Configuring the connection
-Create a file named `db_config.py` in the `config` directory. The file should contain the following variables:
-* `user`, `pwd`, `dsn`: Username, password and dsn used to access the database.
-* `table_name`: Table name.
-* `schema`: Schema for the database connection. (Can be `None`)
+Use the `scripts.db.create_db_config` script to create a database configuration file:
+```
+usage: python -m scripts.db.create_db_config [-h] --user USER --password PASSWORD --dsn DSN
+                                             [--schema SCHEMA] --table_name TABLE_NAME
 
-The contents of `config/db_config.py` might look like this:
-```python
-user = "<username>" 
-pwd = "<password>"
-dsn = "<dsn>"
-# Set this parameter if you want to use a table within a specific schema.
-schema = None 
-# Name of the table
-table_name = "<table name>"
+Create the db_config.py file, which configures the database connection.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --user USER           Database username
+  --password PASSWORD   Database password (will be encrypted)
+  --dsn DSN             Data source name (DSN)
+  --schema SCHEMA       Optional schema. Default is None
+  --table_name TABLE_NAME
+                        Database table name.
 ```
 
 ### Table specification

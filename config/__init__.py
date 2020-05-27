@@ -2,6 +2,7 @@ import os
 import yaml
 import argparse
 from datetime import datetime
+from cryptography.fernet import Fernet
 
 
 DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "default_config.yml")
@@ -98,3 +99,17 @@ def get_db_table_dict(table_name):
                             f" config file '{table_file}' for table name '{table_name}'")
 
     return table_dict
+
+
+def get_db_password_encryption_key():
+    try:
+        return os.environ["ORACLE_KEY"]
+    except Exception as err:
+        raise RuntimeError("Could not find environment variable 'ORACLE_KEY'. The key is required to decrypt the "
+                           "database password") from err
+
+
+def decrypt_db_password(encrypted_password):
+    f = Fernet(get_db_password_encryption_key())
+    decrypted_bytes = f.decrypt(encrypted_password)
+    return decrypted_bytes.decode("utf-8")

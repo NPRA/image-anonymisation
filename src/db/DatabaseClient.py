@@ -33,6 +33,8 @@ class DatabaseClient:
                                    database.
     :type max_n_accumulated_rows: int
     """
+    _CONNECTION_PWD = config.decrypt_db_password(db_config.encrypted_password)
+
     def __init__(self, max_n_accumulated_rows=8, max_n_errors=1000, max_cache_size=1000, table_name=None,
                  enable_cache=True):
         self.max_n_accumulated_rows = max_n_accumulated_rows
@@ -65,7 +67,8 @@ class DatabaseClient:
         :return: Database connection object
         :rtype: cxo.Connection
         """
-        connection = cxo.connect(db_config.user, db_config.pwd, db_config.dsn, encoding="UTF-8", nencoding="UTF-8")
+        connection = cxo.connect(db_config.user, DatabaseClient._CONNECTION_PWD, db_config.dsn, encoding="UTF-8",
+                                 nencoding="UTF-8")
         connection.inputtypehandler = DatabaseClient.input_type_handler
         if db_config.schema is not None:
             connection.current_schema = db_config.schema
