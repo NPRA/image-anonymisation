@@ -486,7 +486,7 @@ def _get_metadata_from_path_element(elem, parsed_exif):
     if veg_matches:
         parsed_exif["exif_vegkat"] = veg_matches[0][0].upper()
         parsed_exif["exif_vegstat"] = veg_matches[0][1].upper()
-        parsed_exif["exif_vegnr"] = veg_matches[0][2:].lstrip("0")
+        parsed_exif["exif_vegnr"] = veg_matches[0][2].lstrip("0")
         
     meter_match = METER_REGEX.findall(elem)
     kilometer_match = KILOMETER_REGEX.findall(elem)
