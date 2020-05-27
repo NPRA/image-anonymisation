@@ -482,7 +482,7 @@ def _get_metadata_from_path_element(elem, parsed_exif):
     if felt_matches:
         parsed_exif["exif_feltkode"] = felt_matches[0][0].lstrip("0")
 
-    veg_matches = VEG_REGEX.match(elem)
+    veg_matches = VEG_REGEX.findall(elem)
     if veg_matches:
         parsed_exif["exif_vegkat"] = veg_matches[0][0].upper()
         parsed_exif["exif_vegstat"] = veg_matches[0][1].upper()
