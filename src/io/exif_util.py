@@ -45,7 +45,7 @@ ID_REMOVE_FROM_FILENAME_PATTERN = re.compile(r"_f\d+")
 STREKNING_PATTERN = re.compile(r"S(\d+)D(\d+)\b")
 
 #: Pattern for extracting kryss-info from filename
-KRYSS_PATTERN = re.compile(r"_S(\d+)D(\d+)_m(\d+)_([KS])D(\d+)")
+KRYSS_PATTERN = re.compile(r"_S(\d+)D(\d+)_m(\d+)_([KSA])D(\d+)")
 
 EXIF_QUALITIES = {
     "good": "2",
