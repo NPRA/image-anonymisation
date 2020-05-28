@@ -224,6 +224,8 @@ class EXIFWorker(BaseWorker):
         :type local_json: bool
         :param remote_json: Write JSON file to the output (remote) directory?
         :type remote_json: bool
+        :param version: Version tag for the application. Will be written to the JSON-file
+        :type version: str
         :return: EXIF dict written to the specified locations
         :rtype: dict
         """

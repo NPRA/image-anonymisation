@@ -3,7 +3,6 @@ import json
 import iso8601
 import numpy as np
 
-import config
 from src.db import geometry
 from src.Logger import LOGGER
 from src.io.exif_util import get_deterministic_id

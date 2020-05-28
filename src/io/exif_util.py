@@ -139,6 +139,8 @@ def get_exif(img, image_path):
 
     :param img: Input image
     :type img: PIL.Image
+    :param image_path: Path to input image. Used to recreate metadata when EXIF-header is missing
+    :type image_path: str
     :return: EXIF data
     :rtype: dict
     """
@@ -243,6 +245,8 @@ def process_image_properties(contents, parsed_exif):
 
     :param contents: XML-contents
     :type contents: bytes
+    :param parsed_exif: Dictionary to hold the extracted values
+    :type parsed_exif: dict
     :return: Relevant information extracted from `contents`
     :rtype: dict
     """
@@ -396,6 +400,8 @@ def process_reflink_info(contents, parsed_exif):
     :param contents: XML-contents. If `contents` is `None`, a dict with the required keys and None values, will be
                      returned.
     :type contents: bytes | None
+    :param parsed_exif: Dictionary to hold the extracted values
+    :type parsed_exif: dict
     :return: Relevant information extracted from `contents`
     :rtype: dict
     """
