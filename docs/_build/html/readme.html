@@ -166,7 +166,7 @@ been created, and the model file has been downloaded.)</p>
 images will be written to an output directory with identical structure as the input folder. The program should be
 executed as a python-module from the root directory:</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">usage: python -m src.main [-h] [-i INPUT_FOLDER] [-o OUTPUT_FOLDER] [-a ARCHIVE_FOLDER]</span>
-<span class="c">                          [-l LOG_FOLDER] [--skip-clear-cache]</span>
+<span class="c">                          [-l LOG_FOLDER] [--skip-clear-cache] [-k CONFIG_FILE]</span>
 
 Image anonymisation
 
@@ -209,13 +209,16 @@ The latter also works when conda is not initialized in the shell, as long as the
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">draw_mask</span></code>: Apply the mask to the output image?</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">delete_input</span></code>: Delete the original image from the input directory when the masking is completed?</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">force_remask</span></code>: Recompute masks even though a .webp file exists in the input folder.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">force_remask</span></code>: Recompute masks even though a .webp file exists in the output folder.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">lazy_paths</span></code>: When <code class="docutils literal notranslate"><span class="pre">lazy_paths</span> <span class="pre">=</span> <span class="pre">True</span></code>, traverse the file tree during the masking process. Otherwise, all paths will be identified and stored before the masking starts.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">file_access_retry_seconds</span></code>: Number of seconds to wait before (re)trying to access a file/directory which cannot currently be reached. This applies to both reading input files, and writing output files.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">file_access_timeout_seconds</span></code>: Total number of seconds to wait before giving up on accessing a file/directory which cannot currently be reached. This also applies to both reading input files, and writing output files.</p></li>
 <li><p><cite>datetime_format</cite>: Timestamp format. See <a class="reference external" href="https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior">https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior</a> for more information.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">log_file_name</span></code>: Name of the log file. <code class="docutils literal notranslate"><span class="pre">{datetime}</span></code> will be replaced with a timestamp formatted as <code class="docutils literal notranslate"><span class="pre">datetime_format</span></code>. <code class="docutils literal notranslate"><span class="pre">{hostname}</span></code> will be replaced with the host name.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">log_level</span></code>: Logging level for the application. This controls the log level for terminal logging and file logging (if it is enabled). Must be one of {“DEBUG”, “INFO”, “WARNING”, “ERROR”}.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">application_version</span></code>: Version number for the application. Will be written to JSON files and database.</p></li>
+<li><p><cite>exif_mappenavn</cite>: Formatter for <cite>mappenavn</cite> in the JSON file. <cite>relative_input_dir</cite> is the path to the folder containing the image, relative to <cite>exif_top_dir</cite> below. For instance, if the image is located at <cite>C:FooBarBazHelloWorld.jpg`</cite>, and``exif_top_dir = Bar<code class="docutils literal notranslate"><span class="pre">,</span> <span class="pre">then</span></code>relative_input_dir<code class="docutils literal notranslate"><span class="pre">will</span> <span class="pre">be</span></code>BazHello`.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exif_top_dir</span></code>: Top directory for <code class="docutils literal notranslate"><span class="pre">relative_input_dir</span></code>. See above for an explanation.</p></li>
 </ul>
 </div>
 <div class="section" id="file-i-o-parameters">
@@ -247,7 +250,7 @@ The latter also works when conda is not initialized in the shell, as long as the
 <div class="section" id="parameters-controlling-the-appearance-of-the-anonymised-regions">
 <h4>Parameters controlling the appearance of the anonymised regions<a class="headerlink" href="#parameters-controlling-the-appearance-of-the-anonymised-regions" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
-<li><p><cite>mask_color</cite>: “RGB tuple (0-255) indicating the masking color. Setting this option will override the colors specified below. Example: Setting <code class="docutils literal notranslate"><span class="pre">mask_color</span> <span class="pre">=</span> <span class="pre">(50,</span> <span class="pre">50,</span> <span class="pre">50)</span></code> will make all masks dark gray.</p></li>
+<li><p><cite>mask_color</cite>: “RGB tuple (0-255) indicating the masking color. Setting this option will override the colors specified below. Example: Setting <code class="docutils literal notranslate"><span class="pre">mask_color</span> <span class="pre">=</span> <span class="pre">[50,</span> <span class="pre">50,</span> <span class="pre">50]</span></code> will make all masks dark gray.</p></li>
 <li><p><cite>blur</cite>: Blurring coefficient (1-100) which specifies the degree of blurring to apply within the mask. When this parameter is specified, the image will be blurred, and not masked with a specific color. Set <cite>blur = None</cite> to disable blurring, and use colored masks instead. Default: <code class="docutils literal notranslate"><span class="pre">15</span></code></p></li>
 <li><p><cite>gray_blur</cite>: Convert the image to grayscale before blurring? (Ignored if blurring is disabled) Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
 <li><p><cite>normalized_gray_blur</cite>: Normalize the gray level within each mask after blurring? This will make bright colors indistinguishable from dark colors. NOTE: Requires <code class="docutils literal notranslate"><span class="pre">gray_blur=True</span></code> Default: True</p></li>
@@ -268,7 +271,6 @@ The latter also works when conda is not initialized in the shell, as long as the
 <li><p><code class="docutils literal notranslate"><span class="pre">db_max_n_accumulated_rows</span></code>: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">db_max_n_errors</span></code>: If the number of failed insertions/updates exceeds this number, a RuntimeError will be raised.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">db_max_cache_size</span></code>: If the number of cached rows exceeds this number, a RuntimeError will be raised.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">db_folder_name</span></code>: Format of the “Mappenavn” column in the database.</p></li>
 </ul>
 <div class="section" id="custom-configuration-file">
 <h5>Custom configuration file<a class="headerlink" href="#custom-configuration-file" title="Permalink to this headline">¶</a></h5>
@@ -297,20 +299,20 @@ contains the following:</p>
 </div>
 <div class="section" id="exif-data-to-database">
 <h3>EXIF data to database<a class="headerlink" href="#exif-data-to-database" title="Permalink to this headline">¶</a></h3>
-<p>Create a file named <code class="docutils literal notranslate"><span class="pre">db_config.py</span></code> in the <code class="docutils literal notranslate"><span class="pre">config</span></code> directory. The file should contain the following variables:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">user</span></code>, <code class="docutils literal notranslate"><span class="pre">pwd</span></code>, <code class="docutils literal notranslate"><span class="pre">dsn</span></code>: Username, password and dsn used to access the database.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">table_name</span></code>: Table name.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">schema</span></code>: Schema for the database connection. (Can be <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
-</ul>
-<p>The contents of <code class="docutils literal notranslate"><span class="pre">config/db_config.py</span></code> might look like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="s2">&quot;&lt;username&gt;&quot;</span>
-<span class="n">pwd</span> <span class="o">=</span> <span class="s2">&quot;&lt;password&gt;&quot;</span>
-<span class="n">dsn</span> <span class="o">=</span> <span class="s2">&quot;&lt;dsn&gt;&quot;</span>
-<span class="c1"># Set this parameter if you want to use a table within a specific schema.</span>
-<span class="n">schema</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="c1"># Name of the table</span>
-<span class="n">table_name</span> <span class="o">=</span> <span class="s2">&quot;&lt;table name&gt;&quot;</span>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">scripts.db.create_db_config</span></code> script to create a database configuration file:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">usage: python -m scripts.db.create_db_config [-h] --user USER --password PASSWORD --dsn DSN</span>
+<span class="c">                                             [--schema SCHEMA] --table_name TABLE_NAME</span>
+
+Create the db_config.py file, which configures the database connection.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --user USER           Database username
+  --password PASSWORD   Database password (will be encrypted)
+  --dsn DSN             Data source name (DSN)
+  --schema SCHEMA       Optional schema. Default is None
+  --table_name TABLE_NAME
+                        Database table name.
 </pre></div>
 </div>
 <p>The program expects to find the table layout in the YAML file <code class="docutils literal notranslate"><span class="pre">config/db_tables/&lt;table_name&gt;.yml</span></code>. The file should contain the following keys:</p>
@@ -327,12 +329,13 @@ Expected keys are:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">dimension</span></code>: Number of dimensions. Must be <code class="docutils literal notranslate"><span class="pre">2</span></code> or <code class="docutils literal notranslate"><span class="pre">3</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">srid</span></code>: SRID for the object’s coordinate system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dim_elements</span></code>: A list where each element has <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">min</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span></code> and <code class="docutils literal notranslate"><span class="pre">tol</span></code>. The elements are used to create the <code class="docutils literal notranslate"><span class="pre">DIMINFO</span></code> array in the spatial metadata table.</p></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-<p>For a table named <code class="docutils literal notranslate"><span class="pre">my_table</span></code>, the contents of <code class="docutils literal notranslate"><span class="pre">config/db_tables/&lt;table_name&gt;.yml</span></code> might look like:</p>
+<p>For a table named <code class="docutils literal notranslate"><span class="pre">my_table</span></code>, the contents of <code class="docutils literal notranslate"><span class="pre">config/db_tables/my_table.yml</span></code> might look like:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">pk_column</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">UUID</span>
 <span class="nt">columns</span><span class="p">:</span>
   <span class="c1"># ID column. Used as primary key</span>
@@ -353,13 +356,21 @@ Expected keys are:</p>
     <span class="nt">formatter</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">position</span>
     <span class="nt">extra</span><span class="p">:</span>
     <span class="nt">spatial_metadata</span><span class="p">:</span>
-      <span class="nt">dimension</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
+      <span class="nt">dimension</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
       <span class="nt">srid</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4326</span>
+      <span class="nt">dim_elements</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Longitude</span>
+          <span class="nt">min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">-180</span>
+          <span class="nt">max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">180</span>
+          <span class="nt">tol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
+
+        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Latitude</span>
+          <span class="nt">min</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">-90</span>
+          <span class="nt">max</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">90</span>
+          <span class="nt">tol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.5</span>
 </pre></div>
 </div>
 <p>Note that the example above expects to find the functions <code class="docutils literal notranslate"><span class="pre">uuid</span></code>, <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> and <code class="docutils literal notranslate"><span class="pre">position</span></code>, in <code class="docutils literal notranslate"><span class="pre">src.db.formatters</span></code>.</p>
-<p>See <a class="reference external" href="config/db_tables/test_anonymisering_vegbilder.yml">test_anonymisering_vegbilder.yml</a> and
-<a class="reference external" href="config/db_tables/test_anonymisering_vegbilder_2d.yml">test_anonymisering_vegbilder_2d.yml</a> for other examples.</p>
 <p>When the parameters above have been configured correctly, the EXIF data can be written to the database by using the <code class="docutils literal notranslate"><span class="pre">json_to_db</span></code> script:</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>python -m scripts.db.json_to_db -i &lt;base input folder&gt;
 </pre></div>
@@ -390,7 +401,7 @@ to run the tests:</p>
 </div>
 <div class="section" id="extra-scripts">
 <h3>Extra scripts<a class="headerlink" href="#extra-scripts" title="Permalink to this headline">¶</a></h3>
-<p>The following scripts are available:</p>
+<p>The following extra scripts are available:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">scripts.create_json</span></code>: Traverses a directory tree and creates JSON-files for all <code class="docutils literal notranslate"><span class="pre">.jpg</span></code> files found in the tree.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">scripts.check_folders</span></code>: Traverses a set of input/output/archive folders and checks that all files are present/not present, as specified in the config file.</p></li>

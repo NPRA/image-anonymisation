@@ -7,9 +7,6 @@ config
 .. automodule:: config
    :members:
 
-.. automodule:: config.config
-   :members:
-
 db
 =========================
 db.DatabaseClient
@@ -32,11 +29,6 @@ io
 io.exif_util
 -------------------------
 .. automodule:: src.io.exif_util
-   :members:
-
-io.load
--------------------------
-.. automodule:: src.io.load
    :members:
 
 io.save

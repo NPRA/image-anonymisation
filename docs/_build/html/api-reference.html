@@ -41,6 +41,7 @@
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="module-config">
 <span id="config"></span><h2>config<a class="headerlink" href="#module-config" title="Permalink to this headline">¶</a></h2>
+<p>This module manages the configuration variables. The config-setup is further documented in the README.</p>
 <dl class="function">
 <dt id="config.get_db_table_dict">
 <code class="sig-prename descclassname">config.</code><code class="sig-name descname">get_db_table_dict</code><span class="sig-paren">(</span><em class="sig-param">table_name</em><span class="sig-paren">)</span><a class="headerlink" href="#config.get_db_table_dict" title="Permalink to this definition">¶</a></dt>
@@ -367,8 +368,14 @@ contained in a file named <cite>&lt;name&gt;.yml</cite> located in <cite>config/
 </dd></dl>
 
 <dl class="data">
+<dt id="src.io.exif_util.KRYSS_PATTERN">
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">KRYSS_PATTERN</code><em class="property"> = re.compile('_S(\\d+)D(\\d+)_m(\\d+)_([KS])D(\\d+)')</em><a class="headerlink" href="#src.io.exif_util.KRYSS_PATTERN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for extracting kryss-info from filename</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="src.io.exif_util.EXIF_TEMPLATE">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">EXIF_TEMPLATE</code><em class="property"> = {'bildeid': None, 'detekterte_objekter': None, 'exif_dato': None, 'exif_delstrekning': None, 'exif_downrmserror': None, 'exif_eastrmserror': None, 'exif_feltkode': None, 'exif_filnavn': None, 'exif_fylke': None, 'exif_geoidalseparation': None, 'exif_gpsposisjon': None, 'exif_heading': None, 'exif_headingrmserror': None, 'exif_hp': None, 'exif_imageproperties': None, 'exif_kvalitet': None, 'exif_mappenavn': None, 'exif_meter': None, 'exif_northrmserror': None, 'exif_pitch': None, 'exif_pitchrmserror': None, 'exif_reflinkid': None, 'exif_reflinkinfo': None, 'exif_reflinkposisjon': None, 'exif_roadident': None, 'exif_roll': None, 'exif_rollrmserror': None, 'exif_speed': None, 'exif_strekning': None, 'exif_strekningreferanse': None, 'exif_strekningsnavn': None, 'exif_tid': None, 'exif_vegkat': None, 'exif_vegnr': None, 'exif_vegstat': None, 'exif_xptitle': None, 'relative_input_dir': None, 'senterlinjeposisjon': None, 'versjon': None}</em><a class="headerlink" href="#src.io.exif_util.EXIF_TEMPLATE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">EXIF_TEMPLATE</code><em class="property"> = {'bildeid': None, 'detekterte_objekter': None, 'exif_ankerpunkt': None, 'exif_dato': None, 'exif_delstrekning': None, 'exif_downrmserror': None, 'exif_eastrmserror': None, 'exif_feltkode': None, 'exif_filnavn': None, 'exif_fylke': None, 'exif_geoidalseparation': None, 'exif_gpsposisjon': None, 'exif_heading': None, 'exif_headingrmserror': None, 'exif_hp': None, 'exif_imageproperties': None, 'exif_kryssdel': None, 'exif_kvalitet': None, 'exif_mappenavn': None, 'exif_meter': None, 'exif_northrmserror': None, 'exif_pitch': None, 'exif_pitchrmserror': None, 'exif_reflinkid': None, 'exif_reflinkinfo': None, 'exif_reflinkposisjon': None, 'exif_roadident': None, 'exif_roll': None, 'exif_rollrmserror': None, 'exif_sideanleggsdel': None, 'exif_speed': None, 'exif_strekning': None, 'exif_strekningreferanse': None, 'exif_strekningsnavn': None, 'exif_tid': None, 'exif_vegkat': None, 'exif_vegnr': None, 'exif_vegstat': None, 'exif_xptitle': None, 'mappenavn': None, 'senterlinjeposisjon': None, 'versjon': None}</em><a class="headerlink" href="#src.io.exif_util.EXIF_TEMPLATE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Template dictionary for the EXIF contents.</p>
 </dd></dl>
 
@@ -391,11 +398,14 @@ contained in a file named <cite>&lt;name&gt;.yml</cite> located in <cite>config/
 
 <dl class="function">
 <dt id="src.io.exif_util.get_exif">
-<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_exif</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">image_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_exif" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.io.exif_util.</code><code class="sig-name descname">get_exif</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">image_path</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.exif_util.get_exif" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse the EXIF data from <cite>img</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>img</strong> (<em>PIL.Image</em>) – Input image</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>PIL.Image</em>) – Input image</p></li>
+<li><p><strong>image_path</strong> (<em>str</em>) – Path to input image. Used to recreate metadata when EXIF-header is missing</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>EXIF data</p>
@@ -447,7 +457,10 @@ timestamp and filename (without extension and “feltkode”).</p>
 <dd><p>Process the <cite>ImageProperties</cite> XML from the EXIF header</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>contents</strong> (<em>bytes</em>) – XML-contents</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contents</strong> (<em>bytes</em>) – XML-contents</p></li>
+<li><p><strong>parsed_exif</strong> (<em>dict</em>) – Dictionary to hold the extracted values</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Relevant information extracted from <cite>contents</cite></p>
@@ -498,48 +511,17 @@ timestamp and filename (without extension and “feltkode”).</p>
 <dd><p>Process the <cite>ReflinkInfo</cite> XML from the EXIF header.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>contents</strong> (<em>bytes | None</em>) – XML-contents. If <cite>contents</cite> is <cite>None</cite>, a dict with the required keys and None values, will be
-returned.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contents</strong> (<em>bytes | None</em>) – XML-contents. If <cite>contents</cite> is <cite>None</cite>, a dict with the required keys and None values, will be
+returned.</p></li>
+<li><p><strong>parsed_exif</strong> (<em>dict</em>) – Dictionary to hold the extracted values</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Relevant information extracted from <cite>contents</cite></p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
-<div class="section" id="module-src.io.load">
-<span id="io-load"></span><h3>io.load<a class="headerlink" href="#module-src.io.load" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="src.io.load.load_image">
-<code class="sig-prename descclassname">src.io.load.</code><code class="sig-name descname">load_image</code><span class="sig-paren">(</span><em class="sig-param">image_path</em>, <em class="sig-param">read_exif=True</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.load.load_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads the image at ‘image_path’ and returns it as an array. None is returned i the image could not be loaded.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>image_path</strong> (<em>str</em>) – Path to image. Must end with ‘.jpg’</p></li>
-<li><p><strong>read_exif</strong> (<em>bool</em>) – Read the EXIF data from the input image?</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Image array</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>(np.ndarray, dict | None) | None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="src.io.load.check_input_img">
-<code class="sig-prename descclassname">src.io.load.</code><code class="sig-name descname">check_input_img</code><span class="sig-paren">(</span><em class="sig-param">img</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.load.check_input_img" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that the given image (represented as a numpy array) is valid for masking.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p>
 </dd>
 </dl>
 </dd></dl>
@@ -634,6 +616,17 @@ indistinguishable from dark colors. NOTE: Requires gray_blur=True.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>tf.data.Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.io.tf_dataset.check_input_img">
+<code class="sig-prename descclassname">src.io.tf_dataset.</code><code class="sig-name descname">check_input_img</code><span class="sig-paren">(</span><em class="sig-param">img</em><span class="sig-paren">)</span><a class="headerlink" href="#src.io.tf_dataset.check_input_img" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that the given image (represented as a numpy array) is valid for masking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>np.ndarray</em>) – Input image</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1303,6 +1296,7 @@ in <cite>config</cite>.</p>
 <li><p><strong>mask_results</strong> (<em>dict</em>) – Results from <cite>src.Masker.Masker.mask</cite></p></li>
 <li><p><strong>local_json</strong> (<em>bool</em>) – Write JSON file to the input (local) directory?</p></li>
 <li><p><strong>remote_json</strong> (<em>bool</em>) – Write JSON file to the output (remote) directory?</p></li>
+<li><p><strong>version</strong> (<em>str</em>) – Version tag for the application. Will be written to the JSON-file</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1337,7 +1331,6 @@ in <cite>config</cite>.</p>
 </li>
 <li><a class="reference internal" href="#io">io</a><ul>
 <li><a class="reference internal" href="#module-src.io.exif_util">io.exif_util</a></li>
-<li><a class="reference internal" href="#module-src.io.load">io.load</a></li>
 <li><a class="reference internal" href="#module-src.io.save">io.save</a></li>
 <li><a class="reference internal" href="#module-src.io.tf_dataset">io.tf_dataset</a></li>
 <li><a class="reference internal" href="#module-src.io.TreeWalker">io.TreeWalker</a></li>

@@ -1,3 +1,6 @@
+"""
+This module manages the configuration variables. The config setup is further documented in the README.
+"""
 import os
 import yaml
 import argparse
