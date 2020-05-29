@@ -142,7 +142,7 @@ processing_error_email: True
 finished_email: True
 
 #: Attach the log file to emails?
-email_attach_log_file: False
+email_attach_log_file: True
 
 
 # ======================
