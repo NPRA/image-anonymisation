@@ -107,7 +107,7 @@ def create_base_message(subject, msg=None):
     if msg is not None:
         _append_content(message, msg)
     # Attach the log file if it is available
-    if LOGGER.log_file_path is not None:
+    if LOGGER.log_file_path is not None and config.email_attach_log_file:
         _attach_log_file(message)
     return message.as_string()
 

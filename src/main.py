@@ -213,6 +213,10 @@ def get_summary(tree_walker, image_processor, start_datetime):
         f"Images skipped due to processing errors: {tree_walker.n_valid_images - image_processor.n_completed}",
         f"Masked images: {image_processor.n_completed}",
     ]
+    if len(tree_walker.mirror_folders) > 1:
+        lines.insert(2, f"Archive folder: {tree_walker.mirror_folders[1]}")
+    if len(tree_walker.mirror_folders) > 0:
+        lines.insert(2, f"Output folder: {tree_walker.mirror_folders[0]}")
 
     if image_processor.database_client is not None:
         cli = image_processor.database_client

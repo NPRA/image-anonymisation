@@ -141,6 +141,9 @@ processing_error_email: True
 #: Send an email when the anonymisation finishes normally.
 finished_email: True
 
+#: Attach the log file to emails?
+email_attach_log_file: False
+
 
 # ======================
 # Database configuration

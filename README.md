@@ -190,6 +190,7 @@ The user-specifiable configuration parameters can be found in [config/default_co
 * `uncaught_exception_email`: Send an email if the program exits abnormally due to an uncaught exception.
 * `processing_error_email`: Send an email if a processing error is encountered, but the program is able to continue
 * `finished_email`: Send an email when the anonymisation finishes normally.
+* `email_attach_log`: Attach the log file to emails?
 
 #### Database configuration
 * `write_exif_to_db`: Write the EXIF data to the database?
