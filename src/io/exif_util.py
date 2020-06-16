@@ -200,9 +200,9 @@ def get_deterministic_id(exif):
 def get_mappenavn(image_path, exif):
     dirs = image_path.split(os.sep)[:-1]
     if config.exif_top_dir in dirs:
-        # Uncomment below for forward-slash separator.
-        # rel_path = "/".join(dirs[(dirs.index(config.exif_top_dir) + 1):])
-        rel_path = os.sep.join(dirs[(dirs.index(config.exif_top_dir) + 1):])
+        # Uncomment below for forward-slash separator or backward-slash.
+        rel_path = "/".join(dirs[(dirs.index(config.exif_top_dir) + 1):])
+        # rel_path = os.sep.join(dirs[(dirs.index(config.exif_top_dir) + 1):])
     else:
         LOGGER.warning(__name__, f"Top directory '{config.exif_top_dir}' not found in image path '{image_path}'. "
                                  f"'rel_path' will be empty")
