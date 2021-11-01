@@ -41,17 +41,13 @@ def make_cutouts(img, window_width_scale, window_height_scale, step_factor=400):
                 ]
             print(f"x: {x}, y: {y}")
             
-            cv2.imwrite(os.path.join(out_path,"preprocessing_crop_1", f"cropped_x_{x}_y_{y}.jpg"), cropped_img)   
+            cv2.imwrite(os.path.join(out_path,"preprocessing_crop_2", f"cropped_x_{x}_y_{y}.jpg"), cropped_img)   
 
 if __name__ == '__main__':
-    out_path = os.environ("OUT_PATH_PREPROCESS")
-    image = os.environ("IN_IMAGE_PREPROCESS")
+    out_path = os.environ["OUT_PATH_PREPROCESS"]
+    image = cv2.imread(os.environ["IN_IMAGE_PREPROCESS"])
     
-    
-    out_path = "C:\\Users\\norpal\\Documents\\utfordring\\"
     # Load image
-    #image = cv2.imread("C:\\Users\\norpal\\Documents\\utfordring\\RV00036_S1D1_m6737_KD1_m00016_f1.jpg")
-    image = cv2.imread("C:\\Users\\norpal\\Documents\\utfordring\\EV00006_S34D1_m00001_f2.jpg")
     #image = cv2.resize(image, (500,600), interpolation=cv2.INTER_AREA)
 
     # 1. Adjust brightness and contrast

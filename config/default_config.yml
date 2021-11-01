@@ -41,10 +41,10 @@ application_version: "0.1"
 #: Formatter for `mappenavn` in the JSON-file. `relative_input_dir` is the path to the folder containing the image,
 #: relative to `exif_top_dir` below. For instance, if the image is located at `C:\Foo\Bar\Baz\Hello\World.jpg`, and
 #: `exif_top_dir = Bar`, then `relative_input_dir` will be `Baz\Hello`.
-exif_mappenavn: "Vegbilder\\{relative_input_dir}"
+exif_mappenavn: "Documents\\{relative_input_dir}"
 
 #: Top directory for `relative_input_dir`. See above for an explanation.
-exif_top_dir: TilSladding
+exif_top_dir: "E6_360_ViaTech"
 
 
 # ===================
@@ -52,19 +52,19 @@ exif_top_dir: TilSladding
 # ===================
 
 #: Write the EXIF .json file to the output (remote) directory?
-remote_json: True
+remote_json: False
 
 #: Write the EXIF .json file to the input (local) directory?
-local_json: False
+local_json: True
 
 #: Write the EXIF .json file to the archive directory?
 archive_json: False
 
 #: Write mask file to the output (remote) directory?
-remote_mask: True
+remote_mask: False
 
 #: Write the mask file to the input (local) directory?
-local_mask: False
+local_mask: True
 
 #: Write mask file to the archive directory?
 archive_mask: False
@@ -152,16 +152,16 @@ extra_prerpocessing_temp_foldername: "/temp"
 # Note: E-mail sending requires additional configuration. This is documented in the README.
 
 #: Send an email if the program exits abnormally due to an uncaught exception.
-uncaught_exception_email: True
+uncaught_exception_email: False
 
 #: Send an email if a processing error is encountered, but the program is able to continue
-processing_error_email: True
+processing_error_email: False
 
 #: Send an email when the anonymisation finishes normally.
-finished_email: True
+finished_email: False
 
 #: Attach the log file to emails?
-email_attach_log_file: True
+email_attach_log_file: False
 
 
 # ======================
@@ -173,7 +173,7 @@ email_attach_log_file: True
 # responsible for the database writing.
 
 #: Write the EXIF data to the database?
-write_exif_to_db: True
+write_exif_to_db: False
 
 #: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
 db_max_n_accumulated_rows: 100

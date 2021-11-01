@@ -89,7 +89,7 @@ foreach($file in  $tmp_config_dirs){
     python -m src.main -i $input_folder -o $output -l $log
     #python -m src.main -i $input_folder -o $output_folder_base_name -l $log -k $configfile
     # cd back to script folder
-    cd "$PROJECT_ROOT_FOLDER/scripts"
+    cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
     "Finished experiment`n"
 }
 "Finished script`n"
