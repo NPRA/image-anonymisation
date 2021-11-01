@@ -151,3 +151,6 @@ tests/data/json_files
 
 docs/_build/*
 !docs/_build/html/
+
+# Scripts
+scripts/set_envs.ps1
