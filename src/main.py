@@ -57,7 +57,10 @@ def check_config(args):
         raise ValueError("Parameter 'archive_json' requires remote_json=True.")
     if config.archive_mask and not config.remote_mask:
         raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
-
+    if config.extra_preprocessing and not os.path.isdir(config.extra_preprocessing_temp_foldername):
+        os.mkdir(config.extra_preprocessing_temp_foldername)
+        LOGGER.info(__name__, f"Parameter 'extra_preprocessing_temp_foldername' does not refer to an existing folder. " \
+                              f"Creating folder '{config.extra_preprocessing_temp_foldername}'")
     if config.delete_input:
         LOGGER.warning(__name__, "Parameter 'delete_input' is enabled. This will permanently delete the original"
                                  " image from the input directory!")
