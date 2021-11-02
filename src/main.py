@@ -46,9 +46,7 @@ def get_args():
                         help="Disables the clearing of cahce files at startup.")
     parser.add_argument("-k", dest="config_file", default=None,
                         help=f"Path to custom configuration file. See the README for details. Default is "
-                             f"{config.DEFAULT_CONFIG_FILE}")
-    parser.add_argument("-i_t","--image_type", dest="image_type", default="planar",
-                    help="The type of the input images. Accepted values are {'planar','360'}. Default is 'planar'")                         
+                             f"{config.DEFAULT_CONFIG_FILE}")                         
     args = parser.parse_args()
     return args
 
@@ -57,6 +55,10 @@ def check_config(args):
     """ Check that the specified configuration variables are valid. """
     if config.archive_json and not config.remote_json:
         raise ValueError("Parameter 'archive_json' requires remote_json=True.")
+    if (config.remote_thumbnail or config.local_thumbnail) and not config.thumbnail_dim:
+        raise ValueError("Parameter 'remote_thumbnail' and 'local_thumbnail' requires 'thumbnail_dim'")
+    if config.archive_thumbnail and not config.remote_thumbnail:
+        raise ValueError("Parameter 'archive_thumbnail' requires remote_thumbnail=True.")
     #if config.archive_mask and not config.remote_mask:
         #raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
     if config.extra_preprocessing and not os.path.isdir(config.extra_preprocessing_temp_foldername):

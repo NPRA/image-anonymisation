@@ -11,7 +11,8 @@ from src.io.file_access_guard import wait_until_path_is_found
 
 
 def save_processed_img(img, mask_results, paths, draw_mask=False, mask_color=None,
-                       blur=None, gray_blur=True, normalized_gray_blur=True):
+                       blur=None, gray_blur=True, normalized_gray_blur=True,
+                       remote_thumbnail=False, local_thumbnail=False):
     """
     Save an image which has been processed by the masker.
 
@@ -55,7 +56,12 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, mask_color=Non
     # Save masked image
     pil_img = Image.fromarray(img[0].astype(np.uint8))
     pil_img.save(paths.output_file)
-
+    if local_thumbnail:
+        wait_until_path_is_found([paths.input_dir])
+        _save_thumbnail(pil_img, config.thumbnail_dim, paths.input_thumbnail)
+    if remote_thumbnail:
+        wait_until_path_is_found([paths.output_dir])
+        _save_thumbnail(pil_img, config.thumbnail_dim, paths.output_thumbnail)
     # if local_mask:
     #     wait_until_path_is_found([paths.input_dir])
     #     _save_mask(agg_mask, paths.input_webp)
@@ -141,6 +147,25 @@ def _apply_normalized_gray_blur(img, mask, ksize):
     blurred_large = cv2.blur(gray, (large_ksize, large_ksize))[None, :, :, None]
     img[mask] = blurred[mask] - blurred_large[mask] + default_gray_value
 
+def _save_thumbnail(img, out_dim, output_path):
+    """
+    Save a thumbnail version of the image
+    """
+    img_w, img_h = img.size
+    center_pixel = np.asarray([int(img_w//2), int(img_h//2)])
+    dim_relative_to_center = np.asarray(out_dim)/2
+    # Make sure the dims are of type int
+    dim_relative_to_center = dim_relative_to_center.astype(int)
+
+    left = int(center_pixel[0]-dim_relative_to_center[0])
+    right = int(center_pixel[0] + dim_relative_to_center[0])
+    upper = int(center_pixel[1]-dim_relative_to_center[1])
+    lower = int(center_pixel[1]+dim_relative_to_center[1])
+
+    print(f"dim-relative: {dim_relative_to_center}, center_pixel: {center_pixel}")
+    thumbnail = img.crop((left, upper, right, lower))
+    print(f"thumbnail shape: {thumbnail.size}, left: {left}, right: {right}, upper: {upper}, lower: {lower} ")
+    thumbnail.save(output_path)
 
 # def _save_mask(mask, output_webp):
 #     mask = np.tile(mask[0, :, :, None], (1, 1, 3)).astype(np.uint8)

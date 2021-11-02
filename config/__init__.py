@@ -35,17 +35,12 @@ def _get_config_file():
     :rtype: str
     """
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("-k", dest="config_file", default=DEFAULT_CONFIG_FILE)
-    parser.add_argument("-i_t","--image_type", dest="image_type", default="planar",
-                        help="The type of the input images. Accepted values are {'planar','360'}. Default is 'Planar'")    
+    parser.add_argument("-k", dest="config_file", default=DEFAULT_CONFIG_FILE)    
     args, *_ = parser.parse_known_args()
-    if os.path.abspath(args.config_file) == DEFAULT_CONFIG_FILE and args.image_type == "360":
-        # Change the config default to point to the 360 config file if the image type is 360
-        config_file = os.path.abspath(DEFAULT_360_CONFIG_FILE)
-    else:
-        config_file = os.path.abspath(args.config_file)
+
+    config_file = os.path.abspath(args.config_file)
     
-    return config_file, args.image_type
+    return config_file
 
 
 def _load_from_config_file(config_file):
@@ -67,8 +62,7 @@ def _load_from_config_file(config_file):
 
 
 # Get the config file from the command line arguments
-config_file, img_type = _get_config_file()
-print(f"IMAGE TYPE: {img_type}, IMGTYPE == 360: {img_type == '360'}")
+config_file = _get_config_file()
 
 # Load the contents of the config file to the config namespace
 _load_from_config_file(config_file)

@@ -138,9 +138,10 @@ class SaveWorker(BaseWorker):
         # Arguments to async. function
         # Removed entries: save_args = {local_mask=config.local_mask, remote_mask=config.remote_mask}
         # Removed entries: archive_args = {archive_mask=config.archive_mask}
-        save_args = dict(draw_mask=config.draw_mask, mask_color=config.mask_color, blur=config.blur, gray_blur=config.gray_blur,
-                         normalized_gray_blur=config.normalized_gray_blur)
-        archive_args = dict(archive_json=config.archive_json, assert_output_mask=True)
+        save_args = dict(draw_mask=config.draw_mask, local_thumbnail=config.local_thumbnail, remote_thumbnail=config.remote_thumbnail, 
+                        mask_color=config.mask_color, blur=config.blur, gray_blur=config.gray_blur,
+                        normalized_gray_blur=config.normalized_gray_blur)
+        archive_args = dict(archive_thumbnail=config.archive_thumbnail, archive_json=config.archive_json, assert_output_mask=True)
         self.args = (img, mask_results, self.paths, save_args, archive_args)
 
         self.start()

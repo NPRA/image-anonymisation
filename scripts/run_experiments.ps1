@@ -73,23 +73,42 @@ $log_folder_base_name = $Env:EXPERIMENT_LOG_FOLDER_BASE
 $tmp_config_dirs = dir "tmp/configs"
 $num_experiments = Get-ChildItem $tmp_config_dirs -Recurse -File | Measure-Object | %{$_.Count}
 
-"Running a total of $num_experiments experiments...`n`n"
-foreach($file in  $tmp_config_dirs){
+"Running one iteration of image anonymisation"
+$output = "$output_folder_base_name"
+$log = "$log_folder_base_name"
+#: planar
+# $configfile = $Env:DEFAULT_CONFIG
+# 360
+$configfile = $Env:DEFAULT_360_CONFIG
+# cd to root folder
+cd $Env:PROJECT_ROOT_FOLDER
+#python -m src.main -i $input_folder -o $output -l $log
+python -m src.main -i $input_folder -o $output -l $log -k $configfile
+
+#: Cd back to script folder
+cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
+
+# "Running a total of $num_experiments experiments...`n`n"
+# run image anonymisation
+# foreach($file in  $tmp_config_dirs){
     
     
-    "@@@@@@@@@@@@@@@@@@@@@@@@ Experiment $file @@@@@@@@@@@@@@@@@@@@@@@@"
-    $option = $file.BaseName
-    $output = "$output_folder_base_name"
-    $log = "$log_folder_base_name"
-    $configfile = $file.FullName
-    #"$option, $output, $log, $configfile"
-    # cd to root of folder
-    cd $Env:PROJECT_ROOT_FOLDER
-    # Run the image anonymisation
-    python -m src.main -i $input_folder -o $output -l $log -i_t "360"
-    #python -m src.main -i $input_folder -o $output_folder_base_name -l $log -k $configfile
-    # cd back to script folder
-    cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
-    "Finished experiment`n"
-}
+#     "@@@@@@@@@@@@@@@@@@@@@@@@ Experiment $file @@@@@@@@@@@@@@@@@@@@@@@@"
+#     $option = $file.BaseName
+#     $output = "$output_folder_base_name"
+#     $log = "$log_folder_base_name"
+#     $configfile = $file.FullName
+#     #"$option, $output, $log, $configfile"
+#     # cd to root of folder
+#     cd $Env:PROJECT_ROOT_FOLDER
+#     # Run the image anonymisation
+#     # Planar
+#     python -m src.main -i $input_folder -o $output -l $log
+#     python -m src.main -i $input_folder -o $output -l $log -k $configfile
+    
+#     #python -m src.main -i $input_folder -o $output_folder_base_name -l $log -k $configfile
+#     # cd back to script folder
+#     cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
+#     "Finished experiment`n"
+# }
 "Finished script`n"

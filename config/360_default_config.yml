@@ -3,6 +3,9 @@
 # Miscellaneous configuration parameters for 360-images
 # ======================================================
 
+#: The type of images to be processed
+image_type: "360"
+
 #: Apply the mask to the output image?
 draw_mask: True
 
@@ -149,6 +152,19 @@ extra_preprocessing_depth: "MEDIUM"
 #: If the folder does not exist already, the folder will be created.
 #: Default: \temp
 extra_prerpocessing_temp_foldername: "/temp"
+
+#: Make thumbnail and output it to the *output* file path?
+remote_thumbnail: True
+
+#: Make thumbnail and output is to the "input" file path?
+local_thumbnail: True
+#: Archive the thumbnail?
+archive_thumbnail: True
+
+#: The dimensions of the thumbnail image
+#: Format: [width, height]
+#: Default values: [3842, 2041]
+thumbnail_dim: [3842, 2041]
 
 # ====================
 # E-mail configuration

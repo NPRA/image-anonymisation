@@ -33,8 +33,11 @@ def get_expected_files(args):
             ef(name="Output json", attr="output_json"),
             ef(name="Input mask", attr="input_webp"),
             ef(name="Output mask", attr="output_webp"),
+            ef(name="Input thumbnail", attr="input_thumbnail"),
+            ef(name="Output thumbnail", attr="output_thumbnail"),
             ef(name="Archive image", attr="archive_file"),
             ef(name="Archive json", attr="archive_json"),
+            ef(name="Archive thumbnail", attr="archive_thumbnail"),
             ef(name="Archive mask", attr="archive_webp")
         ]
     else:
@@ -44,16 +47,21 @@ def get_expected_files(args):
             expected_files.append(ef(name="Input json", attr="input_json"))
         if config.remote_json:
             expected_files.append(ef(name="Output json", attr="output_json"))
-
-        if config.local_mask:
-            expected_files.append(ef(name="Input mask", attr="input_webp"))
-        if config.remote_mask:
-            expected_files.append(ef(name="Output mask", attr="output_webp"))
+        if config.local_thumbnail:
+            expected_files.append(ef(name="Input thumbnail", attr="input_thumbnail"))
+        if config.remote_thumbnail:
+            expected_files.append(ef(name="Output thumbnail", attr="output_thumbnail"))
+        # if config.local_mask:
+        #     expected_files.append(ef(name="Input mask", attr="input_webp"))
+        # if config.remote_mask:
+        #     expected_files.append(ef(name="Output mask", attr="output_webp"))
 
         if args.archive_folder is not None:
             expected_files.append(ef(name="Archive image", attr="archive_file"))
             if config.archive_json:
                 expected_files.append(ef(name="Archive json", attr="archive_json"))
+            if config.archive_thumbnail:
+                expected_files.append(ef(name="Archive thumbnail", attr="archive_thumbnail"))
             if config.archive_mask:
                 expected_files.append(ef(name="Archive mask", attr="archive_webp"))
 
