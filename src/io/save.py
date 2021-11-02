@@ -157,14 +157,13 @@ def _save_thumbnail(img, out_dim, output_path):
     # Make sure the dims are of type int
     dim_relative_to_center = dim_relative_to_center.astype(int)
 
+    # Calculate the pixels to define the thumbnails dimensions.
     left = int(center_pixel[0]-dim_relative_to_center[0])
     right = int(center_pixel[0] + dim_relative_to_center[0])
     upper = int(center_pixel[1]-dim_relative_to_center[1])
     lower = int(center_pixel[1]+dim_relative_to_center[1])
-
-    print(f"dim-relative: {dim_relative_to_center}, center_pixel: {center_pixel}")
     thumbnail = img.crop((left, upper, right, lower))
-    print(f"thumbnail shape: {thumbnail.size}, left: {left}, right: {right}, upper: {upper}, lower: {lower} ")
+
     thumbnail.save(output_path)
 
 # def _save_mask(mask, output_webp):
