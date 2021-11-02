@@ -63,17 +63,17 @@ def get_expected_files(paths):
     if config.remote_json:
         expected_files.append(paths.output_json)
 
-    if config.local_mask:
-        expected_files.append(paths.input_webp)
-    if config.remote_mask:
-        expected_files.append(paths.output_webp)
+    #if config.local_mask:
+        #expected_files.append(paths.input_webp)
+    #if config.remote_mask:
+        #expected_files.append(paths.output_webp)
 
     if paths.archive_dir is not None:
         expected_files.append(paths.archive_file)
         if config.archive_json:
             expected_files.append(paths.archive_json)
-        if config.archive_mask:
-            expected_files.append(paths.archive_webp)
+        #if config.archive_mask:
+            #expected_files.append(paths.archive_webp)
 
     return expected_files
 

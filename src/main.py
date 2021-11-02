@@ -47,6 +47,8 @@ def get_args():
     parser.add_argument("-k", dest="config_file", default=None,
                         help=f"Path to custom configuration file. See the README for details. Default is "
                              f"{config.DEFAULT_CONFIG_FILE}")
+    parser.add_argument("-i_t","--image_type", dest="image_type", default="planar",
+                    help="The type of the input images. Accepted values are {'planar','360'}. Default is 'planar'")                         
     args = parser.parse_args()
     return args
 
@@ -55,8 +57,8 @@ def check_config(args):
     """ Check that the specified configuration variables are valid. """
     if config.archive_json and not config.remote_json:
         raise ValueError("Parameter 'archive_json' requires remote_json=True.")
-    if config.archive_mask and not config.remote_mask:
-        raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
+    #if config.archive_mask and not config.remote_mask:
+        #raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
     if config.extra_preprocessing and not os.path.isdir(config.extra_preprocessing_temp_foldername):
         os.mkdir(config.extra_preprocessing_temp_foldername)
         LOGGER.info(__name__, f"Parameter 'extra_preprocessing_temp_foldername' does not refer to an existing folder. " \

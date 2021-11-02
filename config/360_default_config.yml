@@ -1,7 +1,7 @@
 # New 360 optimal default settings
-# ======================================
-# Miscellaneous configuration parameters
-# ======================================
+# ======================================================
+# Miscellaneous configuration parameters for 360-images
+# ======================================================
 
 #: Apply the mask to the output image?
 draw_mask: True
@@ -47,11 +47,6 @@ exif_mappenavn: "Documents\\{relative_input_dir}"
 #: Top directory for `relative_input_dir`. See above for an explanation.
 exif_top_dir: "E6_360_ViaTech"
 
-#: Pre-process image to be gray scale before masking=?
-grayscale: False
-
-#: Is already grayscale
-is_already_grayscale: False
 
 
 # ===================
@@ -68,13 +63,16 @@ local_json: True
 archive_json: False
 
 #: Write mask file to the output (remote) directory?
-remote_mask: False
+#: Disabled to remove .webp
+#: remote_mask: False
 
 #: Write the mask file to the input (local) directory?
-local_mask: True
+#: Disabled to remove .webp
+#: local_mask: True
 
 #: Write mask file to the archive directory?
-archive_mask: False
+#: Disabled to remove .webp
+#: archive_mask: False
 
 # =====================================
 # Parameters for asynchronous execution

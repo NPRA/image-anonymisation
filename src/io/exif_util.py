@@ -154,9 +154,9 @@ def get_exif(img, image_path):
         # Convert the integer keys in the exif dict to text
         labeled = label_exif(exif)
         # Process the `ImageProperties` XML
-        image_properties_xml = labeled.get("ImageProperties", None)
-        assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
-        process_image_properties(image_properties_xml, parsed_exif)
+        #image_properties_xml = labeled.get("ImageProperties", None)
+        #assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
+        #process_image_properties(image_properties_xml, parsed_exif)
         # Process the `ReflinkInfo` XML if it is available
         reflink_info_xml = labeled.get("ReflinkInfo", None)
         process_reflink_info(reflink_info_xml, parsed_exif)
@@ -171,7 +171,7 @@ def get_exif(img, image_path):
     # Get a deterministic ID from the exif data.
     parsed_exif["bildeid"] = get_deterministic_id(parsed_exif)
     # Insert the folder name
-    parsed_exif["mappenavn"] = get_mappenavn(image_path, parsed_exif)
+    #parsed_exif["mappenavn"] = get_mappenavn(image_path, parsed_exif)
     return parsed_exif
 
 
@@ -187,6 +187,7 @@ def get_deterministic_id(exif):
     """
     if exif["exif_tid"] is None or exif["exif_filnavn"] is None:
         return None
+    
 
     timestamp = iso8601.parse_date(exif["exif_tid"]).strftime(ID_TIMESTAMP_FORMATTER)
     filename = os.path.splitext(exif["exif_filnavn"])[0]

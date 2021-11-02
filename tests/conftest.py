@@ -32,14 +32,16 @@ def pytest_collection_modifyitems(config, items):
 
 class Config:
     EXCLUDED_NAMES = ["os"]
+    # Removed entries = {
+    #   "local_mask": False,
+    #   "remote_mask": False,
+    #   "archive_mask": False
+    # }
     DEFAULTS = {
         "draw_mask": True,
         "remote_json": False,
         "local_json": False,
-        "remote_mask": False,
-        "local_mask": False,
         "archive_json": False,
-        "archive_mask": False,
         "delete_input": False,
         "force_remask": False,
         "lazy_paths": False,

@@ -112,8 +112,8 @@ def test_main_with_interrupt(get_tmp_data_dir, get_args, get_config, timeout):
     args = get_args(input_folder=os.path.join(tmp_dir, "real"), output_folder=os.path.join(tmp_dir, "out"),
                     archive_folder=os.path.join(tmp_dir, "arch"), clear_cache=True)
     # Get the config
-    cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), local_json=True, remote_json=True,
-                     local_mask=True, remote_mask=True, enable_async=True)
+    # Removed args: local_mask=True, remote_mask=True
+    cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), local_json=True, remote_json=True, enable_async=True)
 
     # Start main, and abort it after `timeout` seconds.
     try:
@@ -144,8 +144,8 @@ def test_main_deletes_input(get_tmp_data_dir, get_args, get_config, enable_async
     args = get_args(input_folder=os.path.join(tmp_dir, "real"), output_folder=os.path.join(tmp_dir, "out"),
                     archive_folder=os.path.join(tmp_dir, "arch"), clear_cache=True)
     # Get the config
-    cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), local_json=False, remote_json=True,
-                     local_mask=False, remote_mask=True, enable_async=enable_async, delete_input=True)
+    # Removed args: local_mask=False, remote_mask=True
+    cfg = get_config(CACHE_DIRECTORY=os.path.join(tmp_dir, "_cache"), local_json=False, remote_json=True, enable_async=enable_async, delete_input=True)
 
     # Run the main function
     run_main(cfg, args)
@@ -205,8 +205,8 @@ def check_files(tmp_dir, cfg, args):
         check_file_exists(archive_path, filename, invert=no_archive)
         check_file_exists(input_path, filename, ext=".json", invert=not cfg.local_json)
         check_file_exists(output_path, filename, ext=".json", invert=not cfg.remote_json)
-        check_file_exists(input_path, filename, ext=".webp", invert=not cfg.local_mask)
-        check_file_exists(output_path, filename, ext=".webp", invert=not cfg.remote_mask)
+        # check_file_exists(input_path, filename, ext=".webp", invert=not cfg.local_mask)
+        # check_file_exists(output_path, filename, ext=".webp", invert=not cfg.remote_mask)
 
     for rel_path, filename in EXPECTED_ERROR_FILES:
         error_path = os.path.join(tmp_dir, "out_error", rel_path)

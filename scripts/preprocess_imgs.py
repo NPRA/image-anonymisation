@@ -42,7 +42,25 @@ def make_cutouts(img, window_width_scale, window_height_scale, step_factor=400):
             print(f"x: {x}, y: {y}")
             
             cv2.imwrite(os.path.join(out_path,"preprocessing_crop_2", f"cropped_x_{x}_y_{y}.jpg"), cropped_img)   
+def make_thumbnail(img, out_dim):
+    print(img.shape)
+    
 
+    img_h, img_w = img.shape[:2]
+    center_pixel = np.asarray([int(img_h//2), int(img_w//2)])
+    dim_relative_to_center = np.asarray(out_dim)/2 
+    dim_relative_to_center = dim_relative_to_center.astype(int)
+    print(dim_relative_to_center)
+    print(center_pixel)
+    thumbnail_left = int(center_pixel[1]-dim_relative_to_center[0])
+    thumbnail_right = int(center_pixel[1]+dim_relative_to_center[0])
+    thumbnail_up = int(center_pixel[0]-dim_relative_to_center[1])
+    thumbnail_down = int(center_pixel[0]+dim_relative_to_center[1])
+
+    print(f"left: {thumbnail_left}, right: {thumbnail_right}, up: {thumbnail_up}, down: {thumbnail_down}")
+    thumbnail  = img[thumbnail_up:thumbnail_down, thumbnail_left:thumbnail_right]
+    #cv2.imshow("thumbnail", thumbnail)
+    cv2.imwrite(os.path.join(out_path, "thumbnail_crop", f"h_{out_dim[0]}_w_{out_dim[1]}.jpeg"), thumbnail)
 if __name__ == '__main__':
     out_path = os.environ["OUT_PATH_PREPROCESS"]
     image = cv2.imread(os.environ["IN_IMAGE_PREPROCESS"])
@@ -65,9 +83,10 @@ if __name__ == '__main__':
     # for sharp_num in range(1,10):
     #     sharpen_img(image, ddepth, k, iter_num=sharp_num)
 
-    make_cutouts(image, 4, 4)
+    #make_cutouts(image, 4, 4)
 
+    make_thumbnail(image, (2048,1024))
     # exit images
-    # cv2.waitKey()
-    # cv2.destroyAllWindows()
+    #cv2.waitKey()
+    #cv2.destroyAllWindows()
     

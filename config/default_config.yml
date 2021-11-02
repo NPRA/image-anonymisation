@@ -1,6 +1,6 @@
-# ======================================
-# Miscellaneous configuration parameters
-# ======================================
+# ========================================================
+# Miscellaneous configuration parameters for planar images
+# ========================================================
 
 #: Apply the mask to the output image?
 draw_mask: True
@@ -61,13 +61,17 @@ local_json: True
 archive_json: False
 
 #: Write mask file to the output (remote) directory?
-remote_mask: False
+#: Disabled to remove .webp
+#: remote_mask: False
 
 #: Write the mask file to the input (local) directory?
-local_mask: True
+#: Disabled to remove .webp
+#: local_mask: True
 
 #: Write mask file to the archive directory?
-archive_mask: False
+#: Disabled to remove .webp
+#: archive_mask: False
+
 
 # =====================================
 # Parameters for asynchronous execution

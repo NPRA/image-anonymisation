@@ -40,15 +40,22 @@ def get_image_info(get_tmp_data_dir):
         return img, mask_results, paths
     return _get_info
 
-
-@pytest.mark.parametrize("remote_mask,local_mask,enable_archive,enable_async", [
-    (False, False, False, True),
-    (False, False, False, False),
-    (True, True, True, True),
-    (True, True, True, False),
+# Removed params remote_mask, local_mask
+# Values:
+# False, False
+# False, False
+# True, True
+# True, True
+@pytest.mark.parametrize("enable_archive,enable_async", [
+    (False, True),
+    (False, False),
+    (True, True),
+    (True, False),
 ])
-def test_SaveWorker(get_config, get_image_info, remote_mask, local_mask, enable_archive, enable_async):
-    config = get_config(remote_mask=remote_mask, local_mask=local_mask, archive_mask=enable_archive,
+# Removed params: remote_mask, local_mask
+def test_SaveWorker(get_config, get_image_info,  enable_archive, enable_async):
+    # Removed params: remote_mask=remote_mask, local_mask=local_mask, archive_mask=enable_archive
+    config = get_config(
                         archive_json=enable_archive, enable_async=enable_async)
 
     img, mask_results, paths = get_image_info(enable_archive=enable_archive)
@@ -69,13 +76,13 @@ def test_SaveWorker(get_config, get_image_info, remote_mask, local_mask, enable_
 
     # Check expected output files
     check_file_exists(paths.output_file)
-    check_file_exists(paths.input_webp, invert=not local_mask)
-    check_file_exists(paths.output_webp, invert=not remote_mask)
+    # check_file_exists(paths.input_webp, invert=not local_mask)
+    # check_file_exists(paths.output_webp, invert=not remote_mask)
 
     if enable_archive:
         check_file_exists(paths.archive_file)
         check_file_exists(paths.archive_json)
-        check_file_exists(paths.archive_webp)
+        #check_file_exists(paths.archive_webp)
 
 
 @pytest.mark.parametrize("remote_json,local_json,enable_async", [

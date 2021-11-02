@@ -86,7 +86,7 @@ foreach($file in  $tmp_config_dirs){
     # cd to root of folder
     cd $Env:PROJECT_ROOT_FOLDER
     # Run the image anonymisation
-    python -m src.main -i $input_folder -o $output -l $log
+    python -m src.main -i $input_folder -o $output -l $log -i_t "360"
     #python -m src.main -i $input_folder -o $output_folder_base_name -l $log -k $configfile
     # cd back to script folder
     cd "$Env:PROJECT_ROOT_FOLDER\\scripts"

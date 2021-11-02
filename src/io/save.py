@@ -1,5 +1,5 @@
 import os
-import webp
+#import webp
 import numpy as np
 from shutil import copy2
 from PIL import Image
@@ -10,7 +10,7 @@ from src.Logger import LOGGER
 from src.io.file_access_guard import wait_until_path_is_found
 
 
-def save_processed_img(img, mask_results, paths, draw_mask=False, local_mask=False, remote_mask=False, mask_color=None,
+def save_processed_img(img, mask_results, paths, draw_mask=False, mask_color=None,
                        blur=None, gray_blur=True, normalized_gray_blur=True):
     """
     Save an image which has been processed by the masker.
@@ -23,10 +23,6 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, local_mask=Fal
     :type paths: src.io.TreeWalker.Paths
     :param draw_mask: Draw the mask on the image?
     :type draw_mask: bool
-    :param local_mask: Write the Mask file to the input directory?
-    :type local_mask: bool
-    :param remote_mask: Write the Mask file to the output directory?
-    :type remote_mask: bool
     :param mask_color: Mask color. All masks in the output image will have this color. If `mask_color` is None, the
                        colors in `config` will be used.
     :type mask_color: list | None
@@ -60,38 +56,34 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, local_mask=Fal
     pil_img = Image.fromarray(img[0].astype(np.uint8))
     pil_img.save(paths.output_file)
 
-    if local_mask:
-        wait_until_path_is_found([paths.input_dir])
-        _save_mask(agg_mask, paths.input_webp)
-    if remote_mask:
-        wait_until_path_is_found([paths.output_dir])
-        _save_mask(agg_mask, paths.output_webp)
+    # if local_mask:
+    #     wait_until_path_is_found([paths.input_dir])
+    #     _save_mask(agg_mask, paths.input_webp)
+    # if remote_mask:
+    #     wait_until_path_is_found([paths.output_dir])
+    #     _save_mask(agg_mask, paths.output_webp)
     return 0
 
 
-def archive(paths, archive_mask=False, archive_json=False, assert_output_mask=True):
+def archive(paths, archive_json=False, ):
     """
     Copy the input image file (and possibly some output files) to the archive directory.
 
     :param paths: Paths object representing the image file.
     :type paths: src.io.TreeWalker.Paths
-    :param archive_mask: Copy the mask file to the archive directory?
-    :type archive_mask: bool
     :param archive_json: Copy the EXIF file to the archive directory?
     :type archive_json: bool
-    :param assert_output_mask: Assert that the output mask exists before archiving?
-    :type assert_output_mask: bool
     :returns: 0
     :rtype: int
     """
     os.makedirs(paths.archive_dir, exist_ok=True)
 
-    if assert_output_mask:
-        assert os.path.isfile(paths.output_webp), f"Archiving aborted. Output mask '{paths.output_webp}' not found."
+    # if assert_output_mask:
+    #     assert os.path.isfile(paths.output_webp), f"Archiving aborted. Output mask '{paths.output_webp}' not found."
 
     _copy_file(paths.input_file, paths.archive_file)
-    if archive_mask:
-        _copy_file(paths.output_webp, paths.archive_webp)
+    # if archive_mask:
+    #     _copy_file(paths.output_webp, paths.archive_webp)
     if archive_json:
         _copy_file(paths.output_json, paths.archive_json)
     return 0
@@ -150,6 +142,6 @@ def _apply_normalized_gray_blur(img, mask, ksize):
     img[mask] = blurred[mask] - blurred_large[mask] + default_gray_value
 
 
-def _save_mask(mask, output_webp):
-    mask = np.tile(mask[0, :, :, None], (1, 1, 3)).astype(np.uint8)
-    webp.imwrite(output_webp, mask, pilmode="RGB")
+# def _save_mask(mask, output_webp):
+#     mask = np.tile(mask[0, :, :, None], (1, 1, 3)).astype(np.uint8)
+#     webp.imwrite(output_webp, mask, pilmode="RGB")
