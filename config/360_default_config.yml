@@ -164,7 +164,7 @@ archive_thumbnail: True
 #: The dimensions of the thumbnail image
 #: Format: [width, height]
 #: Default values: [3842, 2041]
-thumbnail_dim: [3842, 2041]
+thumbnail_dim: [2048, 1024]
 
 # ====================
 # E-mail configuration

@@ -153,12 +153,12 @@ extra_preprocessing_depth: "MEDIUM"
 extra_prerpocessing_temp_foldername: "/temp"
 
 #: Make thumbnail and output it to the *output* file path?
-remote_thumbnail: True
+remote_thumbnail: False
 
 #: Make thumbnail and output is to the "input" file path?
-local_thumbnail: True
+local_thumbnail: False
 #: Archive the thumbnail?
-archive_thumbnail: True
+archive_thumbnail: False
 
 #: The dimensions of the thumbnail image
 #: Default values: [3842, 2041]
