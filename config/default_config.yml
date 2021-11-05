@@ -1,7 +1,9 @@
-# ========================================================
-# Miscellaneous configuration parameters for planar images
-# ========================================================
+# ======================================
+# Miscellaneous configuration parameters
+# ======================================
 
+#: Dataeier
+data_eier: null
 #: The type of images to be processed
 image_type: "planar"
 
@@ -55,26 +57,22 @@ exif_top_dir: "E6_360_ViaTech"
 # ===================
 
 #: Write the EXIF .json file to the output (remote) directory?
-remote_json: False
+remote_json: True
 
 #: Write the EXIF .json file to the input (local) directory?
-local_json: True
+local_json: False
 
 #: Write the EXIF .json file to the archive directory?
 archive_json: False
 
-#: Write mask file to the output (remote) directory?
-#: Disabled to remove .webp
-#: remote_mask: False
+# #: Write mask file to the output (remote) directory?
+# remote_mask: True
 
-#: Write the mask file to the input (local) directory?
-#: Disabled to remove .webp
-#: local_mask: True
+# #: Write the mask file to the input (local) directory?
+# local_mask: False
 
-#: Write mask file to the archive directory?
-#: Disabled to remove .webp
-#: archive_mask: False
-
+# #: Write mask file to the archive directory?
+# archive_mask: False
 
 # =====================================
 # Parameters for asynchronous execution
@@ -133,6 +131,7 @@ gray_blur: True
 #: Default: True
 normalized_gray_blur: True
 
+
 #: Extra pre-processing steps. Will try to adjust the images contrast, brightness and sharpness values.
 #: Default: False
 extra_preprocessing: False
@@ -161,8 +160,9 @@ local_thumbnail: False
 archive_thumbnail: False
 
 #: The dimensions of the thumbnail image
+#: Format: [width, height]
 #: Default values: [3842, 2041]
-thumbnail_dim: [3842, 2041]
+thumbnail_dim: [2048, 1024]
 
 # ====================
 # E-mail configuration

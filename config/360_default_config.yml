@@ -3,6 +3,9 @@
 # Miscellaneous configuration parameters for 360-images
 # ======================================================
 
+#: Dataeier
+dataeier: None
+
 #: The type of images to be processed
 image_type: "360"
 

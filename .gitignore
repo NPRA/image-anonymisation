@@ -143,6 +143,8 @@ models/
 logs/
 config/db_config.py
 config/email_config.py
+config/360_test_config.yml
+config/test_config.yml
 
 data/*
 tests/data/real
@@ -154,3 +156,4 @@ docs/_build/*
 
 # Scripts
 scripts/set_envs.ps1
+scripts/test_json.py
