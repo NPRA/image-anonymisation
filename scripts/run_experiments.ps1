@@ -80,10 +80,11 @@ $log = "$log_folder_base_name"
 # $configfile = $Env:DEFAULT_CONFIG
 # 360
 $configfile = $Env:360_TEST_CONFIG
+#$configfile = $Env:PLANAR_TEST_CONFIG
 # cd to root folder
 cd $Env:PROJECT_ROOT_FOLDER
-python -m src.main -i $input_folder -o $output -l $log
-#python -m src.main -i $input_folder -o $output -l $log -k $configfile
+#python -m src.main -i $input_folder -o $output -l $log
+python -m src.main -i $input_folder -o $output -l $log -k $configfile
 
 #: Cd back to script folder
 cd "$Env:PROJECT_ROOT_FOLDER\\scripts"

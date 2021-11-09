@@ -59,6 +59,8 @@ def check_config(args):
         raise ValueError("Parameter 'remote_thumbnail' and 'local_thumbnail' requires 'thumbnail_dim'")
     if config.archive_thumbnail and not config.remote_thumbnail:
         raise ValueError("Parameter 'archive_thumbnail' requires remote_thumbnail=True.")
+    if config.cache_cutouts and (not config.cache_filepath or not os.path.isdir(config.cache_filepath)):
+        raise ValueError(f"Parameter 'cache_cutouts' requires a valid path for cache_filepath")
     #if config.archive_mask and not config.remote_mask:
         #raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
     if config.extra_preprocessing and not os.path.isdir(config.extra_preprocessing_temp_foldername):
@@ -258,8 +260,16 @@ def main():
         try:
             # Get the image
             img = next(dataset_iterator)
-            # Do the processing
-            image_processor.process_image(img, paths)
+            # Do preprocessing for cutouts
+            if config.image_type == "360":
+                LOGGER.info(__name__, f"Processing a 360 image.")
+                image_cutouts = image_processor.make_cutouts(img, paths)
+                for image in image_cutouts:
+                    image_processor.process_image(image, paths)
+                
+            else:
+                # Do the processing
+                image_processor.process_image(img, paths)
         except PROCESSING_EXCEPTIONS as err:
             error_msg = f"'{str(err)}'. File: {paths.input_file}"
             LOGGER.error(__name__, error_msg, save=True, email=True, email_mode="error")

@@ -2,6 +2,7 @@ import os
 import time
 import multiprocessing
 import numpy as np
+import cv2
 
 import config
 from src.Logger import LOGGER
@@ -147,8 +148,47 @@ class ImageProcessor:
             remove_empty_folders(start_dir=paths.input_dir, top_dir=paths.base_input_dir)
 
         self.n_completed += 1
-
-    def process_image(self, image, paths):
+    def make_cutouts(self, image, paths):
+        """
+        Creates cutouts of the image, and caches them to a folder if specified in the config file.
+        
+        """
+        out_dir = paths.cache_cutout_dir
+        cropped_images = []
+        window_height_scale, window_width_scale = config.cutout_dim_downscale
+        img_h, img_w = image.shape[1:3]
+        #print(img_h, img_w)
+        
+        # Get the dimensions of the sliding window
+        window_height = int(img_h/window_height_scale)
+        window_width = int(img_w/window_width_scale)
+        
+        # Slide the window over the original image and crop out the window.
+        
+        for height in range(0, img_h - window_height + 1, config.cutout_step_factor):
+            for width in range(0, img_w - window_width +1, config.cutout_step_factor):
+                
+                cutout_image = image[
+                    :,
+                    height:height+window_height,
+                    width:width+window_width,
+                    : 
+                ]
+                #print(f"[height x width][{height}:{height+window_height} x W{width}:{width+window_width}], cutout shape: {cutout_image.shape}")
+                
+                cropped_img_numpy = cutout_image.numpy()
+                cropped_img_numpy = cropped_img_numpy[0].astype(np.uint8)
+                #print(cropped_img_numpy)
+                #print(cropped_img_numpy.shape)
+                # save cropped image
+                # if config.cache_cutouts:
+                    # cv2.imwrite(os.path.join(out_dir, f"{paths.filename}_h{height}_w{width}.jpg"), cropped_img_numpy)
+                cropped_images.append(cutout_image)
+                LOGGER.info(__name__, f"Cutout: H{height}:{height+window_height} x W{width}:{width+window_width}")
+                
+        
+        return cropped_images
+    def process_image(self, image, paths, cropped=False):
         """
         Run the processing pipeline for `image`.
 
@@ -160,6 +200,7 @@ class ImageProcessor:
         start_time = time.time()
         # Compute the detected objects and their masks.
         mask_results = self.masker.mask(image)
+        LOGGER.info(__name__, f"Masked results: {mask_results}")
         time_delta = "{:.3f}".format(time.time() - start_time)
         LOGGER.info(__name__, f"Masked image in {time_delta} s. File: {paths.input_file}")
 

@@ -3,8 +3,16 @@
 # Miscellaneous configuration parameters for 360-images
 # ======================================================
 
+#: Cache cutouts?
+#: Default value: {False}
+cache_cutouts: False
+cache_filepath: null
+cutout_step_factor: 800
+#: Downscale sliding window by [height, width]
+cutout_dim_downscale: [4,4]
+
 #: Dataeier
-dataeier: None
+dataeier: null
 
 #: The type of images to be processed
 image_type: "360"

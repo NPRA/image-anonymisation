@@ -76,7 +76,7 @@ EXIF_TEMPLATE = {
     "exif_vegkat": None,
     "exif_vegstat": None,
     "exif_vegnr": None,
-    "exif_roadtype":None,
+    "exif_roadtype": "Ukjent",
     "exif_hp": None, #null
     "exif_strekning": None,
     "exif_delstrekning": None,

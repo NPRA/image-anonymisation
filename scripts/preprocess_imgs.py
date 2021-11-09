@@ -60,11 +60,11 @@ def make_thumbnail(img, out_dim):
     print(f"left: {thumbnail_left}, right: {thumbnail_right}, up: {thumbnail_up}, down: {thumbnail_down}")
     thumbnail  = img[thumbnail_up:thumbnail_down, thumbnail_left:thumbnail_right]
     #cv2.imshow("thumbnail", thumbnail)
-    cv2.imwrite(os.path.join(out_path, "thumbnail_crop", f"h_{out_dim[0]}_w_{out_dim[1]}.jpeg"), thumbnail)
+    cv2.imwrite(os.path.join(out_path, f"h_{out_dim[0]}_w_{out_dim[1]}.jpeg"), thumbnail)
 if __name__ == '__main__':
     out_path = os.environ["OUT_PATH_PREPROCESS"]
     image = cv2.imread(os.environ["IN_IMAGE_PREPROCESS"])
-    
+    print(image)
     # Load image
     #image = cv2.resize(image, (500,600), interpolation=cv2.INTER_AREA)
 
@@ -84,8 +84,21 @@ if __name__ == '__main__':
     #     sharpen_img(image, ddepth, k, iter_num=sharp_num)
 
     #make_cutouts(image, 4, 4)
-
+    # 3606 x 1800
+    print(f"1024, 2048")
     make_thumbnail(image, (2048,1024))
+    make_thumbnail(image, (1024,2048))
+    
+    print(f"Planar vies")
+    make_thumbnail(image, (3606,1800))
+    make_thumbnail(image, (1800, 3606))
+    
+    print(f"Medium")
+    make_thumbnail(image, (2800,1400))
+    make_thumbnail(image, (1400,2800))
+    make_thumbnail(image, (2520,1400))
+    make_thumbnail(image, (2880,1600))
+    make_thumbnail(image, (3240,1800))
     # exit images
     #cv2.waitKey()
     #cv2.destroyAllWindows()
