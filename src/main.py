@@ -263,9 +263,11 @@ def main():
             # Do preprocessing for cutouts
             if config.image_type == "360":
                 LOGGER.info(__name__, f"Processing a 360 image.")
-                image_cutouts = image_processor.make_cutouts(img, paths)
-                for image in image_cutouts:
-                    image_processor.process_image(image, paths)
+                # cutout and mask the cutouts
+                image_processor.make_cutouts(img, paths)
+                #image_processor.process_cutout_images(img, image_cutouts, paths)
+                #for image in image_cutouts:
+                #    image_processor.process_image(image, paths)
                 
             else:
                 # Do the processing

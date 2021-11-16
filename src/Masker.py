@@ -62,6 +62,7 @@ class Masker:
         masking_results = _filter_detections(masking_results)
         # Convert the number of detections to an int
         num_detections = masking_results["num_detections"].numpy().squeeze()
+        # print(f"boxes?? {masking_results}")
         # Convert masks from normalized bbox coordinates to whole-image coordinates.
         reframed_masks = reframe_box_masks_to_image_masks(masking_results["detection_masks"][0],
                                                           masking_results["detection_boxes"][0],
