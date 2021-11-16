@@ -182,10 +182,12 @@ class ImageProcessor:
             "num_detections": 0,
             "detection_masks": np.asarray([[full_image_mask]])
         }
+        first_mask = True
         #print(f"At init: {all_mask_results}")
-        
+        full_img_time = time.time()
         for height in range(0, img_h - window_height + 1, config.cutout_step_factor):
             for width in range(0, img_w - window_width +1, config.cutout_step_factor):
+                cutout_time = time.time()
                 
                 cutout_image = image[
                     :,
@@ -202,7 +204,7 @@ class ImageProcessor:
                 masked_result = self.masker.mask(cutout_image)
                 time_delta = "{:.3f}".format(time.time() - start_time)
                 LOGGER.info(__name__, f"Masked image in {time_delta} s. File: {paths.input_file}")
-                
+                after_mask_time = time.time()
                 # detection_masks = masked_result["detection_masks"]
 
                 # detection_classes = masked_result["detection_classes"][0]
@@ -236,7 +238,8 @@ class ImageProcessor:
                     # comparY max Y min, min Y max 
                     
                     
-                    if 1 not in all_mask_results["detection_masks"][0]:
+                    if first_mask:
+                        first_mask = False
                         insert_mask = all_mask_results["detection_masks"][0]
                         insert_mask[0][
                                 height:height+window_height,
@@ -356,7 +359,8 @@ class ImageProcessor:
                             #np.append(all_mask_results["detection_scores"][update_mask_id],masked_result["detection_scores"][0][mask_num])
                             #print(f"afte rupdate: {all_mask_results['detection_scores'][update_mask_id]}")
                             #else:
-                            
+                        time_delta = "{:.3f}".format(time.time() - start_time)
+                           
                         
                         #with np.printoptions(threshold=np.inf):
                         #print(f"new mask area: {mask}")
@@ -380,6 +384,11 @@ class ImageProcessor:
                     # if config.cache_cutouts:
                         # cv2.imwrite(os.path.join(out_dir, f"{paths.filename}_h{height}_w{width}.jpg"), cropped_img_numpy)
                     cropped_images.append(cutout_image)
+                time_delta = "{:.3f}".format(time.time() - cutout_time)
+                LOGGER.info(__name__, f"time checkpoint: fin all mask results updated: {time_delta} s.")
+                time_delta = "{:.3f}".format(time.time() - after_mask_time)
+                LOGGER.info(__name__, f"time checkpoint: after mask updated: {time_delta} s.")
+                    
                     #LOGGER.info(__name__, f"Cutout: H{height}:{height+window_height} x W{width}:{width+window_width}")
                     
                 i += 1
@@ -409,7 +418,7 @@ class ImageProcessor:
 
             cv2.rectangle(show_img, (w, h), (w2,h2), (255,0,0), thickness=1)
             cv2.putText(show_img, 
-                f"n:{mask_num},c:{majority_vote_class}", 
+                f"n:{mask_num},c:{majority_vote_class}, s: {round(average_score,2)}", 
                 (w, h), 
                 cv2.FONT_HERSHEY_COMPLEX, 
                 0.3, 
@@ -431,6 +440,11 @@ class ImageProcessor:
             self._wait_for_workers()
         # # Create workers for the current image.
         self._spawn_workers(paths, image, all_mask_results)
+        #end_time =  time.time()
+        time_delta = "{:.3f}".format(time.time() - full_img_time)
+        LOGGER.info(__name__,f"Full cutout time: {time_delta} s.")
+        print(f"Full cutout time: {time_delta} s.")
+
         return cropped_images
     def map_masks_on_cutouts_to_original_img(masks, original_img):
         pass
