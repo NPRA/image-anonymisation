@@ -7,7 +7,10 @@
 #: Default value: {False}
 cache_cutouts: False
 cache_filepath: null
-cutout_step_factor: 800
+
+#: How many steps the sliding window should move in directions [height, width] 
+cutout_step_factor: [800,800]
+
 #: Downscale sliding window by [height, width]
 cutout_dim_downscale: [4,4]
 

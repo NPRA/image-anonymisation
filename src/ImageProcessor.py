@@ -174,7 +174,7 @@ class ImageProcessor:
         window_height = int(img_h/window_height_scale)
         window_width = int(img_w/window_width_scale)
         #print(f"window_idt: {window_width}")
-        total_masks = 0
+        #total_masks = 0
         # Slide the window over the original image and crop out the window.
         full_image_mask = np.zeros((img_h, img_w), dtype=bool)
         i = 0
@@ -182,7 +182,8 @@ class ImageProcessor:
             "num_detections": 0,
             "detection_masks": np.asarray([[full_image_mask]]),
             "detection_classes": {},
-            "detection_scores": {}
+            "detection_scores": {},
+            "detection_boxes": np.asarray([[]])
         }
         first_mask = True
         # Mask the full image
@@ -215,8 +216,8 @@ class ImageProcessor:
         additional_masks = 0
         #print(f"At init: {all_mask_results}")
         full_img_time = time.time()
-        for height in range(0, img_h - window_height + 1, config.cutout_step_factor):
-            for width in range(0, img_w - window_width +1, config.cutout_step_factor):
+        for height in range(0, img_h - window_height + 1, config.cutout_step_factor[0]):
+            for width in range(0, img_w - window_width +1, config.cutout_step_factor[1]):
                 cutout_time = time.time()
                 
                 cutout_image = image[
@@ -267,7 +268,22 @@ class ImageProcessor:
                     
                     # comparY max Y min, min Y max 
                     
-
+                    if first_mask:
+                        first_mask = False
+                        insert_mask = np.asarray([full_image_mask])
+                        #print(insert_mask.shape)
+                        insert_mask[0][
+                                height:height+window_height,
+                                width:width+window_width,
+                            ] = mask
+                        all_mask_results["detection_boxes"] = np.asarray([mask_bbox_in_full_img])
+                        all_mask_results["detection_classes"] = {
+                            0: [masked_result["detection_classes"][0][mask_num]]
+                            }
+                        all_mask_results["detection_scores"] = {
+                            0:[masked_result["detection_scores"][0][mask_num]]
+                            }
+                        all_mask_results["num_detections"] += 1
                         #print(f"firs!!")
                     for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0]):
                         #new_masked_area = np.where(mask, mask, existing_mask)
@@ -310,7 +326,7 @@ class ImageProcessor:
                         all_mask_results["detection_masks"] = np.asarray([np.concatenate((all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0)])
                         #print(f"aftyer {all_mask_results['detection_masks']}")
                         all_mask_results["num_detections"] += 1
-                        total_masks += 1
+                        #total_masks += 1
                         #LOGGER.debug(__name__, f"All mask result adding a new mask: {all_mask_results}")
                         #LOGGER.debug(__name__, f"Trying to concat: {[[Y_min, X_min, Y_max, X_max]]} along axis 0")
                         #print(f"all: {all_mask_results}")
@@ -436,10 +452,10 @@ class ImageProcessor:
             avg_score_round = round(average_score, 3)
             cv2.rectangle(show_img, (w, h), (w2,h2), (255,0,0), thickness=1)
             cv2.putText(show_img, 
-                f"n:{mask_num},c:{majority_vote_class},s:{avg_score_round}", 
+                f"n:{mask_num},c:{majority_vote_class}", 
                 (w, h), 
                 cv2.FONT_HERSHEY_COMPLEX, 
-                0.3, 
+                0.6, 
                 (255,0,0), 
                 thickness=1)
             #print(image.dtype)
@@ -453,7 +469,7 @@ class ImageProcessor:
         all_mask_results["detection_scores"] = np.asarray([[detection_scores]])
         all_mask_results["detection_boxes"] = np.asarray([all_mask_results["detection_boxes"]])
         #print(f"All results: {all_mask_results}")
-        LOGGER.debug(__name__, f"'all_mask_results' before saving: {all_mask_results}")
+        LOGGER.info(__name__, f"'all_mask_results' before saving: {all_mask_results}")
 
         # # If we have reached the maximum number of workers. Wait for them to finish
         if len(self.workers) >= self.max_num_async_workers:
@@ -484,22 +500,23 @@ class ImageProcessor:
         for i, cutout in enumerate(cutouts):
             masked_results = self.masker.mask(cutout)
             time_delta = "{:.3f}".format(time.time() - start_time)
-            mapped_pixel_term = (config.cutout_step_factor*i)
+            mapped_pixel_term_h = config.cutout_step_factor[0]*i
+            mapped_pixel_term_w = config.cutout_step_factor[1]*i
             window_height_scale, window_width_scale = config.cutout_dim_downscale
         
             # Get the dimensions of the sliding window
             window_height = int(original_image_mask.shape[0]/window_height_scale)
             window_width = int(original_image_mask.shape[1]/window_width_scale)
             
-            relevant_mask_slice = original_image_mask[mapped_pixel_term:mapped_pixel_term+window_height, mapped_pixel_term:mapped_pixel_term+window_width]
+            relevant_mask_slice = original_image_mask[mapped_pixel_term_h:mapped_pixel_term_h+window_height, mapped_pixel_term_w:mapped_pixel_term_w+window_width]
             
             
             # Apply each the mask to 
             for mask in masked_results["detection_masks"][0]:
                 
                 #original_image_mask[:,] = 1 if mask_pixel else 
-                original_image_mask[mapped_pixel_term:mapped_pixel_term+window_height, 
-                                    mapped_pixel_term:mapped_pixel_term+window_width] = np.where(
+                original_image_mask[mapped_pixel_term_h:mapped_pixel_term_h+window_height, 
+                                    mapped_pixel_term_w:mapped_pixel_term_w+window_width] = np.where(
                                         mask == True and relevant_mask_slice == 0, mask, relevant_mask_slice)
             
         pass

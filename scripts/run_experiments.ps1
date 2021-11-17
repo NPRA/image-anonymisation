@@ -40,7 +40,7 @@ function WriteYml {
 }
  
 # Loading yml, setting new values and writing it back to disk
-$yml = LoadYml $Env:DEFAULT_360_CONFIG
+$yml = LoadYml $Env:360_TEST_CONFIG
 #$yml.data.param2 = $
 #$yml.footer.body = $FooterBody
 #WriteYml "sample.yml" $yml
@@ -74,8 +74,9 @@ $tmp_config_dirs = dir "tmp/configs"
 $num_experiments = Get-ChildItem $tmp_config_dirs -Recurse -File | Measure-Object | %{$_.Count}
 
 "Running one iteration of image anonymisation"
-$output = "$output_folder_base_name"
-$log = "$log_folder_base_name"
+$param_tuning = $yml.cutout_step_factor
+$output = "$output_folder_base_name\\step_$param_tuning"
+$log = "$log_folder_base_name\\step_$param_tuning"
 #: planar
 # $configfile = $Env:DEFAULT_CONFIG
 # 360
