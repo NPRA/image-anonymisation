@@ -186,7 +186,7 @@ def get_exif(img, image_path):
             assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
             process_image_properties(image_properties_xml, parsed_exif)
         if config.image_type == "360":
-            print(labeled.items())
+            #print(labeled.items())
 
             # Convert time format "year:month:day hours:minutes:seconds" -> "year-month-dayThours:minutes:seconds"
             timestamp = labeled["DateTimeOriginal"].split(" ")
@@ -466,14 +466,14 @@ def process_reflink_info(contents, parsed_exif):
 
     # Format of March 2020 update
     if "ReflinkInfo" in parsed_contents:
-        print(f"reflink")
+        #print(f"reflink")
         reflink_info = parsed_contents["ReflinkInfo"]
         parsed_exif["exif_reflinkid"] = reflink_info["ReflinkId"]
         parsed_exif["exif_reflinkposisjon"] = reflink_info["ReflinkPosition"]
 
     # Format of May 2020 update
     elif "AdditionalInfoNorway2" in parsed_contents:
-        print(f"additionl")
+        #print(f"additionl")
         # From RoadInfo
         road_info = parsed_contents["AdditionalInfoNorway2"]["RoadInfo"]
         parsed_exif["exif_reflinkid"] = road_info["ReflinkId"]
@@ -500,14 +500,14 @@ def process_reflink_info(contents, parsed_exif):
             gps_posisjon_string = f"srid=4326;POINT Z( {gnss_info['Longitude']} {gnss_info['Latitude']} {gnss_info['Altitude']} )"
             image_info = parsed_contents["AdditionalInfoNorway2"]["ImageInfo"]
             road_info_string_list = image_info["StorageFile"].split(os.sep)
-            print(f"road info: {road_info_string_list}")
+            #print(f"road info: {road_info_string_list}")
             filename = road_info_string_list[-1]
             strekningsreferanse_list = road_info["RoadIdent"].split(" ")[1]
-            print(strekningsreferanse_list)
+            #print(strekningsreferanse_list)
             strekning = strekningsreferanse_list[1:strekningsreferanse_list.index("D")]
             delstrekning = strekningsreferanse_list[strekningsreferanse_list.index("D")+1:]
             strekningsreferanse = "/".join([f"S{strekning}", f"D{delstrekning}"])
-            print(f"Delstrekning: {delstrekning}")
+            #print(f"Delstrekning: {delstrekning}")
             for elem in road_info_string_list:
                 _get_metadata_from_path_element(elem, parsed_exif)
             

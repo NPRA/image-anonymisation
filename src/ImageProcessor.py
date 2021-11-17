@@ -44,7 +44,7 @@ class ImageProcessor:
                                                   max_cache_size=config.db_max_cache_size)
         else:
             self.database_client = None
-    #[ymin, xmin, ymax, xmax]
+    
     def normalize_coordinates(row_i, col_j, img):
         """
         from https://stackoverflow.com/questions/48524516/normalize-coordinates-of-an-image
@@ -180,9 +180,39 @@ class ImageProcessor:
         i = 0
         all_mask_results = {
             "num_detections": 0,
-            "detection_masks": np.asarray([[full_image_mask]])
+            "detection_masks": np.asarray([[full_image_mask]]),
+            "detection_classes": {},
+            "detection_scores": {}
         }
         first_mask = True
+        # Mask the full image
+        full_img_mask_result = self.masker.mask(image)
+        LOGGER.debug(__name__, f"full_mask_result: {full_img_mask_result}")
+        #all_mask_results["detection_boxes"] = full_img_mask_result["detection_boxes"]
+        all_mask_results["num_detections"] = full_img_mask_result["num_detections"]
+        all_mask_results["detection_masks"] = full_img_mask_result["detection_masks"]
+        #print(f"full img: {full_img_mask_result}")
+        #print(f"c: {all_mask_results['detection_classes']}")
+        first_mask = True
+        for mask_num, mask in enumerate(full_img_mask_result["detection_masks"][0]):
+            detection_box = full_img_mask_result["detection_boxes"][0][mask_num]
+
+            if first_mask: 
+                first_mask = False
+                all_mask_results["detection_boxes"] = np.asarray([detection_box])
+            else:
+                all_mask_results["detection_boxes"] = np.concatenate((all_mask_results["detection_boxes"],[detection_box]), axis=0)
+
+            #print(detection_box)
+            #print(type(all_mask_results["detection_classes"]))
+            all_mask_results["detection_classes"].update( {
+                mask_num: [full_img_mask_result["detection_classes"][0][mask_num]]
+                })
+            all_mask_results["detection_scores"].update( {
+                mask_num:full_img_mask_result["detection_scores"][0][mask_num]
+            })
+        # Apply the information into the all masks.
+        additional_masks = 0
         #print(f"At init: {all_mask_results}")
         full_img_time = time.time()
         for height in range(0, img_h - window_height + 1, config.cutout_step_factor):
@@ -199,11 +229,11 @@ class ImageProcessor:
                 
                 #if i > 50:
                 #print(f"$$$$$$$$$$$$$ [i: {i}] $$$$$$$$$$$$$$$$")
-                start_time = time.time()
+                #start_time = time.time()
                 # Mask the cutout
                 masked_result = self.masker.mask(cutout_image)
-                time_delta = "{:.3f}".format(time.time() - start_time)
-                LOGGER.info(__name__, f"Masked image in {time_delta} s. File: {paths.input_file}")
+                #time_delta = "{:.3f}".format(time.time() - start_time)
+                #LOGGER.info(__name__, f"Masked image in {time_delta} s. File: {paths.input_file}")
                 after_mask_time = time.time()
                 # detection_masks = masked_result["detection_masks"]
 
@@ -237,129 +267,117 @@ class ImageProcessor:
                     
                     # comparY max Y min, min Y max 
                     
-                    
-                    if first_mask:
-                        first_mask = False
-                        insert_mask = all_mask_results["detection_masks"][0]
-                        insert_mask[0][
-                                height:height+window_height,
-                                width:width+window_width,
-                            ] = mask
-                        #print(all_mask_results["detection_masks"][0][0])
-                        #print(f"mask_score: {masked_result['detection_scores'][0][mask_num]}")
-                        all_mask_results["detection_masks"][0][0] = np.asarray([[insert_mask]])
-                        all_mask_results["detection_boxes"] = np.asarray([mask_bbox_in_full_img])
-                        all_mask_results["detection_classes"] = {
-                            0: [masked_result["detection_classes"][0][mask_num]]
-                            }
-                        all_mask_results["detection_scores"] = {
-                            0:[masked_result["detection_scores"][0][mask_num]]
-                            }
-                        all_mask_results["num_detections"] += 1
-                        total_masks +=1
+
                         #print(f"firs!!")
+                    for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0]):
+                        #new_masked_area = np.where(mask, mask, existing_mask)
+                        # Compar only the relevant cutout of the mask
+                        existing_mask = existing_mask[height:height+window_height, width:width+window_width]
+                        # Is this a new mask, or a continuation?
+                        # If the masked pixels in mask already exist, only update it,
+                        # no new mask is added to the all_mask_result
+                        #print(f"mask: {np.where(mask)}")
+                        #print(f"{existing_mask}, {existing_mask.shape}")
+                        #print(f"existing: {existing_mask[np.where(mask)] == True}")
+                        #print(f"LEN: {len(np.where(existing_mask[ np.where(mask)] == True)[0])}, ({len(np.where(mask))}), ({np.where(existing_mask)}))")
+                        
+                        if len(np.where(existing_mask[ np.where(mask)] == True)[0]) > 0:
+                            #print(f"UPDATE MASK {e_mask_num}")
+                            #print(f"UPDATE MASK {e_mask_num}")
+                            #print(f"UPDATE MASK {e_mask_num}")
+                            
+                            # Update the existing mask with diff. Perhaps remove where..
+                            mask = np.where(mask, mask, existing_mask)
+                            #all_mask_results[mask_id] = mask
+                            new_mask = False
+                            update_mask_id = e_mask_num
+                    if new_mask: 
+                        additional_masks += 1
+                        #print(f"NEW MASK!!")
+                        # if len(all_mask_results["detection_masks"][0]) == 0:
+                        #     #: 0 the list of all
+                        #     #: 1 ??? should be 0 always
+                        #     #: update_mask_id 
+                        #     all_mask_results["detection_masks"] = [[mask]]
+                        #     all_mask_results["detection_boxes"] = [[[y_min, x_min, y_max, x_max]]]
+                        # else:
+                        updated_full_image_mask = full_image_mask
+                        full_image_mask[height:height+window_height, width:width+window_width] = mask
+                        #print(all_mask_results)
+                        #print(f"beofre: {all_mask_results['detection_masks'][0]}")
+                        #print(updated_full_image_mask)
+                        # print(f"concat: {np.concatenate((all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0).shape}")
+                        all_mask_results["detection_masks"] = np.asarray([np.concatenate((all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0)])
+                        #print(f"aftyer {all_mask_results['detection_masks']}")
+                        all_mask_results["num_detections"] += 1
+                        total_masks += 1
+                        #LOGGER.debug(__name__, f"All mask result adding a new mask: {all_mask_results}")
+                        #LOGGER.debug(__name__, f"Trying to concat: {[[Y_min, X_min, Y_max, X_max]]} along axis 0")
+                        #print(f"all: {all_mask_results}")
+                        #print(f"{all_mask_results['detection_boxes']} ({all_mask_results['detection_boxes'].shape}) >< {[[Y_min, X_min, Y_max, X_max]]} ({np.asarray([[Y_min, X_min, Y_max, X_max]]).shape}) = ")
+                        #print(f"{np.concatenate((all_mask_results['detection_boxes'],[[Y_min, X_min, Y_max, X_max]]), axis=0)}")
+                        #all_mask_results["detection_masks"][0].append(mask, axis=0)
+                        all_mask_results["detection_boxes"] = np.concatenate((all_mask_results["detection_boxes"],[[Y_min, X_min, Y_max, X_max]]), axis=0)
+                        
+                        #np.append(all_mask_results["detection_boxes"],[[[Y_min, X_min, Y_max, X_max]]], axis=0)
+                        #print(f"d {[masked_result['detection_scores'][0][mask_num]]}")
+                        all_mask_results["detection_scores"].update({
+                            len(all_mask_results['detection_scores'].items()): [masked_result["detection_scores"][0][mask_num]]
+                        })
+                        
+                        all_mask_results["detection_classes"].update( {
+                            len(all_mask_results['detection_classes']): [masked_result["detection_classes"][0][mask_num]]
+                        })
+                        #np.concatenate((all_mask_results["detection_classes"], [[masked_result["detection_classes"][0][mask_num]]]), axis=0)
+                        #np.append(all_mask_results["detection_scores"],[masked_result["detection_scores"][0][mask_num]], axis=0)
+                        #np.append(all_mask_results["detection_classes"], [masked_result["detection_classes"][0][mask_num]], axis=0)
+                        #print(all_mask_results)
                     else:
-                        for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0]):
-                            #new_masked_area = np.where(mask, mask, existing_mask)
-                            # Compar only the relevant cutout of the mask
-                            existing_mask = existing_mask[height:height+window_height, width:width+window_width]
-                            # Is this a new mask, or a continuation?
-                            # If the masked pixels in mask already exist, only update it,
-                            # no new mask is added to the all_mask_result
-                            #print(f"mask: {np.where(mask)}")
-                            #print(f"{existing_mask}, {existing_mask.shape}")
-                            #print(f"existing: {existing_mask[np.where(mask)] == True}")
-                            #print(f"LEN: {len(np.where(existing_mask[ np.where(mask)] == True)[0])}, ({len(np.where(mask))}), ({np.where(existing_mask)}))")
-                            
-                            if len(np.where(existing_mask[ np.where(mask)] == True)[0]) > 0:
-                                #print(f"UPDATE MASK {e_mask_num}")
-                                #print(f"UPDATE MASK {e_mask_num}")
-                                #print(f"UPDATE MASK {e_mask_num}")
-                                
-                                # Update the existing mask with diff. Perhaps remove where..
-                                mask = np.where(mask, mask, existing_mask)
-                                #all_mask_results[mask_id] = mask
-                                new_mask = False
-                                update_mask_id = e_mask_num
-                        if new_mask: 
-                            #print(f"NEW MASK!!")
-                            # if len(all_mask_results["detection_masks"][0]) == 0:
-                            #     #: 0 the list of all
-                            #     #: 1 ??? should be 0 always
-                            #     #: update_mask_id 
-                            #     all_mask_results["detection_masks"] = [[mask]]
-                            #     all_mask_results["detection_boxes"] = [[[y_min, x_min, y_max, x_max]]]
-                            # else:
-                            updated_full_image_mask = full_image_mask
-                            full_image_mask[height:height+window_height, width:width+window_width] = mask
-                            #print(f"beofre: {all_mask_results['detection_masks'][0]}")
-                            #print(updated_full_image_mask)
-                            # print(f"concat: {np.concatenate((all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0).shape}")
-                            all_mask_results["detection_masks"] = np.asarray([np.concatenate((all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0)])
-                            #print(f"aftyer {all_mask_results['detection_masks']}")
-                            all_mask_results["num_detections"] += 1
-                            total_masks += 1
-                            #all_mask_results["detection_masks"][0].append(mask, axis=0)
-                            all_mask_results["detection_boxes"] = np.concatenate((all_mask_results["detection_boxes"],[[Y_min, X_min, Y_max, X_max]]), axis=0)
-                            
-                            #np.append(all_mask_results["detection_boxes"],[[[Y_min, X_min, Y_max, X_max]]], axis=0)
-                            #print(f"d {[masked_result['detection_scores'][0][mask_num]]}")
-                            all_mask_results["detection_scores"].update({
-                                len(all_mask_results['detection_scores'].items()): [masked_result["detection_scores"][0][mask_num]]
-                            })
-                            
-                            all_mask_results["detection_classes"].update( {
-                                len(all_mask_results['detection_classes']): [masked_result["detection_classes"][0][mask_num]]
-                            })
-                            #np.concatenate((all_mask_results["detection_classes"], [[masked_result["detection_classes"][0][mask_num]]]), axis=0)
-                            #np.append(all_mask_results["detection_scores"],[masked_result["detection_scores"][0][mask_num]], axis=0)
-                            #np.append(all_mask_results["detection_classes"], [masked_result["detection_classes"][0][mask_num]], axis=0)
-                            #print(all_mask_results)
-                        else:
-                            #print(f"UPDATE!!")
-                            # Only update the mask in the current window
-                            updated_full_image_mask = all_mask_results["detection_masks"][0][update_mask_id]
-                            updated_full_image_mask[height:height+window_height, width:width+window_width] = mask
-                            all_mask_results["detection_masks"][0][update_mask_id] = updated_full_image_mask
-                            
-                            #Update classes
-                            # print(f"all_mask_detection: {all_mask_results['detection_classes']}")
-                            # print(f"on mask id: {all_mask_results['detection_classes'][update_mask_id]} ")
-                            # print(f"masked_results: {masked_result['detection_classes']} "\
-                            #         #f"{[masked_result['detection_classes'][update_mask_id]]}, " \
-                            #         f"{masked_result['detection_classes'][0][mask_num]}, " \
-                            #         f"{np.concatenate((all_mask_results['detection_classes'][0][update_mask_id],[masked_result['detection_classes'][0][mask_num]]), axis=None)}")
-                            new_classes= np.concatenate(
-                                (all_mask_results['detection_classes'][update_mask_id],
-                                    [masked_result['detection_classes'][0][mask_num]]),
-                                axis=None) # should be a list of possible classes
-                            #print(f"new_scores: {new_classes}, new_score")
-                            all_mask_results["detection_classes"].update({update_mask_id: new_classes})
-                            #print(f"all detetion classes obj: {all_mask_results['detection_classes']}")
-                            
-                            new_scores= np.concatenate(
-                                (all_mask_results['detection_scores'][update_mask_id],
-                                    [masked_result['detection_scores'][0][mask_num]]),
-                                axis=None) # should be a list of scores
-                            all_mask_results["detection_scores"].update({update_mask_id: new_scores})
-                            # Add the mask class to the list of detection classes for later polling.
-                            #all_mask_results["detection_classes"]=[[masked_result["detection_classes"][0][mask_num]]]
-                            # Compare the bounding boxes of the masks
-                            full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
-                            #print(f"full_img bbox: {full_img_bbox}, detection: {all_mask_results['detection_boxes']}")
-                            #y_min = Y_min if Y_min < full_img_bbox[0] else full_img_bbox[0]
-                            #x_min = X_min if X_min < full_img_bbox[1] else full_img_bbox[1]
-                            #print(f"mask_bbox: {mask_bbox_in_full_img}")
-                            #print(f"BBox: {full_img_bbox[:2]} < {mask_bbox_in_full_img}")
-                            #print(f"scores: d: {masked_result['detection_scores'][0][mask_num]}, a: {all_mask_results['detection_scores'][update_mask_id]}")
-                            updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2], full_img_bbox[:2], mask_bbox_in_full_img[:2])
-                            updated_mask_bbox_max = np.where(full_img_bbox[2:] < mask_bbox_in_full_img[2:], full_img_bbox[2:], mask_bbox_in_full_img[2:])
-                            updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
-                            all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
-                            #np.append(all_mask_results["detection_scores"][update_mask_id],masked_result["detection_scores"][0][mask_num])
-                            #print(f"afte rupdate: {all_mask_results['detection_scores'][update_mask_id]}")
-                            #else:
-                        time_delta = "{:.3f}".format(time.time() - start_time)
+                        #print(f"UPDATE!!")
+                        # Only update the mask in the current window
+                        updated_full_image_mask = all_mask_results["detection_masks"][0][update_mask_id]
+                        updated_full_image_mask[height:height+window_height, width:width+window_width] = mask
+                        all_mask_results["detection_masks"][0][update_mask_id] = updated_full_image_mask
+                        
+                        #Update classes
+                        # print(f"all_mask_detection: {all_mask_results['detection_classes']}")
+                        # print(f"on mask id: {all_mask_results['detection_classes'][update_mask_id]} ")
+                        # print(f"masked_results: {masked_result['detection_classes']} "\
+                        #         #f"{[masked_result['detection_classes'][update_mask_id]]}, " \
+                        #         f"{masked_result['detection_classes'][0][mask_num]}, " \
+                        #         f"{np.concatenate((all_mask_results['detection_classes'][0][update_mask_id],[masked_result['detection_classes'][0][mask_num]]), axis=None)}")
+                        new_classes= np.concatenate(
+                            (all_mask_results['detection_classes'][update_mask_id],
+                                [masked_result['detection_classes'][0][mask_num]]),
+                            axis=None) # should be a list of possible classes
+                        #print(f"new_scores: {new_classes}, new_score")
+                        all_mask_results["detection_classes"].update({update_mask_id: new_classes})
+                        #print(f"all detetion classes obj: {all_mask_results['detection_classes']}")
+                        
+                        new_scores= np.concatenate(
+                            (all_mask_results['detection_scores'][update_mask_id],
+                                [masked_result['detection_scores'][0][mask_num]]),
+                            axis=None) # should be a list of scores
+                        all_mask_results["detection_scores"].update({update_mask_id: new_scores})
+                        # Add the mask class to the list of detection classes for later polling.
+                        #all_mask_results["detection_classes"]=[[masked_result["detection_classes"][0][mask_num]]]
+                        # Compare the bounding boxes of the masks
+                        #print(f"bbox: {all_mask_results['detection_boxes']}, index: {update_mask_id}, shape: {all_mask_results['detection_boxes'].shape}")
+                        full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
+                        #print(f"full_img bbox: {full_img_bbox}, detection: {all_mask_results['detection_boxes']}")
+                        #y_min = Y_min if Y_min < full_img_bbox[0] else full_img_bbox[0]
+                        #x_min = X_min if X_min < full_img_bbox[1] else full_img_bbox[1]
+                        #print(f"mask_bbox: {mask_bbox_in_full_img}")
+                        #print(f"BBox: {full_img_bbox[:2]} < {mask_bbox_in_full_img}")
+                        #print(f"scores: d: {masked_result['detection_scores'][0][mask_num]}, a: {all_mask_results['detection_scores'][update_mask_id]}")
+                        updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2], full_img_bbox[:2], mask_bbox_in_full_img[:2])
+                        updated_mask_bbox_max = np.where(full_img_bbox[2:] < mask_bbox_in_full_img[2:], full_img_bbox[2:], mask_bbox_in_full_img[2:])
+                        updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
+                        all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
+                        #np.append(all_mask_results["detection_scores"][update_mask_id],masked_result["detection_scores"][0][mask_num])
+                        #print(f"afte rupdate: {all_mask_results['detection_scores'][update_mask_id]}")
+                        #else:
+                        #time_delta = "{:.3f}".format(time.time() - start_time)
                            
                         
                         #with np.printoptions(threshold=np.inf):
@@ -385,9 +403,9 @@ class ImageProcessor:
                         # cv2.imwrite(os.path.join(out_dir, f"{paths.filename}_h{height}_w{width}.jpg"), cropped_img_numpy)
                     cropped_images.append(cutout_image)
                 time_delta = "{:.3f}".format(time.time() - cutout_time)
-                LOGGER.info(__name__, f"time checkpoint: fin all mask results updated: {time_delta} s.")
-                time_delta = "{:.3f}".format(time.time() - after_mask_time)
-                LOGGER.info(__name__, f"time checkpoint: after mask updated: {time_delta} s.")
+                LOGGER.debug(__name__, f"time checkpoint: Time for cutout: {time_delta} s.")
+                #time_delta = "{:.3f}".format(time.time() - after_mask_time)
+                #LOGGER.info(__name__, f"time checkpoint: after mask updated: {time_delta} s.")
                     
                     #LOGGER.info(__name__, f"Cutout: H{height}:{height+window_height} x W{width}:{width+window_width}")
                     
@@ -415,14 +433,14 @@ class ImageProcessor:
             detection_classes.append(majority_vote_class)
             average_score = np.mean(all_mask_results["detection_scores"][mask_num])
             detection_scores.append(average_score)
-
+            avg_score_round = round(average_score, 3)
             cv2.rectangle(show_img, (w, h), (w2,h2), (255,0,0), thickness=1)
             cv2.putText(show_img, 
-                f"n:{mask_num},c:{majority_vote_class}, s: {round(average_score,2)}", 
+                f"n:{mask_num},c:{majority_vote_class},s:{avg_score_round}", 
                 (w, h), 
                 cv2.FONT_HERSHEY_COMPLEX, 
                 0.3, 
-                (0,255,0), 
+                (255,0,0), 
                 thickness=1)
             #print(image.dtype)
             #print(image.shape)
@@ -433,7 +451,9 @@ class ImageProcessor:
         cv2.destroyAllWindows()
         all_mask_results["detection_classes"] = np.asarray([detection_classes])
         all_mask_results["detection_scores"] = np.asarray([[detection_scores]])
-        print(f"All results: {all_mask_results}")
+        all_mask_results["detection_boxes"] = np.asarray([all_mask_results["detection_boxes"]])
+        #print(f"All results: {all_mask_results}")
+        LOGGER.debug(__name__, f"'all_mask_results' before saving: {all_mask_results}")
 
         # # If we have reached the maximum number of workers. Wait for them to finish
         if len(self.workers) >= self.max_num_async_workers:
@@ -442,9 +462,9 @@ class ImageProcessor:
         self._spawn_workers(paths, image, all_mask_results)
         #end_time =  time.time()
         time_delta = "{:.3f}".format(time.time() - full_img_time)
-        LOGGER.info(__name__,f"Full cutout time: {time_delta} s.")
-        print(f"Full cutout time: {time_delta} s.")
-
+        LOGGER.info(__name__,f"Full image time: {time_delta} s.")
+        #print(f"Full cutout time: {time_delta} s.")
+        LOGGER.info(__name__,f"Masks added from the 'sliding window': {additional_masks}")
         return cropped_images
     def map_masks_on_cutouts_to_original_img(masks, original_img):
         pass
