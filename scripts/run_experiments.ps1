@@ -40,23 +40,24 @@ function WriteYml {
 }
  
 # Loading yml, setting new values and writing it back to disk
-$yml = LoadYml $Env:360_TEST_CONFIG
+#$yml = LoadYml $Env:360_TEST_CONFIG
 #$yml.data.param2 = $
 #$yml.footer.body = $FooterBody
 #WriteYml "sample.yml" $yml
-$newConfigRootFolder = "tmp/configs"
+<#$newConfigRootFolder = "tmp/configs"
 mkdir -Force "tmp/configs"
 $config_options = @{
-    mask_dilation_pixels = @(20, 30, 50, 70);
+    cutout_step_factor = @([1000, 800], @(1000, 900), @(1000, 1100), @(900, 2000));
     #mask_dilation_pixels = @(30);
     #blur = @(10, 8, 4)
     # normalized_gray_blur = @("False")
 
-}
+}#>
 
 # Iterate over the different variations of config options.
 <#foreach ($feature in $config_options.keys) {
     foreach ($option in $config_options.$feature) {
+        $option
         $yml.$feature = $option
         $yml.mask_color = "null"
         $confg_yml_file = "$newConfigRootFolder/$feature"+"_$option.yml"
@@ -74,43 +75,54 @@ $tmp_config_dirs = dir "tmp/configs"
 $num_experiments = Get-ChildItem $tmp_config_dirs -Recurse -File | Measure-Object | %{$_.Count}
 
 "Running one iteration of image anonymisation"
-$param_tuning = $yml.cutout_step_factor
-$output = "$output_folder_base_name\\step_$param_tuning"
-$log = "$log_folder_base_name\\step_$param_tuning"
+#$param_tuning = $yml.cutout_step_factor
+#$output = "$output_folder_base_name\\step_$param_tuning"
+#$log = "$log_folder_base_name\\step_$param_tuning"
 #: planar
 # $configfile = $Env:DEFAULT_CONFIG
 # 360
-$configfile = $Env:360_TEST_CONFIG
+#$configfile = $Env:360_TEST_CONFIG
 #$configfile = $Env:PLANAR_TEST_CONFIG
 # cd to root folder
-cd $Env:PROJECT_ROOT_FOLDER
+#cd $Env:PROJECT_ROOT_FOLDER
 #python -m src.main -i $input_folder -o $output -l $log
-python -m src.main -i $input_folder -o $output -l $log -k $configfile
+#python -m src.main -i $input_folder -o $output -l $log -k $configfile
 
 #: Cd back to script folder
-cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
+#cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
 
-# "Running a total of $num_experiments experiments...`n`n"
+"Running a total of $num_experiments experiments...`n`n"
+
 # run image anonymisation
-# foreach($file in  $tmp_config_dirs){
-    
-    
-#     "@@@@@@@@@@@@@@@@@@@@@@@@ Experiment $file @@@@@@@@@@@@@@@@@@@@@@@@"
-#     $option = $file.BaseName
-#     $output = "$output_folder_base_name"
-#     $log = "$log_folder_base_name"
-#     $configfile = $file.FullName
-#     #"$option, $output, $log, $configfile"
-#     # cd to root of folder
-#     cd $Env:PROJECT_ROOT_FOLDER
-#     # Run the image anonymisation
-#     # Planar
-#     python -m src.main -i $input_folder -o $output -l $log
-#     python -m src.main -i $input_folder -o $output -l $log -k $configfile
-    
-#     #python -m src.main -i $input_folder -o $output_folder_base_name -l $log -k $configfile
-#     # cd back to script folder
-#     cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
-#     "Finished experiment`n"
-# }
+foreach($file in  $tmp_config_dirs){
+
+
+    "@@@@@@@@@@@@@@@@@@@@@@@@ Experiment $file @@@@@@@@@@@@@@@@@@@@@@@@"
+
+    $yml = LoadYml $file.FullName
+    $param_tuning = $yml.cutout_step_factor
+    #"$param_tuning"
+    $output = "$output_folder_base_name\\step_$param_tuning"
+    $log = "$log_folder_base_name\\step_$param_tuning"
+    $option = $file.BaseName
+    $configfile = $file.FullName
+
+    "CONFIG: $configfile"
+    "OPTION: $option"
+    "LOG: $log"
+    "OUTPUT: $output"
+    #"$option, $output, $log, $configfile"
+    # cd to root of folder
+    cd $Env:PROJECT_ROOT_FOLDER
+
+    # Run the image anonymisation
+    # Planar
+    #python -m src.main -i $input_folder -o $output -l $log
+    python -m src.main -i $input_folder -o $output -l $log -k $configfile
+
+    #python -m src.main -i $input_folder -o $output_folder_base_name -l $log -k $configfile
+    # cd back to script folder
+    cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
+    "Finished experiment`n"
+ }
 "Finished script`n"

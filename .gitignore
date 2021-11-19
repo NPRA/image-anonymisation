@@ -159,3 +159,4 @@ docs/_build/*
 scripts/set_envs.ps1
 scripts/test_json.py
 scripts/test.py
+scripts/tmp
