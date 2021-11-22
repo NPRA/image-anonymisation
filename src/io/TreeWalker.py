@@ -31,8 +31,6 @@ class Paths:
         self.input_dir = input_dir
         self.mirror_dirs = mirror_dirs
         self.filename = filename
-        if config.cache_cutouts:
-            self.cache_cutout_dir = config.cache_filepath
 
         # Names of .json and .webp files.
         self.json_filename = os.path.splitext(filename)[0] + ".json"

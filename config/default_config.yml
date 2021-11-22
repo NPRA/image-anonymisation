@@ -4,8 +4,7 @@
 
 #: Cache cutouts?
 #: Default value: {False}
-cache_cutouts: False
-cache_filepath: null
+use_cutouts: False
 
 #: How many steps the sliding window should move in directions [height, width]
 cutout_step_factor: [800,800]
@@ -57,10 +56,10 @@ application_version: "0.1"
 #: Formatter for `mappenavn` in the JSON-file. `relative_input_dir` is the path to the folder containing the image,
 #: relative to `exif_top_dir` below. For instance, if the image is located at `C:\Foo\Bar\Baz\Hello\World.jpg`, and
 #: `exif_top_dir = Bar`, then `relative_input_dir` will be `Baz\Hello`.
-exif_mappenavn: "Documents\\{relative_input_dir}"
+exif_mappenavn: "Vegbilder\\{relative_input_dir}"
 
 #: Top directory for `relative_input_dir`. See above for an explanation.
-exif_top_dir: "E6_360_ViaTech"
+exif_top_dir: "tilSladding"
 
 
 # ===================
@@ -172,8 +171,8 @@ archive_thumbnail: False
 
 #: The dimensions of the thumbnail image
 #: Format: [width, height]
-#: Default values: [3842, 2041]
-thumbnail_dim: [2048, 1024]
+#: Default values: [2520, 1400]
+thumbnail_dim: [2520, 1400]
 
 # ====================
 # E-mail configuration

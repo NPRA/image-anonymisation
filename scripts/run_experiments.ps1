@@ -40,7 +40,7 @@ function WriteYml {
 }
  
 # Loading yml, setting new values and writing it back to disk
-#$yml = LoadYml $Env:360_TEST_CONFIG
+$yml = LoadYml $Env:360_TEST_CONFIG
 #$yml.data.param2 = $
 #$yml.footer.body = $FooterBody
 #WriteYml "sample.yml" $yml
@@ -75,26 +75,27 @@ $tmp_config_dirs = dir "tmp/configs"
 $num_experiments = Get-ChildItem $tmp_config_dirs -Recurse -File | Measure-Object | %{$_.Count}
 
 "Running one iteration of image anonymisation"
-#$param_tuning = $yml.cutout_step_factor
-#$output = "$output_folder_base_name\\step_$param_tuning"
-#$log = "$log_folder_base_name\\step_$param_tuning"
+$param_tuning = $yml.cutout_dim_downscale
+$output = "$output_folder_base_name\\dim_$param_tuning"
+$log = "$log_folder_base_name\\dim_$param_tuning"
 #: planar
 # $configfile = $Env:DEFAULT_CONFIG
-# 360
-#$configfile = $Env:360_TEST_CONFIG
+#$configfile = $Env:PLANAR_TEST_CONFIG
+ # 360
+$configfile = $Env:360_TEST_CONFIG
 #$configfile = $Env:PLANAR_TEST_CONFIG
 # cd to root folder
-#cd $Env:PROJECT_ROOT_FOLDER
+cd $Env:PROJECT_ROOT_FOLDER
 #python -m src.main -i $input_folder -o $output -l $log
-#python -m src.main -i $input_folder -o $output -l $log -k $configfile
+python -m src.main -i $input_folder -o $output -l $log -k $configfile
 
 #: Cd back to script folder
-#cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
+cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
 
-"Running a total of $num_experiments experiments...`n`n"
+#"Running a total of $num_experiments experiments...`n`n"
 
 # run image anonymisation
-foreach($file in  $tmp_config_dirs){
+<#foreach($file in  $tmp_config_dirs){
 
 
     "@@@@@@@@@@@@@@@@@@@@@@@@ Experiment $file @@@@@@@@@@@@@@@@@@@@@@@@"
@@ -124,5 +125,5 @@ foreach($file in  $tmp_config_dirs){
     # cd back to script folder
     cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
     "Finished experiment`n"
- }
+ }#>
 "Finished script`n"

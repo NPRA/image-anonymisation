@@ -3,10 +3,9 @@
 # Miscellaneous configuration parameters for 360-images
 # ======================================================
 
-#: Cache cutouts?
-#: Default value: {False}
-cache_cutouts: False
-cache_filepath: null
+#: Use cutouts?
+#: Default value: {True}
+use_cutouts: True
 
 #: How many steps the sliding window should move in directions [height, width] 
 cutout_step_factor: [800,800]
@@ -177,8 +176,8 @@ archive_thumbnail: True
 
 #: The dimensions of the thumbnail image
 #: Format: [width, height]
-#: Default values: [3842, 2041]
-thumbnail_dim: [2048, 1024]
+#: Default values: [2520, 1400]
+thumbnail_dim: [2520, 1400]
 
 # ====================
 # E-mail configuration

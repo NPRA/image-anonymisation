@@ -161,7 +161,7 @@ class ImageProcessor:
 
         self.n_completed += 1
 
-    def make_cutouts(self, image, paths):
+    def process_image_with_cutouts(self, image, paths):
         """
         Creates cutouts of the image, and caches them to a folder if specified in the config file.
         
@@ -327,7 +327,7 @@ class ImageProcessor:
                     cropped_img_numpy = cutout_image.numpy()
                     cropped_img_numpy = cropped_img_numpy[0].astype(np.uint8)
                 time_delta = "{:.3f}".format(time.time() - cutout_time)
-                LOGGER.debug(__name__, f"time checkpoint: Time for cutout: {time_delta} s.")
+                # LOGGER.debug(__name__, f"time checkpoint: Time for cutout: {time_delta} s.")
 
                 i += 1
         detection_classes = []
@@ -379,45 +379,7 @@ class ImageProcessor:
         LOGGER.info(__name__, f"Full image time: {time_delta} s.")
         LOGGER.info(__name__, f"Masks added from the 'sliding window': {additional_masks}")
 
-    def map_masks_on_cutouts_to_original_img(masks, original_img):
-        pass
-
-    def process_cutout_images(self, original_image, cutouts, paths):
-        start_time = time.time()
-
-        # Create a mask array of the original image
-        original_image_mask = np.zeros(original_image.shape[1:3])
-
-        # Define dims of the sliding window        
-        window_scale = config.cutout_dim_downscale
-        window_height = int(original_image_mask.shape[0] / window_scale)
-        window_width = int(original_image_mask.shape[1] / window_scale)
-
-        # Compute masks for the objects detected in each image.
-        for i, cutout in enumerate(cutouts):
-            masked_results = self.masker.mask(cutout)
-            time_delta = "{:.3f}".format(time.time() - start_time)
-            mapped_pixel_term_h = config.cutout_step_factor[0] * i
-            mapped_pixel_term_w = config.cutout_step_factor[1] * i
-            window_height_scale, window_width_scale = config.cutout_dim_downscale
-
-            # Get the dimensions of the sliding window
-            window_height = int(original_image_mask.shape[0] / window_height_scale)
-            window_width = int(original_image_mask.shape[1] / window_width_scale)
-
-            relevant_mask_slice = original_image_mask[mapped_pixel_term_h:mapped_pixel_term_h + window_height,
-                                  mapped_pixel_term_w:mapped_pixel_term_w + window_width]
-
-            # Apply each the mask to 
-            for mask in masked_results["detection_masks"][0]:
-                # original_image_mask[:,] = 1 if mask_pixel else
-                original_image_mask[mapped_pixel_term_h:mapped_pixel_term_h + window_height,
-                mapped_pixel_term_w:mapped_pixel_term_w + window_width] = np.where(
-                    mask is True and relevant_mask_slice == 0, mask, relevant_mask_slice)
-
-        pass
-
-    def process_image(self, image, paths):
+    def process_image_without_cutouts(self, image, paths):
         """
         Run the processing pipeline for `image`.
 
