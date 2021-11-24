@@ -75,9 +75,10 @@ $tmp_config_dirs = dir "tmp/configs"
 $num_experiments = Get-ChildItem $tmp_config_dirs -Recurse -File | Measure-Object | %{$_.Count}
 
 "Running one iteration of image anonymisation"
-$param_tuning = $yml.cutout_dim_downscale
-$output = "$output_folder_base_name\\dim_$param_tuning"
-$log = "$log_folder_base_name\\dim_$param_tuning"
+$step = $yml.cutout_step_factor
+$dim = $yml.cutout_dim_downscale
+$output = "$output_folder_base_name\\step_$step\\dim_$dim"
+$log = "$log_folder_base_name\\step_$step\\dim_$dim"
 #: planar
 # $configfile = $Env:DEFAULT_CONFIG
 #$configfile = $Env:PLANAR_TEST_CONFIG

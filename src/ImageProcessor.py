@@ -172,6 +172,7 @@ class ImageProcessor:
         img_h, img_w = image.shape[1:3]
         window_height = int(img_h / window_height_scale)
         window_width = int(img_w / window_width_scale)
+        LOGGER.debug(__name__, f"Window h: {window_height}, Window w: {window_width}")
 
         # SCreate an empty mask for the whole image.
         full_image_mask = np.zeros((img_h, img_w), dtype=bool)
@@ -187,9 +188,9 @@ class ImageProcessor:
         first_mask = True
         # Count of the masks that are detected from the sliding window.
         additional_masks = 0
+
         # Mask the full image
         full_img_mask_result = self.masker.mask(image)
-        LOGGER.debug(__name__, f"full_mask_result: {full_img_mask_result}")
 
         # Update the full image results with the results from the masking.
         all_mask_results["num_detections"] = full_img_mask_result["num_detections"]
@@ -319,14 +320,14 @@ class ImageProcessor:
                         full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
                         updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2],
                                                          full_img_bbox[:2], mask_bbox_in_full_img[:2])
-                        updated_mask_bbox_max = np.where(full_img_bbox[2:] < mask_bbox_in_full_img[2:],
+                        updated_mask_bbox_max = np.where(full_img_bbox[2:] > mask_bbox_in_full_img[2:],
                                                          full_img_bbox[2:], mask_bbox_in_full_img[2:])
                         updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
                         all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
 
                     cropped_img_numpy = cutout_image.numpy()
-                    cropped_img_numpy = cropped_img_numpy[0].astype(np.uint8)
-                time_delta = "{:.3f}".format(time.time() - cutout_time)
+                    #cropped_img_numpy = cropped_img_numpy[0].astype(np.uint8)
+                #time_delta = "{:.3f}".format(time.time() - cutout_time)
                 # LOGGER.debug(__name__, f"time checkpoint: Time for cutout: {time_delta} s.")
 
                 i += 1
@@ -339,12 +340,12 @@ class ImageProcessor:
 
             # Make final calculations and decisions about the results.
         for mask_num in range(all_mask_results["num_detections"]):
-            bbox = all_mask_results["detection_boxes"][mask_num]
+            #bbox = all_mask_results["detection_boxes"][mask_num]
 
-            h = int(bbox[0] * image.shape[1])
-            w = int(bbox[1] * image.shape[2])
-            h2, w2 = int(bbox[2] * image.shape[1]), int(bbox[3] * image.shape[2])
-            show_img = image[0]
+            #h = int(bbox[0] * image.shape[1])
+            #w = int(bbox[1] * image.shape[2])
+            #h2, w2 = int(bbox[2] * image.shape[1]), int(bbox[3] * image.shape[2])
+            #show_img = image[0]
 
             # Extract the majority vote of all the classes 
             majority_vote_class = _poll_array(all_mask_results["detection_classes"][mask_num])
@@ -352,16 +353,16 @@ class ImageProcessor:
             # Calculate the average score for the mask
             average_score = np.mean(all_mask_results["detection_scores"][mask_num])
             detection_scores.append(average_score)
-            cv2.rectangle(show_img, (w, h), (w2, h2), (255, 0, 0), thickness=1)
-            cv2.putText(show_img,
-                        f"n:{mask_num},c:{majority_vote_class}",
-                        (w, h),
-                        cv2.FONT_HERSHEY_COMPLEX,
-                        0.6,
-                        (255, 0, 0),
-                        thickness=1)
+            #cv2.rectangle(show_img, (w, h), (w2, h2), (255, 0, 0), thickness=1)
+            #cv2.putText(show_img,
+            #            f"n:{mask_num},c:{majority_vote_class}",
+            #            (w, h),
+            #            cv2.FONT_HERSHEY_COMPLEX,
+            #            0.6,
+            #            (255, 0, 0),
+             #           thickness=1)
 
-        cv2.destroyAllWindows()
+        #cv2.destroyAllWindows()
 
         # Format all the results correctly
         all_mask_results["detection_classes"] = np.asarray([detection_classes])

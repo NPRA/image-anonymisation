@@ -260,9 +260,9 @@ def main():
             img = next(dataset_iterator)
             # Do preprocessing for cutouts
             if config.use_cutouts:
-                LOGGER.info(__name__, f"Using cutout-method")
+                LOGGER.debug(__name__, f"Using cutout-method")
                 # Process image with cutout method
-                image_processor.make_cutouts_with_cutouts(img, paths)
+                image_processor.process_image_with_cutouts(img, paths)
             else:
                 # Process image without the cutout method
                 image_processor.process_image_without_cutouts(img, paths)

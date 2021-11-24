@@ -57,7 +57,10 @@ class Masker:
         # Resize the image if it is too large
         image = _maybe_resize_image(image, self.max_num_pixels)
         # Get results from model
+        #LOGGER.debug(__name__, f"Before masking in masker")
+
         masking_results = self.model(image)
+        #LOGGER.debug(__name__, f"After masking in masker")
         # Remove "uninteresting" detections. I.e. detections which are not relevant for anonymisation.
         masking_results = _filter_detections(masking_results)
         # Convert the number of detections to an int

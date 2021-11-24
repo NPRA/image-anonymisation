@@ -58,10 +58,10 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, mask_color=Non
     pil_img.save(paths.output_file)
     if local_thumbnail:
         wait_until_path_is_found([paths.input_dir])
-        _save_thumbnail(pil_img, config.thumbnail_dim, paths.input_thumbnail)
+        _save_thumbnail(pil_img, config.thumbnail_dim, config.thumbnail_center, paths.input_thumbnail)
     if remote_thumbnail:
         wait_until_path_is_found([paths.output_dir])
-        _save_thumbnail(pil_img, config.thumbnail_dim, paths.output_thumbnail)
+        _save_thumbnail(pil_img, config.thumbnail_dim, config.thumbnail_center,  paths.output_thumbnail)
     # if local_mask:
     #     wait_until_path_is_found([paths.input_dir])
     #     _save_mask(agg_mask, paths.input_webp)
@@ -147,12 +147,12 @@ def _apply_normalized_gray_blur(img, mask, ksize):
     blurred_large = cv2.blur(gray, (large_ksize, large_ksize))[None, :, :, None]
     img[mask] = blurred[mask] - blurred_large[mask] + default_gray_value
 
-def _save_thumbnail(img, out_dim, output_path):
+def _save_thumbnail(img, out_dim, center_points, output_path):
     """
     Save a thumbnail version of the image
     """
     img_w, img_h = img.size
-    center_pixel = np.asarray([int(img_w//2), int(img_h//2)])
+    center_pixel = np.asarray([int(img_w*center_points[1]), int(img_h*center_points[0])])
     dim_relative_to_center = np.asarray(out_dim)/2
     # Make sure the dims are of type int
     dim_relative_to_center = dim_relative_to_center.astype(int)
