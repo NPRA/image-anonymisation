@@ -47,9 +47,13 @@ class ImageProcessor:
 
     def normalize_coordinates(row_i, col_j, img):
         """
+        Normalizes a coordinate inside an image
         from https://stackoverflow.com/questions/48524516/normalize-coordinates-of-an-image
-        row: x
-        col: y
+
+        :param row_i: The row-pixel (height pixel) in the image.
+        :param col_j: The column-pixel (width pixel) in the image.
+        :param img: Input image. Must be a 4D color image tensor with shape (1, height, width, 3)
+        :rtype: float, float
         """
 
         num_rows, num_cols = img.shape[1:3]
@@ -163,7 +167,17 @@ class ImageProcessor:
 
     def process_image_with_cutouts(self, image, paths):
         """
-        Creates cutouts of the image, and caches them to a folder if specified in the config file.
+        Masks the image with a sliding window method.
+        It first masks the whole image,
+        then a sliding window of a defined scale will slide through the image
+        by a defined number of steps, and the masking will be applied on each "window".
+        lastly, workers will be spawned to save and process the metadata.
+
+        :param image: Input image. Must be a 4D color image tensor with shape (1, height, width, 3)
+        :type image: tf.python.framework.ops.EagerTensor
+        :param paths: Paths object representing the image file.
+        :type paths: src.io.TreeWalker.Paths
+
         
         """
         # Get the dimensions of the cutout for a sliding window.
@@ -217,7 +231,6 @@ class ImageProcessor:
         # Mask every cutout and update the results
         for height in range(0, img_h - window_height + 1, config.cutout_step_factor[0]):
             for width in range(0, img_w - window_width + 1, config.cutout_step_factor[1]):
-                cutout_time = time.time()
 
                 cutout_image = image[
                                :,
@@ -262,7 +275,7 @@ class ImageProcessor:
                         all_mask_results["num_detections"] += 1
 
                     for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0]):
-                        # CExtract the relevant cutout of the existing full image mask for comparison.
+                        # Extract the relevant cutout of the existing full image mask for comparison.
                         existing_mask = existing_mask[height:height + window_height, width:width + window_width]
 
                         # If there are overlapping masked pixels between the exisiting mask and the cutout mask
@@ -325,11 +338,6 @@ class ImageProcessor:
                         updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
                         all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
 
-                    cropped_img_numpy = cutout_image.numpy()
-                    #cropped_img_numpy = cropped_img_numpy[0].astype(np.uint8)
-                #time_delta = "{:.3f}".format(time.time() - cutout_time)
-                # LOGGER.debug(__name__, f"time checkpoint: Time for cutout: {time_delta} s.")
-
                 i += 1
         detection_classes = []
         detection_scores = []
@@ -340,12 +348,6 @@ class ImageProcessor:
 
             # Make final calculations and decisions about the results.
         for mask_num in range(all_mask_results["num_detections"]):
-            #bbox = all_mask_results["detection_boxes"][mask_num]
-
-            #h = int(bbox[0] * image.shape[1])
-            #w = int(bbox[1] * image.shape[2])
-            #h2, w2 = int(bbox[2] * image.shape[1]), int(bbox[3] * image.shape[2])
-            #show_img = image[0]
 
             # Extract the majority vote of all the classes 
             majority_vote_class = _poll_array(all_mask_results["detection_classes"][mask_num])
@@ -353,22 +355,12 @@ class ImageProcessor:
             # Calculate the average score for the mask
             average_score = np.mean(all_mask_results["detection_scores"][mask_num])
             detection_scores.append(average_score)
-            #cv2.rectangle(show_img, (w, h), (w2, h2), (255, 0, 0), thickness=1)
-            #cv2.putText(show_img,
-            #            f"n:{mask_num},c:{majority_vote_class}",
-            #            (w, h),
-            #            cv2.FONT_HERSHEY_COMPLEX,
-            #            0.6,
-            #            (255, 0, 0),
-             #           thickness=1)
-
-        #cv2.destroyAllWindows()
 
         # Format all the results correctly
         all_mask_results["detection_classes"] = np.asarray([detection_classes])
         all_mask_results["detection_scores"] = np.asarray([[detection_scores]])
         all_mask_results["detection_boxes"] = np.asarray([all_mask_results["detection_boxes"]])
-        LOGGER.info(__name__, f"Final results: {all_mask_results}")
+        LOGGER.debug(__name__, f"Final results: {all_mask_results}")
 
         # If we have reached the maximum number of workers. Wait for them to finish
         if len(self.workers) >= self.max_num_async_workers:
@@ -382,7 +374,7 @@ class ImageProcessor:
 
     def process_image_without_cutouts(self, image, paths):
         """
-        Run the processing pipeline for `image`.
+        Run the processing pipeline for `image` without any sliding window method.
 
         :param image: Input image. Must be a 4D color image tensor with shape (1, height, width, 3)
         :type image: tf.python.framework.ops.EagerTensor
@@ -393,9 +385,9 @@ class ImageProcessor:
         # Compute the detected objects and their masks.
         mask_results = self.masker.mask(image)
 
-        LOGGER.info(__name__, f"Masked results: {mask_results}")
+        LOGGER.debug(__name__, f"Masked results: {mask_results}")
         time_delta = "{:.3f}".format(time.time() - start_time)
-        LOGGER.info(__name__, f"Masked image in {time_delta} s. File: {paths.input_file}")
+        LOGGER.debug(__name__, f"Masked image in {time_delta} s. File: {paths.input_file}")
 
         # Convert the image to a numpy array
         if not isinstance(image, np.ndarray):
@@ -441,7 +433,11 @@ def _coordinate_mapping(y, x, original_img, cutout_img, bounding_w, bounding_h):
     :type original_img: tf.python.framework.ops.EagerTensor
     :param cutout_img: The cutout image as a 4D-color image tensor with shape (1, height, width, 3)
     :type cutout_img: tf.python.framework.ops.EagerTensor
-    :param bounding_w:
+    :param bounding_w: The bounding width coordinate for the cutout
+    :type bounding_w: int
+    :param bounding_h:The bounding height coordinate for the cutout
+    :type bounding_h: int
+    :rtype: float, float
     """
 
     X = bounding_w + (x * cutout_img.shape[2])

@@ -3,16 +3,6 @@
 # Miscellaneous configuration parameters for 360-images
 # ======================================================
 
-#: Use cutouts?
-#: Default value: {True}
-use_cutouts: True
-
-#: How many steps the sliding window should move in directions [height, width] 
-cutout_step_factor: [800,800]
-
-#: Downscale sliding window by [height, width]
-cutout_dim_downscale: [4,4]
-
 #: Dataeier
 dataeier: null
 
@@ -58,10 +48,10 @@ application_version: "0.1"
 #: Formatter for `mappenavn` in the JSON-file. `relative_input_dir` is the path to the folder containing the image,
 #: relative to `exif_top_dir` below. For instance, if the image is located at `C:\Foo\Bar\Baz\Hello\World.jpg`, and
 #: `exif_top_dir = Bar`, then `relative_input_dir` will be `Baz\Hello`.
-exif_mappenavn: "Documents\\{relative_input_dir}"
+exif_mappenavn: "Vegbilder/{relative_input_dir}"
 
 #: Top directory for `relative_input_dir`. See above for an explanation.
-exif_top_dir: "E6_360_ViaTech"
+exif_top_dir: "TilSladding"
 
 
 
@@ -70,7 +60,7 @@ exif_top_dir: "E6_360_ViaTech"
 # ===================
 
 #: Write the EXIF .json file to the output (remote) directory?
-remote_json: False
+remote_json: True
 
 #: Write the EXIF .json file to the input (local) directory?
 local_json: True
@@ -89,6 +79,28 @@ archive_json: False
 #: Write mask file to the archive directory?
 #: Disabled to remove .webp
 #: archive_mask: False
+
+#: Make thumbnail and output it to the *output* file path?
+remote_thumbnail: True
+
+#: Make thumbnail and output is to the "input" file path?
+local_thumbnail: False
+
+#: Write mask file to the archive directory?
+archive_thumbnail: False
+
+#: The dimensions of the thumbnail image
+#: Format: [width, height]
+#: Default values: [2520, 1400]
+thumbnail_dim: [2520, 1400]
+
+#: The center of the thumbnail in normalized.
+#: E.g if the value is [0.5, 0.3], the center of the thumbnail is
+#: the pixel located at 50% of the height of the original image,
+#: and 30% of the width.
+#: Format: [height, width]
+#: Default: [0.45, 0.5] (Slightly off center height, center width)
+thumbnail_center: [0.45, 0.5]
 
 # =====================================
 # Parameters for asynchronous execution
@@ -122,6 +134,20 @@ mask_dilation_pixels: 4
 #: it will be resized before the masker is applied. This will NOT change the resolution of the output image.
 max_num_pixels: 1000000000
 
+#: Apply the cutuout 'sliding window' method.
+#: Is recommended for larger images,
+#: however, it will make the anonymisation process slower.
+#: Default value: {True}
+use_cutouts: True
+
+#: How many steps the sliding window should move in directions [height, width]
+#: The anonymisation will discover more anonymisation objects for lower values,
+#: however, the payoff is a slower anonymisation process for each image.
+#: Default: [1500, 1300]
+cutout_step_factor: [1500,1300]
+
+#: Downscale sliding window by [height, width]
+cutout_dim_downscale: [3,2]
 
 # ===============================================================
 # Parameters controlling the appearance of the anonymised regions
@@ -166,42 +192,22 @@ extra_preprocessing_depth: "MEDIUM"
 #: Default: \temp
 extra_prerpocessing_temp_foldername: "/temp"
 
-#: Make thumbnail and output it to the *output* file path?
-remote_thumbnail: True
-
-#: Make thumbnail and output is to the "input" file path?
-local_thumbnail: True
-#: Archive the thumbnail?
-archive_thumbnail: True
-
-#: The dimensions of the thumbnail image
-#: Format: [width, height]
-#: Default values: [2520, 1400]
-thumbnail_dim: [2520, 1400]
-#: The center of the thumbnail in normalized.
-#: E.g if the value is [0.5, 0.3], the center of the thumbnail is
-#: the pixel located at 50% of the height of the original image,
-#: and 30% of the width.
-#: Format: [height, width]
-#: Default: [0.5, 0.5]
-thumbnail_center: [0.5, 0.5]
-
 # ====================
 # E-mail configuration
 # ====================
 # Note: E-mail sending requires additional configuration. This is documented in the README.
 
 #: Send an email if the program exits abnormally due to an uncaught exception.
-uncaught_exception_email: False
+uncaught_exception_email: True
 
 #: Send an email if a processing error is encountered, but the program is able to continue
-processing_error_email: False
+processing_error_email: True
 
 #: Send an email when the anonymisation finishes normally.
-finished_email: False
+finished_email: True
 
 #: Attach the log file to emails?
-email_attach_log_file: False
+email_attach_log_file: True
 
 
 # ======================
@@ -213,7 +219,7 @@ email_attach_log_file: False
 # responsible for the database writing.
 
 #: Write the EXIF data to the database?
-write_exif_to_db: False
+write_exif_to_db: True
 
 #: Maximum number of rows to accumulate locally before writing all accumulated rows to the database.
 db_max_n_accumulated_rows: 100
