@@ -127,7 +127,7 @@ class SaveWorker(BaseWorker):
         super().__init__(pool, paths)
 
         self.error_message = "Got error while saving masked image '{image_path}': {err}"
-        self.finished_message = "Saved masked image and mask. File: {image_file}"
+        self.finished_message = "Saved masked image. File: {image_file}"
         self.worker_exceptions = (
             AssertionError,
             FileNotFoundError,
