@@ -2,16 +2,6 @@
 # Miscellaneous configuration parameters
 # ======================================
 
-#: Cache cutouts?
-#: Default value: {False}
-use_cutouts: False
-
-#: How many steps the sliding window should move in directions [height, width]
-cutout_step_factor: [800,800]
-
-#: Downscale sliding window by [height, width]
-cutout_dim_downscale: [4,4]
-
 #: Dataeier
 data_eier: null
 #: The type of images to be processed
@@ -84,6 +74,35 @@ archive_json: False
 # #: Write mask file to the archive directory?
 # archive_mask: False
 
+#: Make preview and output it to the *output* file path?
+remote_preview: False
+
+#: Make preview and output is to the "input" file path?
+local_preview: False
+
+#: Write mask file to the archive directory?
+archive_preview: False
+
+#: Save the preview to its own separate directory?
+#: Should be an abosulte path to the directory.
+#: E.g: "C:\\Users\\username\\Documents\\preview_dir"
+#: Default: null
+separate_preview_directory: null
+
+
+#: The dimensions of the preview image
+#: Format: [width, height]
+#: Default values: [2520, 1400]
+preview_dim: [2520, 1400]
+
+#: The center of the preview in normalized.
+#: E.g if the value is [0.5, 0.3], the center of the preview is
+#: the pixel located at 50% of the height of the original image,
+#: and 30% of the width.
+#: Format: [height, width]
+#: Default: [0.45, 0.5]
+preview_center: [0.45, 0.5]
+
 # =====================================
 # Parameters for asynchronous execution
 # =====================================
@@ -116,6 +135,19 @@ mask_dilation_pixels: 4
 #: it will be resized before the masker is applied. This will NOT change the resolution of the output image.
 max_num_pixels: 1000000000
 
+#: Apply the cutuout 'sliding window' method.
+#: Is recommended for larger images,
+#: however, it will make the anonymisation process slower.
+#: Default value: {False}
+use_cutouts: False
+
+#: How many steps the sliding window should move in directions [height, width]
+#: The anonymisation will discover more anonymisation objects for lower values,
+#: however, the payoff is a slower anonymisation process for each image.
+cutout_step_factor: [800,800]
+
+#: Downscale sliding window by [height, width]
+cutout_dim_downscale: [4,4]
 
 # ===============================================================
 # Parameters controlling the appearance of the anonymised regions
@@ -140,47 +172,6 @@ gray_blur: True
 #: colors. NOTE: Requires `gray_blur=True`
 #: Default: True
 normalized_gray_blur: True
-
-
-#: Extra pre-processing steps. Will try to adjust the images contrast, brightness and sharpness values.
-#: Default: False
-extra_preprocessing: False
-
-#: Depth level of the preprocessing step.
-#: Valid values: {"LOW","MEDIUM", "HIGH"} 
-#: Default: Medium
-extra_preprocessing_depth: "MEDIUM"
-
-#: A temporary folder which will be used for expra preprocessing.
-#: The extra preprocessed images will lose the integrity of the image, 
-#: and it cannot be displayed in the application.
-#: The folder will contain the original image, in which the mask detected on the 
-#: extra preprocessed images will be placed upon, as well as the extra preprocessed images
-#: used for masking.
-#: If the folder does not exist already, the folder will be created.
-#: Default: \temp
-extra_prerpocessing_temp_foldername: "/temp"
-
-#: Make thumbnail and output it to the *output* file path?
-remote_thumbnail: False
-
-#: Make thumbnail and output is to the "input" file path?
-local_thumbnail: False
-#: Archive the thumbnail?
-archive_thumbnail: False
-
-#: The dimensions of the thumbnail image
-#: Format: [width, height]
-#: Default values: [2520, 1400]
-thumbnail_dim: [2520, 1400]
-
-#: The center of the thumbnail in normalized.
-#: E.g if the value is [0.5, 0.3], the center of the thumbnail is
-#: the pixel located at 50% of the height of the original image,
-#: and 30% of the width.
-#: Format: [height, width]
-#: Default: [0.5, 0.5]
-thumbnail_center: [0.5, 0.5]
 
 # ====================
 # E-mail configuration

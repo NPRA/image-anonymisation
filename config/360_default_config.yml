@@ -80,27 +80,33 @@ archive_json: False
 #: Disabled to remove .webp
 #: archive_mask: False
 
-#: Make thumbnail and output it to the *output* file path?
-remote_thumbnail: True
+#: Make preview and output it to the *output* file path?
+remote_preview: True
 
-#: Make thumbnail and output is to the "input" file path?
-local_thumbnail: False
+#: Make preview and output is to the "input" file path?
+local_preview: False
 
 #: Write mask file to the archive directory?
-archive_thumbnail: False
+archive_preview: False
 
-#: The dimensions of the thumbnail image
+#: Save the preview to its own separate directory?
+#: Should be an abosulte path to the directory.
+#: E.g: "C:\\Users\\username\\Documents\\preview_dir"
+#: Default: null
+separate_preview_directory: null
+
+#: The dimensions of the preview image
 #: Format: [width, height]
 #: Default values: [2520, 1400]
-thumbnail_dim: [2520, 1400]
+preview_dim: [2520, 1400]
 
-#: The center of the thumbnail in normalized.
-#: E.g if the value is [0.5, 0.3], the center of the thumbnail is
+#: The center of the preview in normalized.
+#: E.g if the value is [0.5, 0.3], the center of the preview is
 #: the pixel located at 50% of the height of the original image,
 #: and 30% of the width.
 #: Format: [height, width]
 #: Default: [0.45, 0.5] (Slightly off center height, center width)
-thumbnail_center: [0.45, 0.5]
+preview_center: [0.45, 0.5]
 
 # =====================================
 # Parameters for asynchronous execution
@@ -172,25 +178,6 @@ gray_blur: True
 #: colors. NOTE: Requires `gray_blur=True`
 #: Default: True
 normalized_gray_blur: True
-
-#: Extra pre-processing steps. Will try to adjust the images contrast, brightness and sharpness values.
-#: Default: False
-extra_preprocessing: False
-
-#: Depth level of the preprocessing step.
-#: Valid values: {"LOW","MEDIUM", "HIGH"} 
-#: Default: Medium
-extra_preprocessing_depth: "MEDIUM"
-
-#: A temporary folder which will be used for expra preprocessing.
-#: The extra preprocessed images will lose the integrity of the image, 
-#: and it cannot be displayed in the application.
-#: The folder will contain the original image, in which the mask detected on the 
-#: extra preprocessed images will be placed upon, as well as the extra preprocessed images
-#: used for masking.
-#: If the folder does not exist already, the folder will be created.
-#: Default: \temp
-extra_prerpocessing_temp_foldername: "/temp"
 
 # ====================
 # E-mail configuration

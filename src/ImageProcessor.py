@@ -202,7 +202,7 @@ class ImageProcessor:
         first_mask = True
         # Count of the masks that are detected from the sliding window.
         additional_masks = 0
-
+        full_img_time = time.time()
         # Mask the full image
         full_img_mask_result = self.masker.mask(image)
 
@@ -226,7 +226,7 @@ class ImageProcessor:
                 mask_num: full_img_mask_result["detection_scores"][0][mask_num]
             })
 
-        full_img_time = time.time()
+        sliding_window_time = time.time()
         # Slide a window/cutout of the full image through the full image. 
         # Mask every cutout and update the results
         for height in range(0, img_h - window_height + 1, config.cutout_step_factor[0]):
@@ -339,6 +339,7 @@ class ImageProcessor:
                         all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
 
                 i += 1
+        sliding_window_time_delta = "{:.3f}".format(time.time() - sliding_window_time)
         detection_classes = []
         detection_scores = []
 
@@ -370,6 +371,7 @@ class ImageProcessor:
 
         time_delta = "{:.3f}".format(time.time() - full_img_time)
         LOGGER.info(__name__, f"Full image time: {time_delta} s.")
+        LOGGER.info(__name__, f"Time spent on 'sliding window {sliding_window_time_delta} s.")
         LOGGER.info(__name__, f"Masks added from the 'sliding window': {additional_masks}")
 
     def process_image_without_cutouts(self, image, paths):
@@ -443,7 +445,6 @@ def _coordinate_mapping(y, x, original_img, cutout_img, bounding_w, bounding_h):
     X = bounding_w + (x * cutout_img.shape[2])
     Y = bounding_h + (y * cutout_img.shape[1])
     return X / original_img.shape[2], Y / original_img.shape[1]
-
 
 def remove_empty_folders(start_dir, top_dir):
     """

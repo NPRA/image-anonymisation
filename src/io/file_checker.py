@@ -67,16 +67,16 @@ def get_expected_files(paths):
         #expected_files.append(paths.input_webp)
     #if config.remote_mask:
         #expected_files.append(paths.output_webp)
-    if config.local_thumbnail:
-        expected_files.append(paths.input_thumbnail)
-    if config.remote_thumbnail:
-        expected_files.append(paths.output_thumbnail)
+    if config.local_preview:
+        expected_files.append(paths.input_preview)
+    if config.remote_preview:
+        expected_files.append(paths.output_preview)
     if paths.archive_dir is not None:
         expected_files.append(paths.archive_file)
         if config.archive_json:
             expected_files.append(paths.archive_json)
-        if config.archive_thumbnail:
-            expected_files.append(paths.archive_thumbnail)
+        if config.archive_preview:
+            expected_files.append(paths.archive_preview)
         #if config.archive_mask:
             #expected_files.append(paths.archive_webp)
 

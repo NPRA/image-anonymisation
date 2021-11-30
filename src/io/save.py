@@ -1,5 +1,5 @@
 import os
-#import webp
+# import webp
 import numpy as np
 from shutil import copy2
 from PIL import Image
@@ -12,7 +12,7 @@ from src.io.file_access_guard import wait_until_path_is_found
 
 def save_processed_img(img, mask_results, paths, draw_mask=False, mask_color=None,
                        blur=None, gray_blur=True, normalized_gray_blur=True,
-                       remote_thumbnail=False, local_thumbnail=False):
+                       remote_preview=False, local_preview=False, archive_preview=False):
     """
     Save an image which has been processed by the masker.
 
@@ -53,15 +53,21 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, mask_color=Non
         else:
             _draw_mask_on_img(img, mask_results, mask_color=mask_color)
 
-    # Save masked image
+    # Save preview images to the directories defined in the config file
     pil_img = Image.fromarray(img[0].astype(np.uint8))
     pil_img.save(paths.output_file)
-    if local_thumbnail:
+    if local_preview:
         wait_until_path_is_found([paths.input_dir])
-        _save_thumbnail(pil_img, config.thumbnail_dim, config.thumbnail_center, paths.input_thumbnail)
-    if remote_thumbnail:
+        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.input_preview)
+    if remote_preview:
         wait_until_path_is_found([paths.output_dir])
-        _save_thumbnail(pil_img, config.thumbnail_dim, config.thumbnail_center,  paths.output_thumbnail)
+        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.output_preview)
+    if paths.separate_preview_dir:
+        wait_until_path_is_found([paths.separate_preview_dir])
+        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.separate_preview)
+    if archive_preview:
+        wait_until_path_is_found([paths.archive_dir])
+        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.archive_preview)
     # if local_mask:
     #     wait_until_path_is_found([paths.input_dir])
     #     _save_mask(agg_mask, paths.input_webp)
@@ -71,7 +77,7 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, mask_color=Non
     return 0
 
 
-def archive(paths, archive_json=False, ):
+def archive(paths, archive_json=False, archive_preview=False, assert_output_mask=True):
     """
     Copy the input image file (and possibly some output files) to the archive directory.
 
@@ -92,6 +98,9 @@ def archive(paths, archive_json=False, ):
     #     _copy_file(paths.output_webp, paths.archive_webp)
     if archive_json:
         _copy_file(paths.output_json, paths.archive_json)
+    if archive_preview:
+        copy_from = paths.output_preview if paths.output_preview is not None else paths.separate_preview
+        _copy_file(copy_from, paths.archive_json)
     return 0
 
 
@@ -147,24 +156,25 @@ def _apply_normalized_gray_blur(img, mask, ksize):
     blurred_large = cv2.blur(gray, (large_ksize, large_ksize))[None, :, :, None]
     img[mask] = blurred[mask] - blurred_large[mask] + default_gray_value
 
-def _save_thumbnail(img, out_dim, center_points, output_path):
+
+def _save_preview(img, out_dim, center_points, output_path):
     """
-    Save a thumbnail version of the image
+    Save a preview version of the image
     """
     img_w, img_h = img.size
-    center_pixel = np.asarray([int(img_w*center_points[1]), int(img_h*center_points[0])])
-    dim_relative_to_center = np.asarray(out_dim)/2
+    center_pixel = np.asarray([int(img_w * center_points[1]), int(img_h * center_points[0])])
+    dim_relative_to_center = np.asarray(out_dim) / 2
     # Make sure the dims are of type int
     dim_relative_to_center = dim_relative_to_center.astype(int)
 
-    # Calculate the pixels to define the thumbnails dimensions.
-    left = int(center_pixel[0]-dim_relative_to_center[0])
+    # Calculate the pixels to define the previews dimensions.
+    left = int(center_pixel[0] - dim_relative_to_center[0])
     right = int(center_pixel[0] + dim_relative_to_center[0])
-    upper = int(center_pixel[1]-dim_relative_to_center[1])
-    lower = int(center_pixel[1]+dim_relative_to_center[1])
-    thumbnail = img.crop((left, upper, right, lower))
+    upper = int(center_pixel[1] - dim_relative_to_center[1])
+    lower = int(center_pixel[1] + dim_relative_to_center[1])
+    preview = img.crop((left, upper, right, lower))
 
-    thumbnail.save(output_path)
+    preview.save(output_path)
 
 # def _save_mask(mask, output_webp):
 #     mask = np.tile(mask[0, :, :, None], (1, 1, 3)).astype(np.uint8)

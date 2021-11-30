@@ -34,38 +34,40 @@ class Paths:
 
         # Names of .json and .webp files.
         self.json_filename = os.path.splitext(filename)[0] + ".json"
-        self.thumbnail_filename = os.path.splitext(filename)[0] + ".jpeg"
+        self.preview_filename = os.path.splitext(filename)[0] + "_preview.jpg"
         self.webp_filename = os.path.splitext(filename)[0] + ".webp"
 
         # Paths to input files
         self.input_file = os.path.join(self.input_dir, self.filename)
         self.input_json = os.path.join(self.input_dir, self.json_filename)
-        self.input_thumbnail = os.path.join(self.input_dir, self.thumbnail_filename)
+        self.input_preview = os.path.join(self.input_dir, self.preview_filename)
         self.input_webp = os.path.join(self.input_dir, self.webp_filename)
 
         # Paths to output files
+        self.separate_preview_dir = config.separate_preview_directory
+        self.separate_preview = os.path.join(self.separate_preview_dir, self.preview_filename)
         if len(self.mirror_dirs) > 0:
             self.base_output_dir = self.base_mirror_dirs[0]
             self.output_dir = self.mirror_dirs[0]
             self.output_file = os.path.join(self.output_dir, self.filename)
             self.output_json = os.path.join(self.output_dir, self.json_filename)
-            self.output_thumbnail = os.path.join(self.output_dir, self.thumbnail_filename)
+            self.output_preview = os.path.join(self.output_dir, self.preview_filename)
             self.output_webp = os.path.join(self.output_dir, self.webp_filename)
         else:
             self.base_output_dir = self.output_dir = None
             self.output_file = self.output_json = self.output_webp = None
 
-        # Paths to archive files
+        # Paths to archive filesm
         if len(self.mirror_dirs) > 1:
             self.base_archive_dir = self.base_mirror_dirs[1]
             self.archive_dir = self.mirror_dirs[1]
             self.archive_file = os.path.join(self.archive_dir, self.filename)
             self.archive_json = os.path.join(self.archive_dir, self.json_filename)
-            self.archive_thumbnail = os.path.join(self.archive_dir, self.thumbnail_filename)
+            self.archive_preview = os.path.join(self.archive_dir, self.preview_filename)
             self.archive_webp = os.path.join(self.archive_dir, self.webp_filename)
         else:
             self.base_archive_dir = self.archive_dir = None
-            self.archive_file = self.archive_json = self.archive_thumbnail = self.archive_webp = None
+            self.archive_file = self.archive_json = self.archive_preview = self.archive_webp = None
 
         # Remaining mirror paths
         if len(self.mirror_dirs) > 2:

@@ -84,11 +84,12 @@ $log = "$log_folder_base_name\\step_$step\\dim_$dim"
 #$configfile = $Env:PLANAR_TEST_CONFIG
  # 360
 $configfile = $Env:360_TEST_CONFIG
+ $archive_file = $Env:EXPERIMENT_ARCHIVE_FOLDER_BASE
 #$configfile = $Env:PLANAR_TEST_CONFIG
 # cd to root folder
 cd $Env:PROJECT_ROOT_FOLDER
 #python -m src.main -i $input_folder -o $output -l $log
-python -m src.main -i $input_folder -o $output -l $log -k $configfile
+python -m src.main -i $input_folder -o $output -l $log -k $configfile -a $archive_file
 
 #: Cd back to script folder
 cd "$Env:PROJECT_ROOT_FOLDER\\scripts"

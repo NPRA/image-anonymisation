@@ -55,16 +55,13 @@ def check_config(args):
     """ Check that the specified configuration variables are valid. """
     if config.archive_json and not config.remote_json:
         raise ValueError("Parameter 'archive_json' requires remote_json=True.")
-    if (config.remote_thumbnail or config.local_thumbnail) and not config.thumbnail_dim:
-        raise ValueError("Parameter 'remote_thumbnail' and 'local_thumbnail' requires 'thumbnail_dim'")
-    if config.archive_thumbnail and not config.remote_thumbnail:
-        raise ValueError("Parameter 'archive_thumbnail' requires remote_thumbnail=True.")
+    if (config.remote_preview or config.local_preview) and not config.preview_dim:
+        raise ValueError("Parameter 'remote_preview' and 'local_preview' requires 'preview_dim'")
+    if config.archive_preview and not config.remote_preview:
+        raise ValueError("Parameter 'archive_preview' requires remote_preview=True.")
     #if config.archive_mask and not config.remote_mask:
         #raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
-    if config.extra_preprocessing and not os.path.isdir(config.extra_preprocessing_temp_foldername):
-        os.mkdir(config.extra_preprocessing_temp_foldername)
-        LOGGER.info(__name__, f"Parameter 'extra_preprocessing_temp_foldername' does not refer to an existing folder. " \
-                              f"Creating folder '{config.extra_preprocessing_temp_foldername}'")
+
     if config.delete_input:
         LOGGER.warning(__name__, "Parameter 'delete_input' is enabled. This will permanently delete the original"
                                  " image from the input directory!")
@@ -158,7 +155,9 @@ def initialize():
         mirror_dirs.append(base_archive_dir)
         # Make the archive directory
         os.makedirs(base_archive_dir, exist_ok=True)
-
+    if config.separate_preview_directory:
+        # Make the preview directory
+        os.makedirs(config.separate_preview_directory, exist_ok=True)
     # Make the cache directory
     os.makedirs(config.CACHE_DIRECTORY, exist_ok=True)
 
