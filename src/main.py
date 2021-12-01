@@ -5,6 +5,7 @@ import logging
 import argparse
 from datetime import datetime, timedelta
 from socket import gethostname
+import numpy as np
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import tensorflow as tf
@@ -13,6 +14,7 @@ import config
 from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
 from src.io.file_checker import clear_cache
+from src.io import save, exif_util
 from src.Masker import Masker
 from src.Logger import LOGGER, LOG_SEP, config_string, logger_excepthook
 from src.ImageProcessor import ImageProcessor
@@ -46,7 +48,10 @@ def get_args():
                         help="Disables the clearing of cahce files at startup.")
     parser.add_argument("-k", dest="config_file", default=None,
                         help=f"Path to custom configuration file. See the README for details. Default is "
-                             f"{config.DEFAULT_CONFIG_FILE}")                         
+                             f"{config.DEFAULT_CONFIG_FILE}")
+    parser.add_argument("-p", "--preview_only", dest="preview_only", action="store_true",
+                        help="Only create preview images of the input images. "
+                             "The masking process will not be applied. Default: False")
     args = parser.parse_args()
     return args
 
@@ -59,6 +64,7 @@ def check_config(args):
         raise ValueError("Parameter 'remote_preview' and 'local_preview' requires 'preview_dim'")
     if config.archive_preview and not config.remote_preview:
         raise ValueError("Parameter 'archive_preview' requires remote_preview=True.")
+
     #if config.archive_mask and not config.remote_mask:
         #raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
 
@@ -257,8 +263,14 @@ def main():
         try:
             # Get the image
             img = next(dataset_iterator)
+            if args.preview_only:
+                LOGGER.debug(__name__, f"Producing previews only")
+                # Convert the image to a numpy array
+                if not isinstance(img, np.ndarray):
+                    img = img.numpy()
+                save.save_preview(img, paths, config.local_preview, config.remote_preview, config.archive_preview)
             # Do preprocessing for cutouts
-            if config.use_cutouts:
+            elif config.use_cutouts:
                 LOGGER.debug(__name__, f"Using cutout-method")
                 # Process image with cutout method
                 image_processor.process_image_with_cutouts(img, paths)

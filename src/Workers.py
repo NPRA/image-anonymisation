@@ -6,7 +6,6 @@ from src.io import save
 from src.io import exif_util
 from src.io.file_access_guard import wait_until_path_is_found
 
-
 ERROR_RETVAL = -1
 
 
@@ -19,6 +18,7 @@ class BaseWorker:
     :param paths: Paths object representing the image file.
     :type paths: src.io.TreeWalker.Paths
     """
+
     def __init__(self, pool, paths):
         self.pool = pool
         self.paths = paths
@@ -123,6 +123,7 @@ class SaveWorker(BaseWorker):
     :param mask_results: Results from `src.Masker.Masker.mask`
     :type mask_results: dict
     """
+
     def __init__(self, pool, paths, img, mask_results):
         super().__init__(pool, paths)
 
@@ -138,10 +139,12 @@ class SaveWorker(BaseWorker):
         # Arguments to async. function
         # Removed entries: save_args = {local_mask=config.local_mask, remote_mask=config.remote_mask}
         # Removed entries: archive_args = {archive_mask=config.archive_mask}
-        save_args = dict(draw_mask=config.draw_mask, local_preview=config.local_preview, remote_preview=config.remote_preview, 
-                        mask_color=config.mask_color, blur=config.blur, gray_blur=config.gray_blur,
-                        normalized_gray_blur=config.normalized_gray_blur, archive_preview=config.archive_preview)
-        archive_args = dict(archive_preview=config.archive_preview, archive_json=config.archive_json, assert_output_mask=True)
+        save_args = dict(draw_mask=config.draw_mask, local_preview=config.local_preview,
+                         remote_preview=config.remote_preview,
+                         mask_color=config.mask_color, blur=config.blur, gray_blur=config.gray_blur,
+                         normalized_gray_blur=config.normalized_gray_blur, archive_preview=config.archive_preview)
+        archive_args = dict(archive_preview=config.archive_preview, archive_json=config.archive_json,
+                            assert_output_mask=True)
         self.args = (img, mask_results, self.paths, save_args, archive_args)
 
         self.start()
@@ -195,6 +198,7 @@ class EXIFWorker(BaseWorker):
    :param mask_results: Results from `src.Masker.Masker.mask`
    :type mask_results: dict
    """
+
     def __init__(self, pool, paths, mask_results):
         super().__init__(pool, paths)
 
@@ -242,6 +246,14 @@ class EXIFWorker(BaseWorker):
         # Insert the version number
         exif["versjon"] = str(version)
 
+        # Insert preview file name if it exists.
+        if os.path.isfile(paths.input_preview) \
+                or os.path.isfile(paths.output_preview) \
+                or os.path.isfile(paths.archive_preview) \
+                or os.path.isfile(paths.separate_preview):
+            exif["exif_filnavn_preview"] = paths.preview_filename
+        else:
+            exif["exif_filnavn_save_preview"] = None
         if local_json:
             # Write EXIF to input directory
             exif_util.write_exif(exif, paths.input_json)

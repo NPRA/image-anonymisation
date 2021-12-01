@@ -54,20 +54,7 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, mask_color=Non
             _draw_mask_on_img(img, mask_results, mask_color=mask_color)
 
     # Save preview images to the directories defined in the config file
-    pil_img = Image.fromarray(img[0].astype(np.uint8))
-    pil_img.save(paths.output_file)
-    if local_preview:
-        wait_until_path_is_found([paths.input_dir])
-        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.input_preview)
-    if remote_preview:
-        wait_until_path_is_found([paths.output_dir])
-        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.output_preview)
-    if paths.separate_preview_dir:
-        wait_until_path_is_found([paths.separate_preview_dir])
-        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.separate_preview)
-    if archive_preview:
-        wait_until_path_is_found([paths.archive_dir])
-        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.archive_preview)
+    save_preview(img, paths, local_preview, remote_preview, archive_preview)
     # if local_mask:
     #     wait_until_path_is_found([paths.input_dir])
     #     _save_mask(agg_mask, paths.input_webp)
@@ -176,6 +163,23 @@ def _save_preview(img, out_dim, center_points, output_path):
 
     preview.save(output_path)
 
+
+def save_preview(img, paths, local_preview, remote_preview, archive_preview):
+    pil_img = Image.fromarray(img[0].astype(np.uint8))
+    pil_img.save(paths.output_file)
+    if local_preview:
+        wait_until_path_is_found([paths.input_dir])
+        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.input_preview)
+    if remote_preview:
+        wait_until_path_is_found([paths.output_dir])
+        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.output_preview)
+    if paths.separate_preview_dir:
+        os.makedirs(paths.separate_preview_dir, exist_ok=True)
+        wait_until_path_is_found([paths.separate_preview_dir])
+        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.separate_preview)
+    if archive_preview:
+        wait_until_path_is_found([paths.archive_dir])
+        _save_preview(pil_img, config.preview_dim, config.preview_center, paths.archive_preview)
 # def _save_mask(mask, output_webp):
 #     mask = np.tile(mask[0, :, :, None], (1, 1, 3)).astype(np.uint8)
 #     webp.imwrite(output_webp, mask, pilmode="RGB")

@@ -7,7 +7,8 @@ from src.db import geometry
 from src.Logger import LOGGER
 from src.io.exif_util import get_deterministic_id
 
-WKT_GEOMETRY_REGEX = re.compile(r"srid=(\d+);POINT Z\(\s*(-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan)\s*\)")
+WKT_GEOMETRY_REGEX = re.compile(
+    r"srid=(\d+);POINT Z\(\s*(-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan)\s*\)")
 
 
 def to_datetime(ts):
@@ -86,6 +87,26 @@ def Tidspunkt(json_data):
     return to_datetime(json_data["exif_tid"])
 
 
+def Dataeier(json_data):
+    return json_data["exif_dataeier"]
+
+
+def Kamera(json_data):
+    return json_data["exif_camera"]
+
+
+def Bildetype(json_data):
+    return json_data["exif_imagetype"]
+
+
+def Bildebredde(json_data):
+    return json_data["exif_imagewidth"]
+
+
+def Bildehoyde(json_data):
+    return json_data["exif_imagehigh"]
+
+
 def Retning(json_data):
     return to_number(json_data["exif_heading"])
 
@@ -100,6 +121,14 @@ def Posisjon_2d(json_data):
 
 def Hoyde(json_data):
     return to_height(json_data["exif_gpsposisjon"])
+
+
+def Moh(json_data):
+    return to_number(json_data["exif_moh"])
+
+
+def Strekningsnavn(json_data):
+    return json_data["exif_strekningsnavn"]
 
 
 def SenterlinjePosisjon(json_data):
@@ -128,6 +157,10 @@ def Vegstatus(json_data):
 
 def Vegnummer(json_data):
     return to_number(json_data["exif_vegnr"])
+
+
+def Vegtype(json_data):
+    return json_data["exif_roadtype"]
 
 
 def HP(json_data):
@@ -170,6 +203,10 @@ def Filnavn(json_data):
     return json_data["exif_filnavn"]
 
 
+def PreviewFilnavn(json_data):
+    return json_data["exif_filnavn_preview"]
+
+
 def JsonData(json_data):
     return to_clob(json_data)
 
@@ -197,10 +234,14 @@ def Feltkode(json_data):
 
 def VegIdentitet(json_data):
     return json_data["exif_roadident"]
-    
+
 
 def Versjon(json_data):
     return json_data.get("versjon", None)
+
+
+def XpTitle(json_data):
+    return json_data["exif_xptitle"]
 
 
 def ExifKvalitet(json_data):

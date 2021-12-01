@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import config
 from src.Logger import LOGGER
+from src.io import exif_util
 
 
 class Paths:
@@ -44,8 +45,12 @@ class Paths:
         self.input_webp = os.path.join(self.input_dir, self.webp_filename)
 
         # Paths to output files
-        self.separate_preview_dir = config.separate_preview_directory
-        self.separate_preview = os.path.join(self.separate_preview_dir, self.preview_filename)
+        if config.separate_preview_directory:
+            self.rel_path = exif_util.get_rel_path(self.input_file).split("/")
+            self.separate_preview_dir = os.path.join(config.separate_preview_directory, *self.rel_path)
+            self.separate_preview = os.path.join(self.separate_preview_dir, self.preview_filename)
+        else:
+            self.separate_preview_dir = None
         if len(self.mirror_dirs) > 0:
             self.base_output_dir = self.base_mirror_dirs[0]
             self.output_dir = self.mirror_dirs[0]

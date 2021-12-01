@@ -13,7 +13,6 @@ from datetime import datetime
 import config
 from src.Logger import LOGGER
 
-
 #: Tags from Viatech
 VIATECH_TAGS = {40055: "ImageProperties", 40056: "ReflinkInfo"}
 
@@ -77,7 +76,7 @@ EXIF_TEMPLATE = {
     "exif_vegstat": None,
     "exif_vegnr": None,
     "exif_roadtype": "Ukjent",
-    "exif_hp": None, #null
+    "exif_hp": None,  # null
     "exif_strekning": None,
     "exif_delstrekning": None,
     "exif_ankerpunkt": None,
@@ -88,9 +87,9 @@ EXIF_TEMPLATE = {
     "exif_mappenavn": None,
     "exif_filnavn": None,
     "exif_strekningreferanse": None,
-    "exif_imageproperties": None, #null
+    "exif_imageproperties": None,  # null
     "exif_basislinje": None,
-    "exif_reflinkinfo": None,   # Null
+    "exif_reflinkinfo": None,  # Null
     "exif_reflinkid": None,
     "exif_reflinkposisjon": None,
     "exif_roadident": None,
@@ -168,7 +167,7 @@ def get_exif(img, image_path):
         labeled = label_exif(exif)
         # for key, value in labeled.items():
         #     labeled[key] = fr"{value}"
-        #write_exif(labeled, "C:\\Users\\norpal\\Documents\\exif_planar.json")
+        # write_exif(labeled, "C:\\Users\\norpal\\Documents\\exif_planar.json")
 
         # Default quality will be "good" which corresponds to "2" for any image that has exif.
         parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["good"]
@@ -180,25 +179,22 @@ def get_exif(img, image_path):
             parsed_exif["exif_dataeier"] = config.data_eier
         # Process the `ImageProperties` XML
         if config.image_type == "planar":
-            
             parsed_exif["exif_imagetype"] = config.image_type
             image_properties_xml = labeled.get("ImageProperties", None)
             assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
             process_image_properties(image_properties_xml, parsed_exif)
         if config.image_type == "360":
-            #print(labeled.items())
+            # print(labeled.items())
 
             # Convert time format "year:month:day hours:minutes:seconds" -> "year-month-dayThours:minutes:seconds"
             timestamp = labeled["DateTimeOriginal"].split(" ")
-            timestamp[0] = timestamp[0].replace(":","-")
-            
+            timestamp[0] = timestamp[0].replace(":", "-")
+
             # Save date
             parsed_exif["exif_dato"] = timestamp[0]
             timestamp = "T".join(timestamp)
             parsed_exif["exif_tid"] = timestamp
 
-
-            
         # Process the `ReflinkInfo` XML if it is available
         reflink_info_xml = labeled.get("ReflinkInfo", None)
         process_reflink_info(reflink_info_xml, parsed_exif)
@@ -229,7 +225,6 @@ def get_deterministic_id(exif):
     """
     if exif["exif_tid"] is None or exif["exif_filnavn"] is None:
         return None
-    
 
     timestamp = iso8601.parse_date(exif["exif_tid"]).strftime(ID_TIMESTAMP_FORMATTER)
     filename = os.path.splitext(exif["exif_filnavn"])[0]
@@ -239,7 +234,17 @@ def get_deterministic_id(exif):
     deterministic_id = timestamp + "_" + filename
     return deterministic_id
 
-
+def get_rel_path(image_path):
+    dirs = image_path.split(os.sep)[:-1]
+    if config.exif_top_dir in dirs:
+        # Uncomment below for forward-slash separator or backward-slash.
+        rel_path = "/".join(dirs[(dirs.index(config.exif_top_dir) + 1):])
+        # rel_path = os.sep.join(dirs[(dirs.index(config.exif_top_dir) + 1):])
+    else:
+        LOGGER.warning(__name__, f"Top directory '{config.exif_top_dir}' not found in image path '{image_path}'. "
+                                 f"'rel_path' will be empty")
+        rel_path = ""
+    return rel_path
 def get_mappenavn(image_path, exif):
     dirs = image_path.split(os.sep)[:-1]
     if config.exif_top_dir in dirs:
@@ -270,7 +275,7 @@ def get_mappenavn(image_path, exif):
     assert "{" not in folder_name and "}" not in folder_name, f"Invalid `Mappenavn`: {config.db_folder_name} -> " \
                                                               f"{folder_name}."
     return folder_name
-    
+
 
 def label_exif(exif):
     """
@@ -367,8 +372,8 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
     parsed_exif["exif_filnavn"] = mapper[-1]
     parsed_exif["exif_strekningreferanse"] = "/".join(mapper[-4:-2])
-    parsed_exif["exif_imageproperties"] = None #contents
-    parsed_exif["exif_kvalitet"] = quality 
+    parsed_exif["exif_imageproperties"] = None  # contents
+    parsed_exif["exif_kvalitet"] = quality
 
 
 def process_strekning_and_kryss(vchp, filename):
@@ -460,20 +465,20 @@ def process_reflink_info(contents, parsed_exif):
 
     # Prettify XML
     contents = to_pretty_xml(contents)
-    
+
     # Parse XML
     parsed_contents = xmltodict.parse(contents)
 
     # Format of March 2020 update
     if "ReflinkInfo" in parsed_contents:
-        #print(f"reflink")
+        # print(f"reflink")
         reflink_info = parsed_contents["ReflinkInfo"]
         parsed_exif["exif_reflinkid"] = reflink_info["ReflinkId"]
         parsed_exif["exif_reflinkposisjon"] = reflink_info["ReflinkPosition"]
 
     # Format of May 2020 update
     elif "AdditionalInfoNorway2" in parsed_contents:
-        #print(f"additionl")
+        # print(f"additionl")
         # From RoadInfo
         road_info = parsed_contents["AdditionalInfoNorway2"]["RoadInfo"]
         parsed_exif["exif_reflinkid"] = road_info["ReflinkId"]
@@ -482,7 +487,8 @@ def process_reflink_info(contents, parsed_exif):
 
         # From GnssInfo
         gnss_info = parsed_contents["AdditionalInfoNorway2"]["GnssInfo"]
-        if config.image_type == "360" and (not gnss_info["Latitude"] or not gnss_info["Longitude"] or not gnss_info["Altitude"]):
+        if config.image_type == "360" and (
+                not gnss_info["Latitude"] or not gnss_info["Longitude"] or not gnss_info["Altitude"]):
             # If the elements of the gpsposisjon-string does not exist, the exif quality will be lowered to "missing valuse", "1"
             parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["missing_values"]
         parsed_exif["exif_roll"] = gnss_info["Roll"]
@@ -496,21 +502,21 @@ def process_reflink_info(contents, parsed_exif):
         parsed_exif["exif_headingrmserror"] = gnss_info["HeadingRmsError"]
 
         if config.image_type == "360":
-            
+
             gps_posisjon_string = f"srid=4326;POINT Z( {gnss_info['Longitude']} {gnss_info['Latitude']} {gnss_info['Altitude']} )"
             image_info = parsed_contents["AdditionalInfoNorway2"]["ImageInfo"]
             road_info_string_list = image_info["StorageFile"].split(os.sep)
-            #print(f"road info: {road_info_string_list}")
+            # print(f"road info: {road_info_string_list}")
             filename = road_info_string_list[-1]
             strekningsreferanse_list = road_info["RoadIdent"].split(" ")[1]
-            #print(strekningsreferanse_list)
+            # print(strekningsreferanse_list)
             strekning = strekningsreferanse_list[1:strekningsreferanse_list.index("D")]
-            delstrekning = strekningsreferanse_list[strekningsreferanse_list.index("D")+1:]
+            delstrekning = strekningsreferanse_list[strekningsreferanse_list.index("D") + 1:]
             strekningsreferanse = "/".join([f"S{strekning}", f"D{delstrekning}"])
-            #print(f"Delstrekning: {delstrekning}")
+            # print(f"Delstrekning: {delstrekning}")
             for elem in road_info_string_list:
                 _get_metadata_from_path_element(elem, parsed_exif)
-            
+
             # Set variables     
             parsed_exif["exif_altitude"] = gnss_info["Altitude"]
             parsed_exif["exif_moh"] = gnss_info["Altitude"]
@@ -524,10 +530,7 @@ def process_reflink_info(contents, parsed_exif):
             parsed_exif["exif_delstrekning"] = delstrekning
             parsed_exif["exif_strekningreferanse"] = strekningsreferanse
             parsed_exif["exif_filnavn"] = filename
-            parsed_exif["exif_mappenavn"] = f"/".join(road_info_string_list[:len(road_info_string_list)-1])
-
-
-
+            parsed_exif["exif_mappenavn"] = f"/".join(road_info_string_list[:len(road_info_string_list) - 1])
 
 
 def get_metadata_from_path(image_path, parsed_exif):
@@ -579,7 +582,7 @@ def _get_metadata_from_path_element(elem, parsed_exif):
         parsed_exif["exif_vegkat"] = veg_matches[0][0].upper()
         parsed_exif["exif_vegstat"] = veg_matches[0][1].upper()
         parsed_exif["exif_vegnr"] = veg_matches[0][2].lstrip("0")
-        
+
     meter_match = METER_REGEX.findall(elem)
     kilometer_match = KILOMETER_REGEX.findall(elem)
     if meter_match:
