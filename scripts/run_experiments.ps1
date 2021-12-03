@@ -77,19 +77,21 @@ $num_experiments = Get-ChildItem $tmp_config_dirs -Recurse -File | Measure-Objec
 "Running one iteration of image anonymisation"
 $step = $yml.cutout_step_factor
 $dim = $yml.cutout_dim_downscale
-$output = "$output_folder_base_name\\step_$step\\dim_$dim"
-$log = "$log_folder_base_name\\step_$step\\dim_$dim"
+$output = "$output_folder_base_name"
+$log = "$log_folder_base_name#"
 #: planar
 # $configfile = $Env:DEFAULT_CONFIG
 #$configfile = $Env:PLANAR_TEST_CONFIG
  # 360
 $configfile = $Env:360_TEST_CONFIG
- $archive_file = $Env:EXPERIMENT_ARCHIVE_FOLDER_BASE
+# $archive_file = $Env:EXPERIMENT_ARCHIVE_FOLDER_BASE
 #$configfile = $Env:PLANAR_TEST_CONFIG
 # cd to root folder
+#python create_json.py -i $input_folder -o $output -l $log -k $configfile
 cd $Env:PROJECT_ROOT_FOLDER
 #python -m src.main -i $input_folder -o $output -l $log
-python -m src.main -i $input_folder -o $output -l $log -k $configfile -a $archive_file
+#python -m src.main -i $input_folder -o $output -l $log -k $configfile
+python -m scripts.create_json -i $input_folder -o $output -l $log -k $configfile
 
 #: Cd back to script folder
 cd "$Env:PROJECT_ROOT_FOLDER\\scripts"

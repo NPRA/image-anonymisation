@@ -7,7 +7,7 @@ import xmltodict
 import xml.dom.minidom
 import numpy as np
 from PIL import Image
-from PIL.ExifTags import TAGS
+from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
 
 import config
@@ -165,9 +165,7 @@ def get_exif(img, image_path):
     if exif is not None:
         # Convert the integer keys in the exif dict to text
         labeled = label_exif(exif)
-        # for key, value in labeled.items():
-        #     labeled[key] = fr"{value}"
-        # write_exif(labeled, "C:\\Users\\norpal\\Documents\\exif_planar.json")
+        gpsinfo = get_gpsinfo(labeled)
 
         # Default quality will be "good" which corresponds to "2" for any image that has exif.
         parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["good"]
@@ -175,16 +173,19 @@ def get_exif(img, image_path):
         parsed_exif["exif_imagetype"] = config.image_type
         parsed_exif["exif_imagewidth"] = img.size[0]
         parsed_exif["exif_imagehigh"] = img.size[1]
+
         if config.data_eier:
             parsed_exif["exif_dataeier"] = config.data_eier
+
+        image_properties_xml = labeled.get("ImageProperties", None)
+        reflink_info_xml = labeled.get("ReflinkInfo", None)
+
         # Process the `ImageProperties` XML
-        if config.image_type == "planar":
+        if image_properties_xml:
             parsed_exif["exif_imagetype"] = config.image_type
-            image_properties_xml = labeled.get("ImageProperties", None)
-            assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
+            # assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
             process_image_properties(image_properties_xml, parsed_exif)
         if config.image_type == "360":
-            # print(labeled.items())
 
             # Convert time format "year:month:day hours:minutes:seconds" -> "year-month-dayThours:minutes:seconds"
             timestamp = labeled["DateTimeOriginal"].split(" ")
@@ -195,9 +196,16 @@ def get_exif(img, image_path):
             timestamp = "T".join(timestamp)
             parsed_exif["exif_tid"] = timestamp
 
-        # Process the `ReflinkInfo` XML if it is available
-        reflink_info_xml = labeled.get("ReflinkInfo", None)
-        process_reflink_info(reflink_info_xml, parsed_exif)
+        if reflink_info_xml:
+            process_reflink_info(reflink_info_xml, parsed_exif)
+        if not image_properties_xml or reflink_info_xml:
+            # Extract road info from file name
+            # check if its the full string
+            extract_road_info_from_filename(image_path, parsed_exif)
+
+            if gpsinfo:
+                process_gpsinfo_tag(gpsinfo, parsed_exif)
+            # get_metadata_from_path(image_path, parsed_exif)
         # Title of image.
         XPTitle = labeled.get("XPTitle", b"").decode("utf16")
         parsed_exif["exif_xptitle"] = XPTitle
@@ -234,6 +242,7 @@ def get_deterministic_id(exif):
     deterministic_id = timestamp + "_" + filename
     return deterministic_id
 
+
 def get_rel_path(image_path):
     dirs = image_path.split(os.sep)[:-1]
     if config.exif_top_dir in dirs:
@@ -245,6 +254,8 @@ def get_rel_path(image_path):
                                  f"'rel_path' will be empty")
         rel_path = ""
     return rel_path
+
+
 def get_mappenavn(image_path, exif):
     dirs = image_path.split(os.sep)[:-1]
     if config.exif_top_dir in dirs:
@@ -277,6 +288,17 @@ def get_mappenavn(image_path, exif):
     return folder_name
 
 
+def get_gpsinfo(labeled_exif):
+    """
+    Decodes and gets the GPSInfo from the exif.
+    """
+    gpsinfo = {}
+    for key in labeled_exif['GPSInfo'].keys():
+        decode = GPSTAGS.get(key, key)
+        gpsinfo[decode] = labeled_exif['GPSInfo'][key]
+    return gpsinfo
+
+
 def label_exif(exif):
     """
     Convert the standard integer EXIF-keys in `exif` to text keys.
@@ -287,6 +309,19 @@ def label_exif(exif):
     :rtype: dict
     """
     return {TAGS.get(key): value for key, value in exif.items()}
+
+
+def extract_road_info_from_filename(filepath, parsed_exif):
+    get_metadata_from_path(filepath, parsed_exif)
+    filename = filepath.split(os.sep)[-1]
+
+    parsed_exif["exif_filnavn"] = filename
+    road_info_list = filename.split(".")[0].split("_")
+
+    # Parse 'strekning' and 'delstrekning'
+    parsed_exif["exif_hp"], parsed_exif["exif_strekning"], parsed_exif["exif_delstrekning"], \
+        parsed_exif["exif_ankerpunkt"], parsed_exif["exif_kryssdel"], parsed_exif[
+        "exif_sideanleggsdel"] = process_strekning_and_kryss(road_info_list[1], filename)
 
 
 def process_image_properties(contents, parsed_exif):
@@ -590,3 +625,30 @@ def _get_metadata_from_path_element(elem, parsed_exif):
     elif kilometer_match:
         meter = 1000 * int(kilometer_match[0][0]) + int(kilometer_match[0][1])
         parsed_exif["exif_meter"] = str(meter)
+
+
+def process_gpsinfo_tag(gpsinfo, parsed_exif):
+    """
+    Prcesses the GPSInfo-tag and creates the gpsposisjon-string for it.
+    """
+    latitude = gpsinfo['GPSLatitude']
+    longitude = gpsinfo["GPSLongitude"]
+    altitude = gpsinfo['GPSAltitude']
+
+    lat = convert_tude_decimal(latitude)
+    long = convert_tude_decimal(longitude)
+    alt = altitude[0] / altitude[1]
+
+    lat = -lat if gpsinfo["GPSLatitudeRef"].strip() == 'S' else lat
+    long = -long if gpsinfo["GPSLongitudeRef"].strip() == 'W' else long
+
+    parsed_exif["exif_gpsposisjon"] = f"srid=4326;POINT Z( {long} {lat} {alt} )"
+    parsed_exif["exif_altitude"] = f"{alt}"
+
+
+def convert_tude_decimal(tude):
+    """
+    """
+    decimal_tude = [float(x) / float(y) for x, y in tude]
+    decimal_tude = decimal_tude[0] + decimal_tude[1] / 60 + decimal_tude[2] / 360
+    return decimal_tude
