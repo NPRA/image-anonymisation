@@ -247,13 +247,14 @@ class EXIFWorker(BaseWorker):
         exif["versjon"] = str(version)
 
         # Insert preview file name if it exists.
-        if os.path.isfile(paths.input_preview) \
-                or os.path.isfile(paths.output_preview) \
-                or os.path.isfile(paths.archive_preview) \
-                or os.path.isfile(paths.separate_preview):
+
+        if (paths.input_preview and os.path.isfile(paths.input_preview)) \
+                or (paths.output_preview and os.path.isfile(paths.output_preview)) \
+                or (paths.archive_preview and os.path.isfile(paths.archive_preview)) \
+                or (paths.separate_preview_dir and os.path.isfile(paths.separate_preview)):
             exif["exif_filnavn_preview"] = paths.preview_filename
         else:
-            exif["exif_filnavn_save_preview"] = None
+            exif["exif_filnavn_preview"] = None
         if local_json:
             # Write EXIF to input directory
             exif_util.write_exif(exif, paths.input_json)
