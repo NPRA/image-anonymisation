@@ -407,7 +407,7 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_kryssdel"] = kryssdel
     parsed_exif["exif_sideanleggsdel"] = sideanleggsdel
     parsed_exif["exif_meter"] = image_properties["VegComValues"]["VCMeter"]
-    parsed_exif["exif_feltkode"] = image_properties["VegComValues"]["VCLane"]
+    parsed_exif["exif_feltkode"] = image_properties["VegComValues"]["VCLaneName"]
     parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
     parsed_exif["exif_filnavn"] = mapper[-1]
     parsed_exif["exif_strekningreferanse"] = "/".join(mapper[-4:-2])
@@ -590,7 +590,7 @@ def get_metadata_from_path(image_path, parsed_exif):
 
 
 HP_REGEX = re.compile(r"hp(\d+)", re.IGNORECASE)
-FELT_REGEX = re.compile(r"f(\d)", re.IGNORECASE)
+FELT_REGEX = re.compile(r"f(\d\w*)", re.IGNORECASE)
 VEG_REGEX = re.compile(f"([{''.join(LOVLIG_VEGKATEGORI)}])([{''.join(LOVLIG_VEGSTATUS)}])(\d+)", re.IGNORECASE)
 METER_REGEX = re.compile(r"(?<!k)m(\d+)")
 KILOMETER_REGEX = re.compile(r"km(\d{2})[_,\.](\d{3})")
