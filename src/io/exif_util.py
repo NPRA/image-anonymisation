@@ -166,6 +166,7 @@ def get_exif(img, image_path):
         # Convert the integer keys in the exif dict to text
         labeled = label_exif(exif)
         gpsinfo = get_gpsinfo(labeled)
+        print(gpsinfo)
 
         # Default quality will be "good" which corresponds to "2" for any image that has exif.
         parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["good"]
@@ -186,7 +187,6 @@ def get_exif(img, image_path):
             # assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
             process_image_properties(image_properties_xml, parsed_exif)
         if config.image_type == "360":
-
             # Convert time format "year:month:day hours:minutes:seconds" -> "year-month-dayThours:minutes:seconds"
             timestamp = labeled["DateTimeOriginal"].split(" ")
             timestamp[0] = timestamp[0].replace(":", "-")
@@ -200,12 +200,11 @@ def get_exif(img, image_path):
             process_reflink_info(reflink_info_xml, parsed_exif)
         if not image_properties_xml or reflink_info_xml:
             # Extract road info from file name
-            # check if its the full string
+            # check if it's the full string
             extract_road_info_from_filename(image_path, parsed_exif)
-
+            # Extract GPS information from the image
             if gpsinfo:
                 process_gpsinfo_tag(gpsinfo, parsed_exif)
-            # get_metadata_from_path(image_path, parsed_exif)
         # Title of image.
         XPTitle = labeled.get("XPTitle", b"").decode("utf16")
         parsed_exif["exif_xptitle"] = XPTitle
@@ -320,7 +319,7 @@ def extract_road_info_from_filename(filepath, parsed_exif):
 
     # Parse 'strekning' and 'delstrekning'
     parsed_exif["exif_hp"], parsed_exif["exif_strekning"], parsed_exif["exif_delstrekning"], \
-        parsed_exif["exif_ankerpunkt"], parsed_exif["exif_kryssdel"], parsed_exif[
+    parsed_exif["exif_ankerpunkt"], parsed_exif["exif_kryssdel"], parsed_exif[
         "exif_sideanleggsdel"] = process_strekning_and_kryss(road_info_list[1], filename)
 
 
@@ -645,9 +644,38 @@ def process_gpsinfo_tag(gpsinfo, parsed_exif):
     parsed_exif["exif_gpsposisjon"] = f"srid=4326;POINT Z( {long} {lat} {alt} )"
     parsed_exif["exif_altitude"] = f"{alt}"
 
+    speed = gpsinfo.get('GPSSpeed', None)
+    if speed:
+        parsed_exif['exif_speed_ms'] = str(to_ms(speed, gpsinfo['GPSSpeedRef'].strip()))
+
+    direction = gpsinfo.get('GPSImgDirection', None)
+    if direction:
+        parsed_exif['exif_heading'] = direction[0] / direction[1]
+
+
+def to_ms(speed, speed_ref):
+    """
+    Converts the speed value of speed_ref to m/s.
+
+    """
+    # Denominator for m/s conversion.
+    # K: Km/h
+    # M: Mph
+    # N: Knots
+    denominator = {
+        'K': 3.6,
+        'M': 2.237,
+        'N': 1.944
+    }
+    speed = speed[0]/speed[1]
+    m_s = speed / denominator[speed_ref]
+    return m_s
+
 
 def convert_tude_decimal(tude):
     """
+    Converts a *tude (longitude or latitude) on the form (degrees, hours, minutes)
+    to a decimal number.
     """
     decimal_tude = [float(x) / float(y) for x, y in tude]
     decimal_tude = decimal_tude[0] + decimal_tude[1] / 60 + decimal_tude[2] / 360
