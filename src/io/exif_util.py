@@ -199,18 +199,23 @@ def get_exif(img, image_path):
         if reflink_info_xml:
             process_reflink_info(reflink_info_xml, parsed_exif)
         if not image_properties_xml or reflink_info_xml:
+            # Lower the quality level to 'missing values'
+            parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["missing_values"]
             # Extract road info from file name
             # check if it's the full string
             extract_road_info_from_filename(image_path, parsed_exif)
             # Extract GPS information from the image
             if gpsinfo:
                 process_gpsinfo_tag(gpsinfo, parsed_exif)
+
         # Title of image.
         XPTitle = labeled.get("XPTitle", b"").decode("utf16")
         parsed_exif["exif_xptitle"] = XPTitle
     else:
         LOGGER.warning(__name__, "No EXIF data found for image. Attempting to reconstruct data from image path.")
         if image_path is not None:
+            # Set the quality
+            parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["nonexistent"]
             get_metadata_from_path(image_path, parsed_exif)
 
     # Get a deterministic ID from the exif data.
@@ -568,8 +573,6 @@ def process_reflink_info(contents, parsed_exif):
 
 
 def get_metadata_from_path(image_path, parsed_exif):
-    # Set the quality
-    parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["nonexistent"]
 
     # Use os.stat to get a timestamp.
     file_stat = os.stat(image_path)

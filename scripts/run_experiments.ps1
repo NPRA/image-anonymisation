@@ -90,8 +90,8 @@ $configfile = $Env:360_TEST_CONFIG
 #python create_json.py -i $input_folder -o $output -l $log -k $configfile
 cd $Env:PROJECT_ROOT_FOLDER
 #python -m src.main -i $input_folder -o $output -l $log
-#python -m src.main -i $input_folder -o $output -l $log -k $configfile
-python -m scripts.create_json -i $input_folder -o $output -l $log -k $configfile
+python -m src.main -i $input_folder -o $output -l $log -k $configfile
+#python -m scripts.create_json -i $input_folder -o $output -l $log -k $configfile
 
 #: Cd back to script folder
 cd "$Env:PROJECT_ROOT_FOLDER\\scripts"
