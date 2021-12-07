@@ -315,6 +315,9 @@ def label_exif(exif):
 
 
 def extract_road_info_from_filename(filepath, parsed_exif):
+    """
+    Extracts the road info from the file name.
+    """
     get_metadata_from_path(filepath, parsed_exif)
     filename = filepath.split(os.sep)[-1]
 
@@ -509,14 +512,12 @@ def process_reflink_info(contents, parsed_exif):
 
     # Format of March 2020 update
     if "ReflinkInfo" in parsed_contents:
-        # print(f"reflink")
         reflink_info = parsed_contents["ReflinkInfo"]
         parsed_exif["exif_reflinkid"] = reflink_info["ReflinkId"]
         parsed_exif["exif_reflinkposisjon"] = reflink_info["ReflinkPosition"]
 
     # Format of May 2020 update
     elif "AdditionalInfoNorway2" in parsed_contents:
-        # print(f"additionl")
         # From RoadInfo
         road_info = parsed_contents["AdditionalInfoNorway2"]["RoadInfo"]
         parsed_exif["exif_reflinkid"] = road_info["ReflinkId"]
@@ -527,7 +528,8 @@ def process_reflink_info(contents, parsed_exif):
         gnss_info = parsed_contents["AdditionalInfoNorway2"]["GnssInfo"]
         if config.image_type == "360" and (
                 not gnss_info["Latitude"] or not gnss_info["Longitude"] or not gnss_info["Altitude"]):
-            # If the elements of the gpsposisjon-string does not exist, the exif quality will be lowered to "missing valuse", "1"
+            # If the elements of the gpsposisjon-string does not exist,
+            # the exif quality will be lowered to "missing valuse", "1"
             parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["missing_values"]
         parsed_exif["exif_roll"] = gnss_info["Roll"]
         parsed_exif["exif_pitch"] = gnss_info["Pitch"]
@@ -540,18 +542,15 @@ def process_reflink_info(contents, parsed_exif):
         parsed_exif["exif_headingrmserror"] = gnss_info["HeadingRmsError"]
 
         if config.image_type == "360":
-
+            # Create the gps_posisjon-string to the correct format.
             gps_posisjon_string = f"srid=4326;POINT Z( {gnss_info['Longitude']} {gnss_info['Latitude']} {gnss_info['Altitude']} )"
             image_info = parsed_contents["AdditionalInfoNorway2"]["ImageInfo"]
             road_info_string_list = image_info["StorageFile"].split(os.sep)
-            # print(f"road info: {road_info_string_list}")
             filename = road_info_string_list[-1]
             strekningsreferanse_list = road_info["RoadIdent"].split(" ")[1]
-            # print(strekningsreferanse_list)
             strekning = strekningsreferanse_list[1:strekningsreferanse_list.index("D")]
             delstrekning = strekningsreferanse_list[strekningsreferanse_list.index("D") + 1:]
             strekningsreferanse = "/".join([f"S{strekning}", f"D{delstrekning}"])
-            # print(f"Delstrekning: {delstrekning}")
             for elem in road_info_string_list:
                 _get_metadata_from_path_element(elem, parsed_exif)
 
@@ -572,7 +571,6 @@ def process_reflink_info(contents, parsed_exif):
 
 
 def get_metadata_from_path(image_path, parsed_exif):
-
     # Use os.stat to get a timestamp.
     file_stat = os.stat(image_path)
     time_created = datetime.fromtimestamp(min([file_stat.st_mtime, file_stat.st_ctime]))
@@ -631,25 +629,33 @@ def _get_metadata_from_path_element(elem, parsed_exif):
 def process_gpsinfo_tag(gpsinfo, parsed_exif):
     """
     Prcesses the GPSInfo-tag and creates the gpsposisjon-string for it.
+    The values of the GPSInfo is given as a tuple with the nominator and the denominator.
+    To get the value in decimal numbers, do the division.
     """
+    # Get the *tudes from the tag.
     latitude = gpsinfo['GPSLatitude']
     longitude = gpsinfo["GPSLongitude"]
     altitude = gpsinfo['GPSAltitude']
 
+    # Convert to decimal numbers.
     lat = convert_tude_decimal(latitude)
     long = convert_tude_decimal(longitude)
     alt = altitude[0] / altitude[1]
 
+    # Make sure the decimal is of the correct sign.
     lat = -lat if gpsinfo["GPSLatitudeRef"].strip() == 'S' else lat
     long = -long if gpsinfo["GPSLongitudeRef"].strip() == 'W' else long
 
+    # Create the exif_gposisjon string on the correct format
     parsed_exif["exif_gpsposisjon"] = f"srid=4326;POINT Z( {long} {lat} {alt} )"
     parsed_exif["exif_altitude"] = f"{alt}"
 
+    # Parse the speed information and convert it to m/s
     speed = gpsinfo.get('GPSSpeed', None)
     if speed:
         parsed_exif['exif_speed_ms'] = str(to_ms(speed, gpsinfo['GPSSpeedRef'].strip()))
 
+    # Parse the direction information.
     direction = gpsinfo.get('GPSImgDirection', None)
     if direction:
         parsed_exif['exif_heading'] = direction[0] / direction[1]
@@ -669,7 +675,7 @@ def to_ms(speed, speed_ref):
         'M': 2.237,
         'N': 1.944
     }
-    speed = speed[0]/speed[1]
+    speed = speed[0] / speed[1]
     m_s = speed / denominator[speed_ref]
     return m_s
 

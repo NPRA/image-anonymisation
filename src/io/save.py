@@ -57,7 +57,6 @@ def save_processed_img(img, mask_results, paths, draw_mask=False, mask_color=Non
     pil_img.save(paths.output_file)
     # Save preview images to the directories defined in the config file
 
-
     save_preview(pil_img, paths, local_preview, remote_preview, archive_preview)
     # if local_mask:
     #     wait_until_path_is_found([paths.input_dir])

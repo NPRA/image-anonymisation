@@ -4,7 +4,7 @@
 # ======================================================
 
 #: Dataeier
-dataeier: null
+data_eier: null
 
 #: The type of images to be processed
 image_type: "360"

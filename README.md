@@ -150,6 +150,8 @@ The HTML documentation can be built from the `docs` directory by running
 The user-specifiable configuration parameters can be found in [config/default_config.yml](config/default_config.yml). The available parameters are listed below.
 
 #### Miscellaneous configuration parameters
+* `data_eier`: The name of who owns the data. E.g. "Statens Vegvesen"
+* `image_type`: The type of images to be processed. Either "planar" or "360".
 * `draw_mask`: Apply the mask to the output image?
 * `delete_input`: Delete the original image from the input directory when the masking is completed?
 * `force_remask`: Recompute masks even though a .webp file exists in the output folder.
@@ -167,9 +169,15 @@ The user-specifiable configuration parameters can be found in [config/default_co
 * `remote_json`: Write the EXIF .json file to the output (remote) directory?
 * `local_json`: Write the EXIF .json file to the input (local) directory?
 * `archive_json`: Write the EXIF .json file to the archive directory?
-* `remote_mask`: Write mask file to the output (remote) directory?
-* `local_mask`: Write the mask file to the input (local) directory?
-* `archive_mask`: Write mask file to the archive directory?
+* [Deprecated] `remote_mask`: Write mask file to the output (remote) directory?
+* [Deprecated] `local_mask`: Write the mask file to the input (local) directory?
+* [Deprecated] `archive_mask`: Write mask file to the archive directory?
+* `remote_preview`: Write the preview file to the output (remote) directory
+* `local_preveiw`: Write the preview file to the input (local) directory
+* `archive_directory`: Write the preview file to the archive directory
+* `separate_preview_directory`: Path to the location in where only the previews are stored.
+* `preview_dim`: The dimensions on the form [height, width] of the thumbnail.
+* `preview_center`: The percentage of each dimension of the original image where the center of the thumbnail should be located
 
 #### Parameters for asynchronous execution
 * `enable_async`: Enable asynchronous post-processing? When True, the file exports (anonymised image, mask file and JSON file) will be executed asynchronously in order to increase processing speed.
@@ -179,7 +187,10 @@ The user-specifiable configuration parameters can be found in [config/default_co
 * `model_type`: Type of masking model. Currently, there are three available models with varying speed and accuracy. The slowest model produces the most accurate masks, while the masks from the medium model are slightly worse. The masks from the "Fast" model are currently not recommended due to poor quality. Must be either "Slow", "Medium" or "Fast". "Medium" is recommended. Default: "Medium"
 * `mask_dilation_pixels`: Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered by the corresponding mask. Set `mask_dilation_pixels = 0` to disable mask dilation. Default: `4`
 * `max_num_pixels`: Maximum number of pixels in images to be processed by the masking model. If the number of pixels exceeds this value, it will be resized before the masker is applied. This will NOT change the resolution of the output image.
-
+* `use_cutouts`: Apply the cutout 'sliding window' method on the masking.
+* `cutout_step_factor`: How many steps/pixels the sliding window should move in each direction [height,width] .
+* `cutout_dim_downscale`: The downscale of the dimensions of the cutout by [height, width]. 
+E.g if the value is [3,2], the height of the cutout is a third of the height of the original image, and the width is half the size.
 #### Parameters controlling the appearance of the anonymised regions
 * `mask_color`: "RGB tuple (0-255) indicating the masking color. Setting this option will override the colors specified below. Example: Setting `mask_color = [50, 50, 50]` will make all masks dark gray.
 * `blur`: Blurring coefficient (1-100) which specifies the degree of blurring to apply within the mask. When this parameter is specified, the image will be blurred, and not masked with a specific color. Set `blur = None` to disable blurring, and use colored masks instead. Default: `15`

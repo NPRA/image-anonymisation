@@ -52,12 +52,12 @@ def initialize():
         log_file = os.path.join(log_dir, log_file_name)
         LOGGER.set_log_file(log_file)
 
+    # Get the absolute paths of the directories
     input_dir = os.path.abspath(args.input_folder)
-    print(input_dir)
     output_dir = os.path.abspath(args.output_folder)
-
+    # Initialise the tree walker that produces each path for each image.
     tree_walker = TreeWalker(input_dir, [output_dir], skip_webp=False, precompute_paths=True)
-
+    # Iterator for images in the input directory
     image_iterator = iter(get_images(tree_walker))
     return tree_walker, image_iterator
 
@@ -79,8 +79,9 @@ def get_args():
 
 def get_images(tree_walker):
     """
-    Generates the images from path and yields them.
+    Generator of images in the input directory.
     """
+    # Go through each path and yield the images as a PIL.Image.
     for paths in tree_walker.walk():
         img = Image.open(paths.input_file)
         yield img
@@ -89,15 +90,17 @@ def get_images(tree_walker):
 def main():
     tree_walker, image_iterator = initialize()
 
+    # Go through each path in the input directory and save preview of each image.
     for i, paths in enumerate(tree_walker.walk()):
         os.makedirs(paths.output_dir, exist_ok=True)
         count_str = f"{i + 1} of {tree_walker.n_valid_images}"
         LOGGER.info(__name__, LOG_SEP)
         LOGGER.info(__name__, f"Iteration: {count_str}.")
         LOGGER.info(__name__, f"Processing file {paths.input_file}")
-
         try:
+            # Get the next image from the iterator
             img = next(image_iterator)
+            # Save the image as a preview image.
             save_preview(img, paths, config.local_preview, config.remote_preview, config.archive_preview)
         except PROCESSING_EXCEPTIONS as err:
             LOGGER.error(f"Got error '{type(err).__name__}: {str(err)}' when creating JSON from image. "

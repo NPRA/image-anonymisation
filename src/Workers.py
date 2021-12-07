@@ -247,7 +247,7 @@ class EXIFWorker(BaseWorker):
         exif["versjon"] = str(version)
 
         # Insert preview file name if it exists.
-
+        # Checks if the preview shoould be saved and if so if it is saved.
         if (paths.input_preview and os.path.isfile(paths.input_preview)) \
                 or (paths.output_preview and os.path.isfile(paths.output_preview)) \
                 or (paths.archive_preview and os.path.isfile(paths.archive_preview)) \
