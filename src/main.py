@@ -263,14 +263,8 @@ def main():
         try:
             # Get the image
             img = next(dataset_iterator)
-            if args.preview_only:
-                LOGGER.debug(__name__, f"Producing previews only")
-                # Convert the image to a numpy array
-                if not isinstance(img, np.ndarray):
-                    img = img.numpy()
-                save.save_preview(img, paths, config.local_preview, config.remote_preview, config.archive_preview)
-            # Do preprocessing for cutouts
-            elif config.use_cutouts:
+           # Do preprocessing for cutouts
+            if config.use_cutouts:
                 LOGGER.debug(__name__, f"Using cutout-method")
                 # Process image with cutout method
                 image_processor.process_image_with_cutouts(img, paths)

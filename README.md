@@ -335,6 +335,7 @@ The following extra scripts are available:
 * `scripts.db.create_table`: Creates the specified database table.
 * `scripts.db.insert_geom_metadata`: Inserts the appropriate metadata for the specified table into the `MDSYS.USER_GEOM_METADATA` view.
 * `scripts.db.json_to_db`: Traverses a directory tree and writes the contents of all found `.json` files to the specified database table.
+* `scripts.create_preview`: Traverses a directory tree and creates preview images of all `.jpg` files found in the tree. 
 
 Each script can be invoked by running:
 ```

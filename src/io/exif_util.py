@@ -166,7 +166,6 @@ def get_exif(img, image_path):
         # Convert the integer keys in the exif dict to text
         labeled = label_exif(exif)
         gpsinfo = get_gpsinfo(labeled)
-        print(gpsinfo)
 
         # Default quality will be "good" which corresponds to "2" for any image that has exif.
         parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["good"]
