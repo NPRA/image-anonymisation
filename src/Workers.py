@@ -248,13 +248,13 @@ class EXIFWorker(BaseWorker):
 
         # Insert preview file name if it exists.
         # Checks if the preview shoould be saved and if so if it is saved.
-        if (paths.input_preview and os.path.isfile(paths.input_preview)) \
-                or (paths.output_preview and os.path.isfile(paths.output_preview)) \
-                or (paths.archive_preview and os.path.isfile(paths.archive_preview)) \
-                or (paths.separate_preview_dir and os.path.isfile(paths.separate_preview)):
-            exif["exif_filnavn_preview"] = paths.preview_filename
+        if paths.input_preview \
+                or paths.output_preview \
+                or paths.archive_preview \
+                or paths.separate_preview_dir:
+            exif["exif_preview_filnavn"] = paths.preview_filename
         else:
-            exif["exif_filnavn_preview"] = None
+            exif["exif_preview_filnavn"] = None
         if local_json:
             # Write EXIF to input directory
             exif_util.write_exif(exif, paths.input_json)
