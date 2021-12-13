@@ -15,7 +15,6 @@ from src.io.TreeWalker import TreeWalker
 from src.io.file_access_guard import wait_until_path_is_found
 from src.Logger import LOGGER, LOG_SEP, logger_excepthook
 
-
 PROCESSING_EXCEPTIONS = (
     OSError,
     SystemError,
@@ -49,12 +48,14 @@ def set_excepthook(hooks):
                   instance, and traceback instance.
     :type hooks: list of function
     """
+
     def excepthook(etype, ex, tb):
         # Call hooks
         for hook in hooks:
             hook(etype, ex, tb)
         # Call the default excepthook.
         sys.__excepthook__(etype, ex, tb)
+
     # Register the custom hook
     sys.excepthook = excepthook
 
@@ -106,6 +107,37 @@ def get_summary(tree_walker, database_client, start_datetime):
     return summary
 
 
+def convert_comma_to_dot(string_to_convert):
+    """
+    Replaces each occurance of ',' in the string with '.'
+    """
+    return string_to_convert.replace(",", ".")
+
+
+def convert_north_east_to_east_north_coordinates(coordinate_string):
+    """
+    Converts the gps position string to define the coordinates in the order of 'east, north' instead of 'north, east'
+    """
+    # Get the coordinates from the string 'north east height'
+    coordinates = coordinate_string[coordinate_string.find("(") + 1:coordinate_string.find(")")]
+    # Put the coordinates in a list, split them by space, " "
+    coordinates_split = coordinates.split(" ")
+    # Swap north and east coordinates
+    coordinates_split[1], coordinates_split[2] = coordinates_split[2], coordinates_split[1]
+    # Join each coordinate to a string split by space, " "
+    coordinates_string = " ".join(coordinates_split[1:len(coordinates_split) - 1])
+    # Stitch together the 'exif_gpsposisjon' string again with the new coordinate order
+    new_coordinate_string = f"{coordinate_string[:coordinate_string.find('(') + 1]} {coordinates_string} {coordinate_string[coordinate_string.find(')'):]}"
+    return new_coordinate_string
+
+
+def check_if_conversion_is_needed(data):
+    """
+    Returns true if the JSON was written with the ViaAIUtility tool
+    """
+    return data["versjon"].split(" - ")[0] == "ViaAIUtility"
+
+
 def load_json(paths):
     wait_until_path_is_found(paths.input_file)
     with open(paths.input_file, "r", encoding="utf-8") as f:
@@ -125,6 +157,13 @@ def main():
 
         try:
             json_dict = load_json(paths)
+            # Convert value strings if necessary
+            if check_if_conversion_is_needed(json_dict):
+                json_dict["exif_gpsposisjon"] = convert_north_east_to_east_north_coordinates(
+                    json_dict["exif_gpsposisjon"])
+                for key, value in json_dict.items():
+                    if isinstance(value, str):
+                        json_dict[key] = convert_comma_to_dot(value)
             database_client.add_row(json_dict)
         except PROCESSING_EXCEPTIONS as err:
             LOGGER.error(__name__, f"Got error '{type(err).__name__}: {str(err)}' when writing JSON to Database. "
