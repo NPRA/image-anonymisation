@@ -35,7 +35,7 @@ REDACT_XML_REGEX_PATTERNS = [re.compile(f"<{tag}>.*</{tag}") for tag in REDACT_X
 REDACT_XML_REPLACE_STRINGS = [f"<{tag}>FJERNET</{tag}" for tag in REDACT_XML_TAGS]
 
 #: Timestamp format for the deterministic id
-ID_TIMESTAMP_FORMATTER = "%Y-%m-%dT%H.%M.%S.%f"
+ID_TIMESTAMP_FORMATTER = "%Y-%m-%dT%H.%M.%S"
 
 #: Pattern to remove from the filename when creating the deterministic id
 ID_REMOVE_FROM_FILENAME_PATTERN = re.compile(r"_f\d+")
@@ -171,18 +171,16 @@ def get_exif(img, image_path):
         parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["good"]
         parsed_exif["exif_camera"] = labeled["Model"]
         parsed_exif["exif_imagetype"] = config.image_type
-        parsed_exif["exif_imagewidth"] = img.size[0]
-        parsed_exif["exif_imagehigh"] = img.size[1]
+        parsed_exif["exif_imagewidth"] = str(img.size[0])
+        parsed_exif["exif_imagehigh"] = str(img.size[1])
 
         if config.data_eier:
             parsed_exif["exif_dataeier"] = config.data_eier
 
         image_properties_xml = labeled.get("ImageProperties", None)
         reflink_info_xml = labeled.get("ReflinkInfo", None)
-
         # Process the `ImageProperties` XML
         if image_properties_xml:
-            parsed_exif["exif_imagetype"] = config.image_type
             # assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
             process_image_properties(image_properties_xml, parsed_exif)
         if config.image_type == "360":
@@ -197,7 +195,7 @@ def get_exif(img, image_path):
 
         if reflink_info_xml:
             process_reflink_info(reflink_info_xml, parsed_exif)
-        if not image_properties_xml or reflink_info_xml:
+        if not image_properties_xml and not reflink_info_xml:
             # Lower the quality level to 'missing values'
             parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["missing_values"]
             # Extract road info from file name
@@ -218,13 +216,13 @@ def get_exif(img, image_path):
             get_metadata_from_path(image_path, parsed_exif)
 
     # Get a deterministic ID from the exif data.
-    parsed_exif["bildeid"] = get_deterministic_id(parsed_exif)
+    parsed_exif["bildeid"] = get_deterministic_id(parsed_exif, parsed_exif["exif_feltkode"])
     # Insert the folder name
     parsed_exif["mappenavn"] = get_mappenavn(image_path, parsed_exif)
     return parsed_exif
 
 
-def get_deterministic_id(exif):
+def get_deterministic_id(exif, feltkode):
     """
     This function will create a unique deterministic ID from the EXIF metadata. The id is created by concatenating the
     timestamp and filename (without extension and "feltkode").
@@ -242,7 +240,7 @@ def get_deterministic_id(exif):
     # Remove "feltkode" from filename.
     filename = re.sub(ID_REMOVE_FROM_FILENAME_PATTERN, "", filename)
     # Create the ID
-    deterministic_id = timestamp + "_" + filename
+    deterministic_id = timestamp + "_" + filename + f"_{config.image_type}_{feltkode}"
     return deterministic_id
 
 
@@ -394,7 +392,7 @@ def process_image_properties(contents, parsed_exif):
     # Set values
     parsed_exif["exif_tid"] = timestamp
     parsed_exif["exif_dato"] = date
-    parsed_exif["exif_speed_ms"] = speed
+    parsed_exif["exif_speed_ms"] = str(round(float(speed), 2))
     parsed_exif["exif_heading"] = heading
     parsed_exif["exif_gpsposisjon"] = ewkt
     parsed_exif["exif_strekningsnavn"] = image_properties["VegComValues"]["VCArea"]
@@ -408,7 +406,7 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_ankerpunkt"] = ankerpunkt
     parsed_exif["exif_kryssdel"] = kryssdel
     parsed_exif["exif_sideanleggsdel"] = sideanleggsdel
-    parsed_exif["exif_meter"] = image_properties["VegComValues"]["VCMeter"]
+    parsed_exif["exif_meter"] = str(round(float(image_properties["VegComValues"]["VCMeter"]),2))
     parsed_exif["exif_feltkode"] = image_properties["VegComValues"]["VCLaneName"]
     parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
     parsed_exif["exif_filnavn"] = mapper[-1]
@@ -558,11 +556,11 @@ def process_reflink_info(contents, parsed_exif):
             parsed_exif["exif_altitude"] = gnss_info["Altitude"]
             parsed_exif["exif_moh"] = gnss_info["Altitude"]
             parsed_exif["exif_fylke"] = image_info["fylke"]
-            parsed_exif["exif_speed_ms"] = gnss_info["Speed"]
+            parsed_exif["exif_speed_ms"] = str(round(float(gnss_info["Speed"]),2))
             parsed_exif["exif_gpsposisjon"] = gps_posisjon_string
             parsed_exif["exif_heading"] = gnss_info["Heading"]
             parsed_exif["exif_roadtype"] = image_info["roadtype"]
-            parsed_exif["exif_meter"] = image_info["meter"]
+            parsed_exif["exif_meter"] = str(round(float(image_info["meter"]),2))
             parsed_exif["exif_strekning"] = strekning
             parsed_exif["exif_delstrekning"] = delstrekning
             parsed_exif["exif_strekningreferanse"] = strekningsreferanse
@@ -574,8 +572,10 @@ def get_metadata_from_path(image_path, parsed_exif):
     # Use os.stat to get a timestamp.
     file_stat = os.stat(image_path)
     time_created = datetime.fromtimestamp(min([file_stat.st_mtime, file_stat.st_ctime]))
-    parsed_exif["exif_tid"] = time_created.strftime("%Y-%m-%dT%H:%M:%S.%f")
-    parsed_exif["exif_dato"] = time_created.strftime("%Y-%m-%d")
+    if parsed_exif["exif_tid"] is None:
+        parsed_exif["exif_tid"] = time_created.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    if parsed_exif["exif_dato"] is None:
+        parsed_exif["exif_dato"] = time_created.strftime("%Y-%m-%d")
 
     # Process the elements in the image path
     path_elements = image_path.split(os.sep)
@@ -671,7 +671,9 @@ def to_ms(speed, speed_ref):
     # M: Mph
     # N: Knots
     denominator = {
-        'K': 3.6,
+        # This is an error with the tagging. The ref is K, while the speed value is in m/s.
+        # If this is fixed, the denominator for 'K' should be 3.6
+        'K': 1,
         'M': 2.237,
         'N': 1.944
     }
@@ -686,5 +688,5 @@ def convert_tude_decimal(tude):
     to a decimal number.
     """
     decimal_tude = [float(x) / float(y) for x, y in tude]
-    decimal_tude = decimal_tude[0] + decimal_tude[1] / 60 + decimal_tude[2] / 360
+    decimal_tude = decimal_tude[0] + decimal_tude[1] / 60 + decimal_tude[2] / 3600
     return decimal_tude
