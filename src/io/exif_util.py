@@ -406,7 +406,7 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_ankerpunkt"] = ankerpunkt
     parsed_exif["exif_kryssdel"] = kryssdel
     parsed_exif["exif_sideanleggsdel"] = sideanleggsdel
-    parsed_exif["exif_meter"] = str(round(float(image_properties["VegComValues"]["VCMeter"]),2))
+    parsed_exif["exif_meter"] = str(round(float(image_properties["VegComValues"]["VCMeter"]), 2))
     parsed_exif["exif_feltkode"] = image_properties["VegComValues"]["VCLaneName"]
     parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
     parsed_exif["exif_filnavn"] = mapper[-1]
@@ -556,11 +556,11 @@ def process_reflink_info(contents, parsed_exif):
             parsed_exif["exif_altitude"] = gnss_info["Altitude"]
             parsed_exif["exif_moh"] = gnss_info["Altitude"]
             parsed_exif["exif_fylke"] = image_info["fylke"]
-            parsed_exif["exif_speed_ms"] = str(round(float(gnss_info["Speed"]),2))
+            parsed_exif["exif_speed_ms"] = str(round(float(gnss_info["Speed"]), 2))
             parsed_exif["exif_gpsposisjon"] = gps_posisjon_string
             parsed_exif["exif_heading"] = gnss_info["Heading"]
             parsed_exif["exif_roadtype"] = image_info["roadtype"]
-            parsed_exif["exif_meter"] = str(round(float(image_info["meter"]),2))
+            parsed_exif["exif_meter"] = str(round(float(image_info["meter"]), 2))
             parsed_exif["exif_strekning"] = strekning
             parsed_exif["exif_delstrekning"] = delstrekning
             parsed_exif["exif_strekningreferanse"] = strekningsreferanse

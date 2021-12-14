@@ -10,6 +10,15 @@ from src.Workers import SaveWorker, EXIFWorker, ERROR_RETVAL
 from src.io.file_checker import check_all_files_written
 from src.io.file_access_guard import wait_until_path_is_found
 
+MASK_RESULT_TEMPLATE = {
+    "num_detections": None,
+    "detection_masks": None,
+    "detection_classes": None,
+    "detection_scores": None,
+    "detection_boxes": None
+
+}
+
 
 class ImageProcessor:
     """
@@ -280,7 +289,7 @@ class ImageProcessor:
 
                         # If there are overlapping masked pixels between the exisiting mask and the cutout mask
                         # The mask is not new, and the matching existing mask should be updated.
-                        if len(np.where(existing_mask[np.where(mask)] == True)[0]) > 0:
+                        if _mask_overlap(mask, existing_mask):
                             mask = np.where(mask, mask, existing_mask)
                             new_mask = False
                             update_mask_id = e_mask_num
@@ -349,8 +358,7 @@ class ImageProcessor:
 
             # Make final calculations and decisions about the results.
         for mask_num in range(all_mask_results["num_detections"]):
-
-            # Extract the majority vote of all the classes 
+            # Extract the majority vote of all the classes
             majority_vote_class = _poll_array(all_mask_results["detection_classes"][mask_num])
             detection_classes.append(majority_vote_class)
             # Calculate the average score for the mask
@@ -446,6 +454,7 @@ def _coordinate_mapping(y, x, original_img, cutout_img, bounding_w, bounding_h):
     Y = bounding_h + (y * cutout_img.shape[1])
     return X / original_img.shape[2], Y / original_img.shape[1]
 
+
 def remove_empty_folders(start_dir, top_dir):
     """
     Bottom-up removal of empty folders. If `start_dir` is empty, it will be removed. If `start_dir`'s parent directory
@@ -466,3 +475,26 @@ def remove_empty_folders(start_dir, top_dir):
         os.rmdir(current_dir)
         LOGGER.debug(__name__, f"Input folder removed: {current_dir}")
         current_dir = os.path.dirname(current_dir)
+
+
+def _mask_overlap(mask_a, mask_b):
+    # masked_area_a = np.where(mask_a)
+    # masked_area_b = np.where(mask_b)
+
+    # print(f"a: {len(mask_a)} ({mask_a.shape}), b: {len(mask_b)} ({mask_b.shape})")
+    # print(f"OVerlapping areas? a: {len(masked_area_a)}, b:{len(masked_area_b)}, {np.where(mask_b[np.where(mask_a)] is True)}")
+
+    # Find the overlapping masked areas between mask a and mask b.
+    overlapping_masks = np.where(mask_b[np.where(mask_a)] is True)
+
+    return len(overlapping_masks) > 0
+
+
+def _update_mask_results(updated_mask, mask_id, parsed_mask_results, left, right, upper, lower):
+    mask_before_update = parsed_mask_results["detection_masks"][0][updated_mask].copy()
+    updated_after_update = mask_before_update
+    updated_mask[upper:lower, left:right] = updated_mask
+
+    overlap = np.where(mask_before_update)
+
+    pass
