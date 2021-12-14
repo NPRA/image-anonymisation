@@ -203,7 +203,7 @@ def Filnavn(json_data):
     return json_data["exif_filnavn"]
 
 
-def PreviwFilnavn(json_data):
+def PreviewFilnavn(json_data):
     return json_data["exif_preview_filnavn"]
 
 
