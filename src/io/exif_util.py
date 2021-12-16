@@ -406,7 +406,7 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_ankerpunkt"] = ankerpunkt
     parsed_exif["exif_kryssdel"] = kryssdel
     parsed_exif["exif_sideanleggsdel"] = sideanleggsdel
-    parsed_exif["exif_meter"] = str(round(float(image_properties["VegComValues"]["VCMeter"]),2))
+    parsed_exif["exif_meter"] = str(round(float(image_properties["VegComValues"]["VCMeter"]), 2))
     parsed_exif["exif_feltkode"] = image_properties["VegComValues"]["VCLaneName"]
     parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
     parsed_exif["exif_filnavn"] = mapper[-1]
@@ -421,13 +421,15 @@ def process_strekning_and_kryss(vchp, filename):
     if kryss_matches:
         return _kryss(kryss_matches[0])
 
-    # Look for SxDy pattern
-    strekning_delstrekning_matches = STREKNING_PATTERN.findall(vchp)
-    if strekning_delstrekning_matches:
-        return _strekning_delstrekning(strekning_delstrekning_matches[0])
+    if vchp:
+        # Look for SxDy pattern
+        strekning_delstrekning_matches = STREKNING_PATTERN.findall(vchp)
+        if strekning_delstrekning_matches:
+            return _strekning_delstrekning(strekning_delstrekning_matches[0])
 
-    # Fallback to old HP-standard
-    return _hp(vchp)
+        # Fallback to old HP-standard
+        return _hp(vchp)
+    return None, None, None, None, None, None
 
 
 def _kryss(matches):
@@ -552,18 +554,24 @@ def process_reflink_info(contents, parsed_exif):
             for elem in road_info_string_list:
                 _get_metadata_from_path_element(elem, parsed_exif)
 
+            hp, _, _, ankerpunkt, \
+                kryssdel, sideanleggsdel = process_strekning_and_kryss(None, filename)
             # Set variables     
             parsed_exif["exif_altitude"] = gnss_info["Altitude"]
             parsed_exif["exif_moh"] = gnss_info["Altitude"]
             parsed_exif["exif_fylke"] = image_info["fylke"]
-            parsed_exif["exif_speed_ms"] = str(round(float(gnss_info["Speed"]),2))
+            parsed_exif["exif_speed_ms"] = str(round(float(gnss_info["Speed"]), 2))
             parsed_exif["exif_gpsposisjon"] = gps_posisjon_string
             parsed_exif["exif_heading"] = gnss_info["Heading"]
             parsed_exif["exif_roadtype"] = image_info["roadtype"]
-            parsed_exif["exif_meter"] = str(round(float(image_info["meter"]),2))
+            parsed_exif["exif_meter"] = str(round(float(image_info["meter"]), 2))
             parsed_exif["exif_strekning"] = strekning
             parsed_exif["exif_delstrekning"] = delstrekning
             parsed_exif["exif_strekningreferanse"] = strekningsreferanse
+            parsed_exif["exif_kryssdel"] = kryssdel
+            parsed_exif["exif_sideanleggsdel"] = sideanleggsdel
+            parsed_exif["exif_ankerpunkt"] = ankerpunkt
+            parsed_exif["exif_hp"] = hp
             parsed_exif["exif_filnavn"] = filename
             parsed_exif["exif_mappenavn"] = f"/".join(road_info_string_list[:len(road_info_string_list) - 1])
 
