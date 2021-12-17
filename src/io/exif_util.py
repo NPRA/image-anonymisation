@@ -452,7 +452,6 @@ def _strekning_delstrekning(matches):
     delstrekning = matches[1]
     return None, strekning, delstrekning, None, None, None
 
-
 def _hp(vchp):
     # HP metadata.
     return vchp.lstrip("0"), None, None, None, None, None

@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'Image-anonymisation'
-copyright = '2020, Daniel Johansen Trosten, Christian Skjetne'
-author = 'Daniel Johansen Trosten, Christian Skjetne'
+copyright = '2020, Daniel Johansen Trosten, Christian, Nora Elisabeth Qi Eck Pålsrid'
+author = 'Daniel Johansen Trosten, Christian Skjetne, Nora Elisabeth Qi Eck Pålsrud'
 
 # The full version, including alpha/beta/rc tags
 release = '0'
