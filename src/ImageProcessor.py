@@ -251,6 +251,7 @@ class ImageProcessor:
                 # Mask the cutout
                 masked_result = self.masker.mask(cutout_image)
 
+
                 # Loop through each mask detected by the masking.
                 # MEither update an existing mask or add a new mask to the results
                 for mask_num, mask in enumerate(masked_result["detection_masks"][0]):
@@ -283,21 +284,26 @@ class ImageProcessor:
                         }
                         all_mask_results["num_detections"] += 1
 
-                    for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0]):
+                    for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0].copy()):
+                        all_existing_masks = all_mask_results["detection_masks"][0]
+                        existing_mask_dict = {}
+                        for k, e_mask in enumerate(all_existing_masks):
+                            existing_mask_dict[str(k)] = e_mask
                         # Extract the relevant cutout of the existing full image mask for comparison.
-                        existing_mask = existing_mask[height:height + window_height, width:width + window_width]
+                        existing_mask_small = existing_mask[height:height + window_height, width:width + window_width].copy()
 
                         # If there are overlapping masked pixels between the exisiting mask and the cutout mask
                         # The mask is not new, and the matching existing mask should be updated.
-                        if _mask_overlap(mask, existing_mask):
+                        if _mask_overlap(mask, existing_mask_small, existing_mask, height, width):
+
                             mask = np.where(mask, mask, existing_mask)
                             new_mask = False
                             update_mask_id = e_mask_num
                     # If the mask is new, add the new results as new entries for the full image.
                     if new_mask:
                         additional_masks += 1
-                        updated_full_image_mask = full_image_mask
-                        full_image_mask[height:height + window_height, width:width + window_width] = mask
+                        updated_full_image_mask = full_image_mask.copy()
+                        updated_full_image_mask[height:height + window_height, width:width + window_width] = mask
 
                         # Add the mask as a new entry in the full image results.
                         all_mask_results["detection_masks"] = np.asarray([np.concatenate(
@@ -316,36 +322,40 @@ class ImageProcessor:
                             len(all_mask_results['detection_classes']): [
                                 masked_result["detection_classes"][0][mask_num]]
                         })
+
                     # If the mask is not new, update the results of the existing mask.
                     else:
+                       all_mask_results= _update_mask_results(mask, update_mask_id, all_mask_results, masked_result, mask_bbox_in_full_img,
+                                             height, height + window_height, width, width + window_width)
+                        updated_mask_after_update_func = np.where(all_mask_results['detection_masks'])
 
                         # Only update the mask in the current window
-                        updated_full_image_mask = all_mask_results["detection_masks"][0][update_mask_id]
-                        updated_full_image_mask[height:height + window_height, width:width + window_width] = mask
-                        all_mask_results["detection_masks"][0][update_mask_id] = updated_full_image_mask
-
-                        # Add the mask class and score to the list of classes and scores for the mask.
-                        # The class defined for the mask will be the majority vote of all the classes
-                        # The final score for the mask will be the average score of all the scores.
-                        new_classes = np.concatenate(
-                            (all_mask_results['detection_classes'][update_mask_id],
-                             [masked_result['detection_classes'][0][mask_num]]),
-                            axis=None)
-                        all_mask_results["detection_classes"].update({update_mask_id: new_classes})
-                        new_scores = np.concatenate(
-                            (all_mask_results['detection_scores'][update_mask_id],
-                             [masked_result['detection_scores'][0][mask_num]]),
-                            axis=None)
-                        all_mask_results["detection_scores"].update({update_mask_id: new_scores})
-
-                        # Update the bounding boxes of the mask.
-                        full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
-                        updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2],
-                                                         full_img_bbox[:2], mask_bbox_in_full_img[:2])
-                        updated_mask_bbox_max = np.where(full_img_bbox[2:] > mask_bbox_in_full_img[2:],
-                                                         full_img_bbox[2:], mask_bbox_in_full_img[2:])
-                        updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
-                        all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
+                        # updated_full_image_mask = all_mask_results["detection_masks"][0][update_mask_id]
+                        # updated_full_image_mask[height:height + window_height, width:width + window_width] = mask
+                        # all_mask_results["detection_masks"][0][update_mask_id] = updated_full_image_mask
+                        #
+                        # # Add the mask class and score to the list of classes and scores for the mask.
+                        # # The class defined for the mask will be the majority vote of all the classes
+                        # # The final score for the mask will be the average score of all the scores.
+                        # new_classes = np.concatenate(
+                        #     (all_mask_results['detection_classes'][update_mask_id],
+                        #      [masked_result['detection_classes'][0][mask_num]]),
+                        #     axis=None)
+                        # all_mask_results["detection_classes"].update({update_mask_id: new_classes})
+                        # new_scores = np.concatenate(
+                        #     (all_mask_results['detection_scores'][update_mask_id],
+                        #      [masked_result['detection_scores'][0][mask_num]]),
+                        #     axis=None)
+                        # all_mask_results["detection_scores"].update({update_mask_id: new_scores})
+                        #
+                        # # Update the bounding boxes of the mask.
+                        # full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
+                        # updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2],
+                        #                                  full_img_bbox[:2], mask_bbox_in_full_img[:2])
+                        # updated_mask_bbox_max = np.where(full_img_bbox[2:] > mask_bbox_in_full_img[2:],
+                        #                                  full_img_bbox[2:], mask_bbox_in_full_img[2:])
+                        # updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
+                        # all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
 
                 i += 1
         sliding_window_time_delta = "{:.3f}".format(time.time() - sliding_window_time)
@@ -477,24 +487,73 @@ def remove_empty_folders(start_dir, top_dir):
         current_dir = os.path.dirname(current_dir)
 
 
-def _mask_overlap(mask_a, mask_b):
+def _mask_overlap(mask_a, mask_b, big_mask_b, h, w):
     # masked_area_a = np.where(mask_a)
     # masked_area_b = np.where(mask_b)
 
     # print(f"a: {len(mask_a)} ({mask_a.shape}), b: {len(mask_b)} ({mask_b.shape})")
     # print(f"OVerlapping areas? a: {len(masked_area_a)}, b:{len(masked_area_b)}, {np.where(mask_b[np.where(mask_a)] is True)}")
-
+    where_mask_a = np.where(mask_a)
+    where_mask_b = np.where(mask_b)
+    mask_a_in_coordinates = (where_mask_a[0]+h, where_mask_a[1]+w)
+    where_mask_full = np.where(big_mask_b)
     # Find the overlapping masked areas between mask a and mask b.
     overlapping_masks = np.where(mask_b[np.where(mask_a)] is True)
+    overlap = len(overlapping_masks) > 0
+    return len(overlapping_masks[0]) > 0
 
-    return len(overlapping_masks) > 0
+
+def _update_mask_results(updated_mask, mask_id, parsed_mask_results, new_mask_results, mask_bbox, upper, lower, left, right):
+    print(f"parsed mask results: {parsed_mask_results}")
+
+    # Array inside the results, which should be updated
+    mask_before_update = parsed_mask_results["detection_masks"][0][mask_id].copy()
+    # A copy of the array which is to be updated.
+    mask_after_update = mask_before_update.copy()
+    mask_after_update[upper:lower, left:right] = updated_mask
+    overlap = np.where(mask_before_update == mask_after_update)
+    print(f"Overlap:  {len(overlap)}, {overlap}")
+    before_updated_parsed = np.where(parsed_mask_results["detection_masks"])
+    # All the detected masks, copied
+    mask_results_before_update = parsed_mask_results["detection_masks"].copy()
+    mask_results_after_update = mask_results_before_update.copy()
+    mask_results_after_update[0][mask_id] = mask_after_update
+    mask_len_before = np.where(mask_results_before_update)
+    mask_len_after = np.where(mask_results_after_update)
+    diff_results = np.where(mask_results_before_update != mask_results_after_update)
+
+    parsed_mask_results["detection_masks"] = mask_results_after_update
+
+    updated_parsed = np.where(parsed_mask_results["detection_masks"])
+    print(updated_parsed)
+
+    class_predictions = np.concatenate((
+        parsed_mask_results['detection_classes'][mask_id],
+        [new_mask_results['detection_classes'][0][mask_id]]
+    ), axis=None)
+    parsed_mask_results["detection_classes"].update({mask_id: class_predictions})
+
+    score_poll = np.concatenate((
+        parsed_mask_results['detection_scores'][mask_id],
+        [new_mask_results['detection_scores'][0][mask_id]]
+    ), axis=None)
+    parsed_mask_results['detection_scores'].update({mask_id: score_poll})
+
+    # Update boxes
+
+    bbox_before_update = parsed_mask_results["detection_boxes"][mask_id].copy()
+    updated_mask_bbox_min = np.where(bbox_before_update[:2] < mask_bbox[:2], bbox_before_update[:2], mask_bbox[:2])
+    updated_mask_bbox_max = np.where(bbox_before_update[2:] > mask_bbox[2:], bbox_before_update[2:], mask_bbox[2:])
+    bbox_after_update = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
+    parsed_mask_results['detection_boxes'][mask_id] = bbox_after_update
 
 
-def _update_mask_results(updated_mask, mask_id, parsed_mask_results, left, right, upper, lower):
-    mask_before_update = parsed_mask_results["detection_masks"][0][updated_mask].copy()
-    updated_after_update = mask_before_update
-    updated_mask[upper:lower, left:right] = updated_mask
+    ## Update classes
+    # Update scores
+    # Update boxes
+    # Update masks
 
-    overlap = np.where(mask_before_update)
 
-    pass
+
+
+    return parsed_mask_results
