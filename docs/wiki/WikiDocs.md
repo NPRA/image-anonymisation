@@ -71,23 +71,42 @@ This will produce a `.jpg`-image in the desired location
 * `exif_roadtype`: Read from the exif data of the input image.
 * `exif_filnavn_preview`: Generated based on file name of the input image.
 
-# Infrastructure and Composition
+
+# Architecture
+
+
+| The architecture of the Image Anonymisation |
+|    :----:   |
+|![](SVV-ImageAnonymisationArchitecture.png "The architecture of the Image Anonymisation")     |
 
 The image anonymisation consists of mainly six components
 as well as multiple helper-scripts.
 
 #### Main components
+* `TreeWalker`
+* `Path`
 * `ImageProcessor`
 * `Masker`
 * `ExifWorker`
 * `SaveWorker`
-* `TreeWalker`
-* `Path`
+
+##### TreeWalker
+The `TreeWalker` is a helper-class that finds all the relevant files.
+The `walk()`-function will traverse the file tree and generate instances of `Path`-objects for each relevant file it finds.
+
+#### Path
+The `Path` is a class that contain all the path information relevant for a specified image.
+It contains the filename, output file paths, archive file paths, input file paths and preview paths.
 
 ##### ImageProcessor
 The `ImageProcessor` will run the masker on either the image with or without the sliding window techinque.
 If the sliding window is used, the masker is first used on the full image,
 followed by the sliding windows.
+
+| A Visualisation of the cutout method |
+|    :----:   |
+|![](./SVV-CutoutMethod.png)     |
+|The **first row** shows the input image and how the orange sliding window moves over it. The **second row** shows the mask result-building process|
 
 The window will first slide width-wise, then height-wise.
 This is implemented by using a double for-loop.
@@ -100,6 +119,7 @@ If there is a overlap in pixels of the newly predicted mask in the window
 compared to any of the previously predicted masks for the image,
 the the mask is assumed to already exist.
 If the mak already exist, it's predicted data should be updated in the following manner:
+
 1. The outer edges should be moved to be defined by the outermost pixels from either the existing mask or the new mask.
 2. The bounding boxes should be updated to be the outermost value from either the existing or the new mask.
 3. The prediction score should be added to a pool of all the other prediction scores that were made for one mask.
@@ -131,23 +151,10 @@ This level is given to an image where the exif-data cannot be derived.
 The `SaveWorker` is responsible to save the anonymised image and the potential preview image.
 Additionally it will draw on the masks after the definitions in the configuration-file.
 
-##### TreeWalker
-The `TreeWalker` is a helper-class that finds all the relevant files.
-The `walk()`-function will traverse the file tree and generate instances of `Path`-objects for each relevant file it finds.
-
-#### Path
-The `Path` is a class that contain all the path information relevant for a specified image.
-It contains the filename, output file paths, archive file paths, input file paths and preview paths.
-
-## Data Flow
-
-## Classes
 
 ## Scripts
 
 ## Configuration
-
-# Object Detection, Machine Learning Model and Data Set
 
 # The Next Steps
 
