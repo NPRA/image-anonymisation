@@ -16,17 +16,18 @@ It supported end-to-end image anonymisation "planar", also called "field-of-view
 
 The second version of the image anonymisation was developed in 2021/2022.
 There were four main updates and differences to this version:
-1. The anonymisation of 360°-images should be supported in a satisfactory manner
+1. The anonymisation should support 360°-images in a satisfactory manner
 2. The anonymisation should *not* output the `.wepb`-files
-3. The anonymisation should be able to produce "previews" of the image of a desired dimension.
-4. The output `.json`-file should have updated fields and values.
+3. The anonymisation should be able to produce "previews" of the image of a desired dimension and position.
+4. The output `.json`-file should have updated fields and values to comply with new standards.
 
 
 #### Planar vs. 360°-images
 There were notable differences that had an impact on
 the choices that were made during the continuation of this project to support 360°-images.
 
-1. The "flat" 360°-images were curved, consequently, making the objects to be detected curved.
+1. The "flat" 360°-images were curved, consequently, making the objects to be detected curved and 
+less likely to be detected fully.
 2. The images were significantly larger in size
 3. The exif-data is different in 360°-images.
 
@@ -75,7 +76,7 @@ This will produce a `.jpg`-image in the desired location
 # Architecture
 
 
-| The architecture of the Image Anonymisation |
+| The simplified architecture of the Image Anonymisation |
 |    :----:   |
 |![](SVV-ImageAnonymisationArchitecture.png "The architecture of the Image Anonymisation")     |
 
@@ -155,6 +156,8 @@ The `walk()`-function will traverse the file tree and generate instances of `Pat
 The `Path` is a class that contain all the path information relevant for a specified image.
 It contains the filename, output file paths, archive file paths, input file paths and preview paths.
 
+#### SDOGeometry
+The SDOGeometry class is a helper class to represent a `SDO_GEOMETRY` object in Oracle Database.
 
 ## Scripts
 
@@ -211,9 +214,32 @@ and clearing cached files.
 ##### save.py
 The `save.py` is a helper script that handles the writing of the output anonymised image and the preview image.
 It will draw the masks defined from the mask-prediction according to the settings in the `config`-file.
-Also handles the cropping of the preview image according to the specifications in the `config`-file.
-##### save.py
+After the masks have been drawn on the image, the image is written to one or more of the following places:
+* The input folder
+* The output folder
+* The archive folder
+
+The script also handles the cropping and writing of the preview image according to the specifications in the `config`-file.
+The preview is output to one or more of the following places:
+* The input folder
+* The output folder
+* The archive folder
+* A separate folder path specified in the `config`-file
+
 ##### tf_dataset.py
+The `tf_dataset.py` is a helper script that can create a [TensorFlow Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) 
+from the image files in a path. 
+It also has validation checks to ensure that an image is represtented as a valid 4D-tensor.
+
+##### formatters.py
+The `formatters.py` is a helper script that is used to get the correct information from the `.json`-file 
+on a format that is accepted by the database.
+There is one formatter function for every field in the `.json`-file
+
+##### geometry.py
+The `geometry.py` is a helper script to convert an instance of the `src.db.SDOGeometry` class 
+to a `SDO_GEOMETRY` Oracle database object type.
+
 #### Extra Scripts
 There are several extra scripts that serve their own functionalities when invoked. 
 
