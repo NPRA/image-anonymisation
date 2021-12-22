@@ -286,6 +286,7 @@ This script is invoked by running from root:
 ```
 python -m script.check_preview <args>
 ```
+
 ##### evaluate.py
 The `evaluate.py` script is a script to evaluate the mask prediciton model. 
 It will evaluate the model on the COCO-data set and accumulate results over all the entries.
