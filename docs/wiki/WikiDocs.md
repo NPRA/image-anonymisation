@@ -253,6 +253,48 @@ There are several extra scripts that serve their own functionalities when invoke
     * `execute_sql.py`
     * `insert_geom_metadata.py`
     * `json_to_db.py`
+    
+##### check_folders.py
+The `check_folders.py` script is a script that will traverse a file tree with the `TreeWalker`
+and check if the expected files are in the input, output or archive folders depending on the accompanying `config`-file.
+It will create a cumulative status of how many files that are either of the following statuses:
+* `OK`
+* `Missing`
+* `None`
+
+This script is invoked by running from root:
+```
+python -m script.check_folders <args>
+```
+##### create_json.py
+The `create_json.py` script is a script that will create a `.json`-file for each of the valid image-files
+found in the input folder path. 
+It will traverse the input folder and use the `ExifWorker`-class to parse the exif-data in the input images
+as well as write the output files to the desired locations.
+
+This script is invoked by running from root:
+```
+python -m script.create_json.py <args>
+```
+##### create_preview.py
+The `create_preview.py` script is a script that will traverse the file tree with the `TreeWalker` 
+and for each image found, create a cropped preview of it. 
+The preview's dimension and position is defined in the accompanying `config`-file.
+The preview is written to the output locations also defined in the accompanying `config`-file.
+
+This script is invoked by running from root:
+```
+python -m script.check_preview <args>
+```
+##### evaluate.py
+The `evaluate.py` script is a script to evaluate the mask prediciton model. 
+It will evaluate the model on the COCO-data set and accumulate results over all the entries.
+To run this script, pycocotools is required
+
+This script is invoked by running from root:
+```
+python -m script.evaluate <args>
+```
 ## Configuration
 
 # The Next Steps

@@ -7,7 +7,6 @@ import logging
 import argparse
 from datetime import datetime
 from socket import gethostname
-
 import config
 from src.io.TreeWalker import TreeWalker
 from src.Logger import LOGGER, LOG_SEP, logger_excepthook
