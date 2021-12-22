@@ -57,15 +57,11 @@ class Masker:
         # Resize the image if it is too large
         image = _maybe_resize_image(image, self.max_num_pixels)
         # Get results from model
-        #LOGGER.debug(__name__, f"Before masking in masker")
-
         masking_results = self.model(image)
-        #LOGGER.debug(__name__, f"After masking in masker")
         # Remove "uninteresting" detections. I.e. detections which are not relevant for anonymisation.
         masking_results = _filter_detections(masking_results)
         # Convert the number of detections to an int
         num_detections = masking_results["num_detections"].numpy().squeeze()
-        # print(f"boxes?? {masking_results}")
         # Convert masks from normalized bbox coordinates to whole-image coordinates.
         reframed_masks = reframe_box_masks_to_image_masks(masking_results["detection_masks"][0],
                                                           masking_results["detection_boxes"][0],

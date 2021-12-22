@@ -80,30 +80,26 @@ This will produce a `.jpg`-image in the desired location
 |![](SVV-ImageAnonymisationArchitecture.png "The architecture of the Image Anonymisation")     |
 
 The image anonymisation consists of mainly six components
-as well as multiple helper-scripts.
+as well as multiple helper-scripts and classes.
 
 #### Main components
-* `TreeWalker`
-* `Path`
-* `ImageProcessor`
-* `Masker`
+* [`ImageProcessor`](#imageprocessor)
+* [`Masker`](#masker)
 * `ExifWorker`
 * `SaveWorker`
 
-##### TreeWalker
-The `TreeWalker` is a helper-class that finds all the relevant files.
-The `walk()`-function will traverse the file tree and generate instances of `Path`-objects for each relevant file it finds.
-
-#### Path
-The `Path` is a class that contain all the path information relevant for a specified image.
-It contains the filename, output file paths, archive file paths, input file paths and preview paths.
+#### Helper Classes
+* `TreeWalker`
+* `Path`
+* `DatabaseClient.py`
+* `Table.py`
 
 ##### ImageProcessor
 The `ImageProcessor` will run the masker on either the image with or without the sliding window techinque.
 If the sliding window is used, the masker is first used on the full image,
 followed by the sliding windows.
 
-| A Visualisation of the cutout method |
+| A visualisation of the cutout method |
 |    :----:   |
 |![](./SVV-CutoutMethod.png)     |
 |The **first row** shows the input image and how the orange sliding window moves over it. The **second row** shows the mask result-building process|
@@ -151,9 +147,86 @@ This level is given to an image where the exif-data cannot be derived.
 The `SaveWorker` is responsible to save the anonymised image and the potential preview image.
 Additionally it will draw on the masks after the definitions in the configuration-file.
 
+##### TreeWalker
+The `TreeWalker` is a helper-class that finds all the relevant files.
+The `walk()`-function will traverse the file tree and generate instances of `Path`-objects for each relevant file it finds.
+
+#### Path
+The `Path` is a class that contain all the path information relevant for a specified image.
+It contains the filename, output file paths, archive file paths, input file paths and preview paths.
+
 
 ## Scripts
 
+#### Helper Scripts
+* `email_sender.py`
+* I/O
+    * `exif_util.py`
+    * `file_access_guard.py`
+    * `file_checker.py`
+    * `save.py`
+    * `tf_dataset.py`
+* Database
+    * `formatters.py`
+    * `geometry.py`
+##### email_sender.py    
+The `email_sender.py` is a helper script to send emails.
+The sending of email is configured in the accompanying `config`-file when running. 
+It supports three different types of email messages: 
+1. `critical` for critical errors which cause the program to exit abnormally
+2. `error` for processing errors which do not cause the program to exit.
+3. `finished` for when the program exists normally.
+
+##### exif_util.py
+The `exif_util.py` is a helper script to parse the exif-data of an image and create metadata for the output `.json`-file.
+It will create a `dict` from a template and parse the exif data to 
+fill the `dict` with values. 
+
+First it will try to get data from the `ImageProperties`-tag. 
+The `ImageProperties` is an `XML` that contains road information such as 
+Road name and number, Lane name and number, etc. 
+It also contain important GPS-information of where the image was taken.
+
+If the `ImageProperties`-tag does not exist in the image's exif,
+it will try to get data from the `ReflinkInfo`-tag.
+The `ReflinkInfoTag` is an `XML` that contains much the same road information
+as in the `ImageProperties`-tag, but in a different format, thus, these tags need to be handled differently.
+
+If the image exif data does not contain any of these aforementioned tags,
+as much data as possible needs to be extracted from the `GPSInfo`-tag and the file path.
+The filename of the road images are standardized on a specific format, 
+making the information extraction somewhat predictable.
+
+The script also contains functionality for writing a `.json`-file with the filled in `dict`.
+
+##### file_access_guard.py
+The `file_access_guard.py` is a script to help determine the existence and access of a path. 
+It traverses a `Path`-object.
+
+##### file_checker.py
+The `file_checker.py` is a helper script that handles all the logic regarding what files to expect as outputs.
+It reports what files are expected as outputs, what files are missing compared to the expected files
+and clearing cached files.
+
+##### save.py
+The `save.py` is a helper script that handles the writing of the output anonymised image and the preview image.
+It will draw the masks defined from the mask-prediction according to the settings in the `config`-file.
+Also handles the cropping of the preview image according to the specifications in the `config`-file.
+##### save.py
+##### tf_dataset.py
+#### Extra Scripts
+There are several extra scripts that serve their own functionalities when invoked. 
+
+* `check_folders.py`
+* `create_json.py`
+* `create_preview.py`
+* `evaluate.py`
+* Database
+    * `create_db_config.py`
+    * `create_table.py`
+    * `execute_sql.py`
+    * `insert_geom_metadata.py`
+    * `json_to_db.py`
 ## Configuration
 
 # The Next Steps

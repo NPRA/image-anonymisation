@@ -1,7 +1,6 @@
 import time
 import os
 import numpy as np
-
 import config
 from src.Logger import LOGGER
 
