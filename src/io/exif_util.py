@@ -169,7 +169,7 @@ def get_exif(img, image_path):
 
         # Default quality will be "good" which corresponds to "2" for any image that has exif.
         parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["good"]
-        parsed_exif["exif_camera"] = labeled["Model"]
+        parsed_exif["exif_camera"] = labeled.get("Model", None)
         parsed_exif["exif_imagetype"] = config.image_type
         parsed_exif["exif_imagewidth"] = str(img.size[0])
         parsed_exif["exif_imagehigh"] = str(img.size[1])
