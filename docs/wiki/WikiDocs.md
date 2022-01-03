@@ -262,7 +262,7 @@ It will create a cumulative status of how many files that are either of the foll
 * `Missing`
 * `None`
 
-This script is invoked by running from root:
+This script is invoked by running the following command from root:
 ```
 python -m script.check_folders <args>
 ```
@@ -272,7 +272,7 @@ found in the input folder path.
 It will traverse the input folder and use the `ExifWorker`-class to parse the exif-data in the input images
 as well as write the output files to the desired locations.
 
-This script is invoked by running from root:
+This script is invoked by running the following command from root:
 ```
 python -m script.create_json.py <args>
 ```
@@ -282,7 +282,7 @@ and for each image found, create a cropped preview of it.
 The preview's dimension and position is defined in the accompanying `config`-file.
 The preview is written to the output locations also defined in the accompanying `config`-file.
 
-This script is invoked by running from root:
+This script is invoked by running the following command from root:
 ```
 python -m script.check_preview <args>
 ```
@@ -292,11 +292,155 @@ The `evaluate.py` script is a script to evaluate the mask prediciton model.
 It will evaluate the model on the COCO-data set and accumulate results over all the entries.
 To run this script, pycocotools is required
 
-This script is invoked by running from root:
+This script is invoked by running the following command from root:
 ```
 python -m script.evaluate <args>
 ```
+
+##### create_db_config.py
+The `create_db_config.py` script is a script that will create a configuration file based on the input arguments given.
+It will also encrypt the password.
+
+This script is invoked by running the following command from root:
+```
+python -m script.create_db_config <args>
+```
+
+##### create_table.py
+The ``create_table.py`` script is a script that will create a table with the name specified as input argument.
+The table that is created will have columns specified by the ``.yml``-file in the ``config/db_tables` that has a matching name.
+
+This script is invoked by running the following command from root:
+```
+python -m script.create_table <args>
+```
+
+##### execute_sql.py
+The ``create_table.py`` is a script that takes an sql statement as input either as a string or in a file.
+It will create a ``DatabaseClient`` and execuite the sql statement through it
+
+This script is invoked by running the following command from root:
+```
+python -m script.execute_sql <args>
+```
+
+##### insert_geom_metadata.py
+The ``insert_geom_metadata.py`` is a script that inserts the meta data of the SDO Geometry into its own table.
+It has helper functions that will extract and create the metadata in a compatible format.
+
+This script is invoked by running the following command from root:
+```
+python -m script.insert_geom_metadata <args>
+```
 ## Configuration
+
+The main program and multiple other scripts require a **configuration-file**.
+This repo comes with a default configuration file, which the programs and scripts will be using
+if no other configuration file is defined and provided by the user.
+The default configruation file can be found from root in `config/default_config.yml`.
+
+If a user wishes to specify another configuration file to be used,
+the option `-k` can be provided with the path to the configuration file to be used. 
+Example:
+
+```
+python -i input/path -o output/path -k path/to/cutsom/config.yml
+```
+
+#### For 360°-images
+There is a configuration file, `config/360_default_config.yml`, that can be used as a default configuration file for anonymising
+360°-images.
+This configuration file, however, will have to be provided by the user using the `-k` option.
+
+### Fields
+These are the fields in the configuration file.
+
+#### Miscellaneous configuration parameters
+
+| Field                         |           Default Value          | Data Type | Description                                                                                                                                                                                                                                                                                              |
+|-------------------------------|:--------------------------------:|:---------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `data_eier`                   |              `null`              |   `str`   | Who owns the data. It is used as meta data in the `.json`-file                                                                                                                                                                                                                                           |
+| `image_type`                  |             "planar"             |   `str`   | What image type the input images are. Usually either "planar" or "360". It is used as meta data in the `.json`-file                                                                                                                                                                                      |
+| `draw_mask`                   |              `True`              |   `bool`  | If `True` the mask is drawn on the output image. If `False`, it will not draw the mask on the ouput image.                                                                                                                                                                                               |
+| `delete_input`                |              `False`             |   `bool`  | If `True` the input images are deleted from their folder.                                                                                                                                                                                                                                                |
+| `force_remask` [Deprecated]   |              `False`             |   `bool`  | This feature is deprecated, as `.wepb`-files are no longer produced in version 2.0                                                                                                                                                                                                                       |
+| `lazy_paths`                  |              `False`             |   `bool`  | If `True` the paths will be identified during the masking process, while `False` means that this happens before masking.                                                                                                                                                                                 |
+| `file_access_retry_seconds`   |                10                |   `int`   | Number of seconds to wait before (re)trying to access a file/directory which cannot currently be reached. This  applies to both reading input files, and writing output files.                                                                                                                           |
+| `file_access_timeout_seconds` |                60                |   `int`   | The number of seconds to wait before timeout to access a file/directory which cannot currently be reached. This  applies to both reading input files, and writing output files.                                                                                                                          |
+| `datetime_format`             |        "%Y-%m-%d %H.%M.%S"       |    `str`  | The datetime format of the timestamp. See [datetime documentation for Python 3.7](https://docs.python.org/3.7/library/datetime.html#strftime-strptime-behavior) for more information.                                                                             |
+| `log_file_name`               |    "{datetime}_{hostname}.log"   |   `str`   | A format string defining the log-file naming. Uses the format-string rules of Python 3 where variables can be inserted by {}.                                                                                                                                                                            |
+| `log_level`                   |              "DEBUG"             |   `str`   | The level of logging that should be done during the running of the program or script. Some logging-outputs only occur on certain levels. The valid values are: {"DEBUG", "INFO", "WARNING", "ERROR"}                                                                                                     |
+| `application_version`         |               "0.2"              |   `str`   | The version number of the application                                                                                                                                                                                                                                                                    |
+| `exif_mappenavn`              | "Vegbilder/{relative_input_dir}" |   `str`   | Formatter for `mappenavn` in the JSON-file. `relative_input_dir` is the path to the folder containing the image,  relative to `exif_top_dir` below. For instance, if the image is located at `C:\Foo\Bar\Baz\Hello\World.jpg`, and  `exif_top_dir = Bar`, then `relative_input_dir` will be `Baz\Hello`. |
+| `exif_top_dir`                |           "tilSladding"          |   `str`   | Top directory for `relative_input_dir`. The `mappenavn` will not include this value, unless the direcotry is included in the `exif_mappenavn`-path.                                                                                                                                                      |
+
+#### File I/O parameters
+
+| Field                        | Default Value | Data Type | Description                                                                                                                                                                                                        |
+|------------------------------|:-------------:|:---------:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `remote_json`                |     `True`    |   `bool`  | If `True` an output `.json`-file, containing EXIF metadata of an image, will be written to the *output* directory. This does not exclude the option of writing to input folder or archive folder.                  |
+| `local_json`                 |    `False`    |   `bool`  | If `True` an output `.json`-file, containing EXIF metadata of an image, will be written to the *input* directory. This does not exclude the option of writing to the output folder or the archive folder.          |
+| `archive_json`               |    `False`    |   `bool`  | If `True` an output `.json`-file, containing EXIF metadata of an image, will be written to the *archive* directory. This does not exclude the option of writing to input folder or output folder.                  |
+| `remote_preview`             |    `False`    |   `bool`  | If `True` a preview of dimensions defined by `preview_dim` and `preview_center` will be written to the *output* directory. This does not exclude the option of writing to the archive, input or a separate folder. |
+| `local_preview`              |    `False`    |   `bool`  | If `True` a preview of dimensions defined by `preview_dim` and `preview_center` will be written to the *input* directory. This does not exclude the option of writing to the archive, output or a separate folder. |
+| `archive_preview`            |    `False`    |   `bool`  | If `True` a preview of dimensions defined by `preview_dim` and `preview_center` will be written to the *archive* directory. This does not exclude the option of writing to the output, input or a separate folder. |
+| `separate_preview_directory` |     `null`    |   `str`   | An absolute path string pointing to the location of where the preview images should be written to. Example: "C:\\Users\\username\\Documents\\preview_dir"                                                          |
+| `preview_dim`                |  [2520, 1400] |   `list`  | The dimensions of the preview image. Format: [width, height]                                                                                                                                                       |
+| `preview_center`             |  [0.45, 0.5]  |   `list`  | The center pixel of the preview in normalized format. Format: [height, width]                                                                                                                                      |
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+
+#### Parrameters for asynchrounous execution
+
+| Field                       | Default Value | Data Type | Description                                                                                                                     |
+|-----------------------------|:-------------:|:---------:|---------------------------------------------------------------------------------------------------------------------------------|
+| `enable_async`              |     `True`    |   `bool`  | If `True` the file exports will be executed asynchronously. This will increase the processing speed and reduce processing time. |
+| `max_num_async_workers`     |       2       |   `int`   | The maximum number of asynchronous workers that are active at any given time. Should be `<= (CPU core count - 1)`               |                                                                                                                                                                                                                                                                                                     |
+
+#### Parameters for the masking model
+
+| Field                       | Default Value | Data Type | Description                                                                                                                                                                                                                                                                                                                                                                                                 |
+|-----------------------------|:-------------:|:---------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `model_type`                |    "Medium"   |   `str`   | The type of masking model to use. There are currently 3 available models with varying speed and accuracy. The slowest model produces the most accurate masks, while the masks from the medium model are slightly worse. The masks from the "Fast" model are currently not recommended due to poor quality. Must be either "Slow", "Medium" or "Fast". "Medium" is recommended.                              |
+| `mask_dilation_pixels`      |       4       |   `int`   | Approximate number of pixels for mask dilation. This will help ensure that an identified object is completely covered by the corresponding mask. Set `mask_dilation_pixels: 0` to disable mask dilation.                                                                                                                                                                                                    |
+| `max_num_pixels`            |   1000000000  |   `int`   | Maximum number of pixels in images to be processed by the masking model. If the number of pixels exceeds this value, it will be resized before the masker is applied. This will NOT change the resolution of the output image.                                                                                                                                                                              |
+| `use_cutouts`               |    `False`    |   `bool`  | If `True`, the image processing will use a cutout method by using a "sliding window" making cutouts of the input image and masking each cutout.  This process is explained in detail [here](#imageprocessor). Using the cutout method is only recommended for larger images or curved images such as 360°-images. It makes the anonymisation more accurate, but it will slow the process down significantly. |
+| `cutout_step_factor`        |   [800, 800]  |   `list`  | The number of steps the sliding window should move in directions [height, width]. The anonymisation will be more accurate for lower values, however, with the cost of speed.                                                                                                                                                                                                                                |
+| `cutout_dim_downscale`      |     [4,4]     |   `list`  | The downscale of the sliding window compared to the input image dimensions. Format: [height, width].                                                                                                                                                                                                                                                                                                        |
+
+#### Parameters controlling the appearance of the anonymised regions
+
+| Field                       | Default Value | Data Type | Description                                                                                                                                                                                                                                                          |
+|-----------------------------|:-------------:|:---------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `mask_color`                |     `null`    |   `list`  | RGB values of the color the mask should be drawn with. Setting this option will override the colors specified below. Example: Setting `mask_color: [50, 50, 50]` will make all masks dark gray.                                                                      |
+| `blur`                      |       15      |   `int`   | Blurring coefficient (1-100) which specifies the degree of blurring to apply within the mask. When this parameter is specified, the image will be blurred, and not masked with a specific color. Set `blur: null` to disable blurring, and use colored masks instead |
+| `gray_blur`                 |     `True`    |   `bool`  | Converts the image to grayscale before blurring. If blurring is disabled, this is ignored.                                                                                                                                                                           |
+| `normalized_gray_blur`      |     `True`    |   `bool`  | If `True` it normalizes the gray level within each mask after blurring. NOTE: Requires `gray_blur: True`. With this, bright colors are indistinguishable from dark colors.                                                                                           |
+
+#### E-mail configuration
+Note: E-mail sending requires additional configuration. This is documented in the [README](../../README.md).
+
+| Field                       | Default Value | Data Type | Description                                                                                      |
+|-----------------------------|:-------------:|:---------:|--------------------------------------------------------------------------------------------------|
+| `uncaught_exception_email`  |    `False`    |   `bool`  | If `True` end an email if the program exits abnormally due to an uncaught exception.             |
+| `processing_error_email`    |    `False`    |   `bool`  | If `True` end an email if a processing error is encountered, but the program is able to continue |
+| `finished_email`            |    `False`    |   `bool`  | If `True` end an email when the anonymisation finishes normally.                                 |
+| `email_attach_log_file`     |    `False`    |   `bool`  | If `True` the log file will be attached to the emails sent.                                      |
+
+#### Database configuration
+
+Note: Database writing requires additional configuration. This is documented in the README.
+
+When `write_exif_to_db: True`, the EXIF data will be written as a row to an Oracle database. The `src.db` module is
+responsible for the database writing.
+
+
+| Field                       | Default Value | Data Type | Description                                                                                   |
+|-----------------------------|:-------------:|:---------:|-----------------------------------------------------------------------------------------------|
+| `write_exif_to_db`          |    `False`    |   `bool`  | If `True` the Exif data will be written to the database                                       |
+| `db_max_n_accumulated_rows` |      100      |   `int`   | The maximum number of rows to be accumulated locally before they are written to the database. |
+| `db_max_n_errors`           |      1000     |   `int`   | The threshold number of failed updates/inserts before a ´RuntimeError´ is raised.             |
+| `db_max_cache_size`         |      1000     |   `int`   | The maximum number of cached rows before a `RuntimeError is raised`                           |                                                                                                                                                                                                                                                                                                |                                                                                                           |
+
 
 # The Next Steps
 

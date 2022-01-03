@@ -41,12 +41,12 @@ log_file_name: "{datetime}_{hostname}.log"
 log_level: "DEBUG"
 
 #: Version number for the application. Will be written to json files and database.
-application_version: "0.1"
+application_version: "0.2"
 
 #: Formatter for `mappenavn` in the JSON-file. `relative_input_dir` is the path to the folder containing the image,
 #: relative to `exif_top_dir` below. For instance, if the image is located at `C:\Foo\Bar\Baz\Hello\World.jpg`, and
 #: `exif_top_dir = Bar`, then `relative_input_dir` will be `Baz\Hello`.
-exif_mappenavn: "Vegbilder\\{relative_input_dir}"
+exif_mappenavn: "Vegbilder/{relative_input_dir}"
 
 #: Top directory for `relative_input_dir`. See above for an explanation.
 exif_top_dir: "tilSladding"
@@ -107,7 +107,7 @@ preview_center: [0.45, 0.5]
 # Parameters for asynchronous execution
 # =====================================
 
-#: Enable asynchronous post-processing? When True, the file exports (anonymised image, mask file and JSON file) will be
+#: Enable asynchronous post-processing? When True, the file exports (anonymised image, preview and JSON file) will be
 #: executed asynchronously in order to increase processing speed.
 enable_async: True
 

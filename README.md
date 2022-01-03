@@ -145,6 +145,7 @@ The HTML documentation can be built from the `docs` directory by running
 ```
 .\make.bat html
 ```
+For a detailed in-depth documentation of the architecture and system, look here: [Image Anonymisation Wiki](docs/wiki/WikiDocs.md) 
 
 ## Configuration
 The user-specifiable configuration parameters can be found in [config/default_config.yml](config/default_config.yml). The available parameters are listed below.
