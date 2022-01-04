@@ -171,7 +171,7 @@ def get_exif(img, image_path):
 
         # Default quality will be "good" which corresponds to "2" for any image that has exif.
         parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["good"]
-        parsed_exif["exif_camera"] = labeled["Model"]
+        parsed_exif["exif_camera"] = labeled.get("Model", None)
         parsed_exif["exif_imagetype"] = config.image_type
         parsed_exif["exif_imagewidth"] = str(img.size[0])
         parsed_exif["exif_imagehigh"] = str(img.size[1])
@@ -402,6 +402,10 @@ def process_image_properties(contents, parsed_exif):
         vchp=image_properties["VegComValues"]["VCHP"], filename=mapper[-1]
     )
 
+    # Get Lane if LaneName doesn't exist.
+    # This is for backward compatability for older images that does not use this tag.
+    feltkode = image_properties.get("VegComValues").get("VCLaneName")
+
     # Set values
     parsed_exif["exif_tid"] = timestamp
     parsed_exif["exif_dato"] = date
@@ -420,7 +424,7 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_kryssdel"] = kryssdel
     parsed_exif["exif_sideanleggsdel"] = sideanleggsdel
     parsed_exif["exif_meter"] = str(round(float(image_properties["VegComValues"]["VCMeter"]), 2))
-    parsed_exif["exif_feltkode"] = image_properties["VegComValues"]["VCLaneName"]
+    parsed_exif["exif_feltkode"] = feltkode
     parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
     parsed_exif["exif_filnavn"] = mapper[-1]
     parsed_exif["exif_strekningreferanse"] = "/".join(mapper[-4:-2])
