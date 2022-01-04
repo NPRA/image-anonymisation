@@ -165,11 +165,13 @@ def get_exif(img, image_path):
     if exif is not None:
         # Convert the integer keys in the exif dict to text
         labeled = label_exif(exif)
-        gpsinfo = get_gpsinfo(labeled)
+        gpsinfo_exif = labeled.get("GPSInfo", None)
+        if gpsinfo_exif:
+            gpsinfo = get_gpsinfo(labeled)
 
         # Default quality will be "good" which corresponds to "2" for any image that has exif.
         parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["good"]
-        parsed_exif["exif_camera"] = labeled.get("Model", None)
+        parsed_exif["exif_camera"] = labeled["Model"]
         parsed_exif["exif_imagetype"] = config.image_type
         parsed_exif["exif_imagewidth"] = str(img.size[0])
         parsed_exif["exif_imagehigh"] = str(img.size[1])
@@ -312,15 +314,16 @@ def label_exif(exif):
     return {TAGS.get(key): value for key, value in exif.items()}
 
 
-def extract_road_info_from_filename(filepath, parsed_exif, labeled):
+def extract_road_info_from_filename(filepath, parsed_exif, labeled_exif):
     """
     Extracts the road info from the file name.
     """
     get_metadata_from_path(filepath, parsed_exif)
     filename = filepath.split(os.sep)[-1]
-    timestamp = labeled.get("DateTimeOriginal", None)
+    # Convert time format "year:month:day hours:minutes:seconds" -> "year-month-dayThours:minutes:seconds"
+    timestamp = labeled_exif.get("DateTimeOriginal", None)
     if timestamp:
-        timestamp = labeled["DateTimeOriginal"].split(" ")
+        timestamp = timestamp.split(" ")
         timestamp[0] = timestamp[0].replace(":", "-")
 
         # Save date
@@ -348,6 +351,7 @@ def process_image_properties(contents, parsed_exif):
     :return: Relevant information extracted from `contents`
     :rtype: dict
     """
+    print(contents)
     contents = to_pretty_xml(contents)
     contents = redact_image_properties(contents)
     image_properties = xmltodict.parse(contents)["ImageProperties"]
@@ -461,6 +465,7 @@ def _strekning_delstrekning(matches):
     delstrekning = matches[1]
     return None, strekning, delstrekning, None, None, None
 
+
 def _hp(vchp):
     # HP metadata.
     return vchp.lstrip("0"), None, None, None, None, None
@@ -475,6 +480,7 @@ def to_pretty_xml(contents_bytes):
     :return: Prettified contents
     :rtype: str
     """
+    print(contents_bytes)
     xmlstr = contents_bytes.decode("utf-8")[1:]
     plain_xml = xml.dom.minidom.parseString(xmlstr)
     pretty_xml = plain_xml.toprettyxml()
@@ -563,8 +569,8 @@ def process_reflink_info(contents, parsed_exif):
                 _get_metadata_from_path_element(elem, parsed_exif)
 
             hp, _, _, ankerpunkt, \
-                kryssdel, sideanleggsdel = process_strekning_and_kryss(None, filename)
-            # Set variables     
+            kryssdel, sideanleggsdel = process_strekning_and_kryss(None, filename)
+            # Set variables
             parsed_exif["exif_altitude"] = gnss_info["Altitude"]
             parsed_exif["exif_moh"] = gnss_info["Altitude"]
             parsed_exif["exif_fylke"] = image_info["fylke"]
