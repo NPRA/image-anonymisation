@@ -200,7 +200,7 @@ def get_exif(img, image_path):
             parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["missing_values"]
             # Extract road info from file name
             # check if it's the full string
-            extract_road_info_from_filename(image_path, parsed_exif)
+            extract_road_info_from_filename(image_path, parsed_exif, labeled)
             # Extract GPS information from the image
             if gpsinfo:
                 process_gpsinfo_tag(gpsinfo, parsed_exif)
@@ -312,12 +312,21 @@ def label_exif(exif):
     return {TAGS.get(key): value for key, value in exif.items()}
 
 
-def extract_road_info_from_filename(filepath, parsed_exif):
+def extract_road_info_from_filename(filepath, parsed_exif, labeled):
     """
     Extracts the road info from the file name.
     """
     get_metadata_from_path(filepath, parsed_exif)
     filename = filepath.split(os.sep)[-1]
+    timestamp = labeled.get("DateTimeOriginal", None)
+    if timestamp:
+        timestamp = labeled["DateTimeOriginal"].split(" ")
+        timestamp[0] = timestamp[0].replace(":", "-")
+
+        # Save date
+        parsed_exif["exif_dato"] = timestamp[0]
+        timestamp = "T".join(timestamp)
+        parsed_exif["exif_tid"] = timestamp
 
     parsed_exif["exif_filnavn"] = filename
     road_info_list = filename.split(".")[0].split("_")
