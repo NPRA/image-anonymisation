@@ -131,6 +131,11 @@ def write_exif(exif, output_filepath):
         json.dump(exif, out_file, indent=4, ensure_ascii=False)
 
 
+def read_exif(input_filepath):
+    with open(input_filepath, "r", encoding="latin-1") as data:
+        return json.load(data)
+
+
 def get_detected_objects_dict(mask_results):
     objs = mask_results["detection_classes"]
     if objs.size > 0:
@@ -212,6 +217,11 @@ def get_exif(img, image_path):
         # Title of image.
         XPTitle = labeled.get("XPTitle", b"").decode("utf16")
         parsed_exif["exif_xptitle"] = XPTitle
+    # If an accompanying json exists in the input file with the same filename as the image
+    # Try to extract exif data from this file.
+    elif os.path.isfile(f"{image_path.split('.')[0]}.json"):
+        get_exif_from_json(f"{image_path.split('.')[0]}.json", parsed_exif)
+
     else:
         LOGGER.warning(__name__, "No EXIF data found for image. Attempting to reconstruct data from image path.")
         if image_path is not None:
@@ -259,6 +269,15 @@ def get_rel_path(image_path):
                                  f"'rel_path' will be empty")
         rel_path = ""
     return rel_path
+
+
+def get_exif_from_json(json_file, parsed_exif):
+    existing_exif = read_exif(json_file)
+    for key, val in parsed_exif.items():
+        if "exif_speed_ms" in key:
+            existing_exif[key] = existing_exif["exif_speed"]
+        if key in existing_exif.keys():
+            parsed_exif[key] = existing_exif[key] if not parsed_exif[key] else parsed_exif[key]
 
 
 def get_mappenavn(image_path, exif):
