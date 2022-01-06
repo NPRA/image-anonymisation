@@ -248,10 +248,10 @@ class EXIFWorker(BaseWorker):
 
         # Insert preview file name if it exists.
         # Checks if the preview shoould be saved and if so if it is saved.
-        if paths.input_preview \
-                or paths.output_preview \
-                or paths.archive_preview \
-                or paths.separate_preview_dir:
+        if (paths.input_preview and config.local_preview)\
+                or (paths.output_preview and config.remote_preview) \
+                or (paths.archive_preview and config.archive_preview) \
+                or (paths.separate_preview_dir and config.separate_preview_directory):
             exif["exif_preview_filnavn"] = paths.preview_filename
         else:
             exif["exif_preview_filnavn"] = None
