@@ -503,7 +503,7 @@ def update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info)
     # Only set new values to the parsed exif tag if it hasn't already been set.
     for key, value in exif_tags_lookup_reflink.items():
         if value:
-            parsed_exif[key] = value if not parsed_exif[key] else parsed_exif[key]
+            parsed_exif[key] = value
 
 
 def get_metadata_from_path(image_path, parsed_exif):
