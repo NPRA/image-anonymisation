@@ -6,7 +6,7 @@ import cv2
 
 import config
 from src.Logger import LOGGER
-from src.Workers import SaveWorker, EXIFWorker, ERROR_RETVAL
+from src.Workers import SaveWorker, EXIFWorker, EXIFWorkerOld, ERROR_RETVAL
 from src.io.file_checker import check_all_files_written
 from src.io.file_access_guard import wait_until_path_is_found
 
@@ -24,12 +24,15 @@ class ImageProcessor:
     :type max_num_async_workers: int
     """
 
-    def __init__(self, masker, max_num_async_workers=2):
+    def __init__(self, masker, max_num_async_workers=2, old_exif_version=False):
         self.masker = masker
         self.n_completed = 0
         self.max_worker_starts = 2
         self.workers = []
+        self.old_exif_version = old_exif_version
 
+        if self.old_exif_version:
+            LOGGER.info(__name__, f"ImageProcessor running with the *old* version of the ExifWorker.")
         if config.enable_async:
             self.max_num_async_workers = max_num_async_workers
             self.pool = multiprocessing.Pool(processes=max_num_async_workers)
@@ -76,10 +79,12 @@ class ImageProcessor:
         # Write the cache file indicating that the saving process has begun.
         paths.create_cache_file()
         # Create workers
+        # If the ImageProcessor is working with older images,
+        # it may run an older version of the ExifWorker.
         worker = {
             "paths": paths,
             "SaveWorker": SaveWorker(self.pool, paths, image, mask_results),
-            "EXIFWorker": EXIFWorker(self.pool, paths, mask_results)
+            "EXIFWorker": EXIFWorker(self.pool, paths, mask_results) if not self.old_exif_version else EXIFWorkerOld(self.pool, paths, mask_results)
         }
         self.workers.append(worker)
 
