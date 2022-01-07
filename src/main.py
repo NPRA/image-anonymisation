@@ -64,7 +64,11 @@ def check_config(args):
         raise ValueError("Parameter 'remote_preview' and 'local_preview' requires 'preview_dim'")
     if config.archive_preview and not config.remote_preview:
         raise ValueError("Parameter 'archive_preview' requires remote_preview=True.")
-
+    if config.extra_processing and (not config.contrast_alpha
+                                    or not config.brightness_beta
+                                    or not config.sharpness_iter_max):
+        raise ValueError(f"Parameter 'extra_processing' requires all of the following parameters:"
+                         f"\n* contrast_alpha\n* brightness_beta\n* sharpness_iter_max")
     #if config.archive_mask and not config.remote_mask:
         #raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
 

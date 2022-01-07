@@ -149,6 +149,13 @@ cutout_step_factor: [800,800]
 #: Downscale sliding window by [height, width]
 cutout_dim_downscale: [4,4]
 
+#: Apply extra processing steps for masking
+#: Mainly used for images with challenging lighting and subpar conditions
+#: If True will decrease processing speed.
+extra_processing: False
+contrast_alpha: [0.1, 0.5, 1.0, 1.5, 2.0]
+brightness_beta: [-100, -50, 0, 50, 100]
+sharpness_iter_max: 5
 # ===============================================================
 # Parameters controlling the appearance of the anonymised regions
 # ===============================================================

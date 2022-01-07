@@ -165,6 +165,18 @@ class ImageProcessor:
 
         self.n_completed += 1
 
+    def process_image_extra(self, image, paths):
+        """
+            :param image: Input image. Must be a 4D color image tensor with shape (1, height, width, 3)
+            :type image: tf.python.framework.ops.EagerTensor
+            :param paths: Paths object representing the image file.
+            :type paths: src.io.TreeWalker.Paths
+        """
+        contrast_brightness_imgs = _adjust_contrast_brightness(image, config.contrast_alpha, config.brightness_beta)
+        sharpened_imgs = _sharpen_imags(image, config.sharpness_iter_max)
+        extra_processed_imgs = np.array([*contrast_brightness_imgs, *sharpened_imgs])
+        return extra_processed_imgs
+
     def process_image_with_cutouts(self, image, paths):
         """
         Masks the image with a sliding window method.
@@ -349,8 +361,7 @@ class ImageProcessor:
 
             # Make final calculations and decisions about the results.
         for mask_num in range(all_mask_results["num_detections"]):
-
-            # Extract the majority vote of all the classes 
+            # Extract the majority vote of all the classes
             majority_vote_class = _poll_array(all_mask_results["detection_classes"][mask_num])
             detection_classes.append(majority_vote_class)
             # Calculate the average score for the mask
@@ -383,6 +394,11 @@ class ImageProcessor:
         :param paths: Paths object representing the image file.
         :type paths: src.io.TreeWalker.Paths
         """
+        img_h, img_w = image.shape[1:3]
+        if config.extra_processing:
+            extra_processed_imgs = self.process_image_extra(image, paths)
+            extra_mask_result = _get_one_mask_result_from_images(extra_processed_imgs, self.masker, img_h, img_w)
+            print(f"extra: {extra_mask_result}")
         start_time = time.time()
         # Compute the detected objects and their masks.
         mask_results = self.masker.mask(image)
@@ -445,6 +461,70 @@ def _coordinate_mapping(y, x, original_img, cutout_img, bounding_w, bounding_h):
     X = bounding_w + (x * cutout_img.shape[2])
     Y = bounding_h + (y * cutout_img.shape[1])
     return X / original_img.shape[2], Y / original_img.shape[1]
+
+
+def _get_one_mask_result_from_images(images, masker, img_h, img_w):
+    # condition 1: max number of masks
+    # condition 2: the largest masks, mean?.
+    # Why: IF max num is the same, go for the one with larger masks.
+    # The highest number of masks found in the images
+    # Format: [number of masks, image number in list]
+    max_num_mask = [0, 0]
+    # The largest avg mask size
+    # Format: [average maks size, image number in list]
+    largest_mask_avg = 0
+    full_image_mask = np.zeros((img_h, img_w), dtype=bool)
+    # The mask results for the whole image.
+    final_mask_result = {
+        "num_detections": 0,
+        "detection_masks": np.asarray([[full_image_mask]]),
+        "detection_classes": {},
+        "detection_scores": {},
+        "detection_boxes": np.asarray([[]])
+    }
+
+    # Go through each image
+    for i, image in enumerate(images):
+        mask_result = masker.mask(image)
+
+        # Calculate largest mask
+        mask_num = np.shape(mask_result["detection_masks"])[1]
+        # Condition 1
+        if mask_num >= max_num_mask[0]:
+            # Calculate average mask size (number of pixels).
+            mask_avg = 0
+            for mask_area in np.where(mask_result["detection_masks"][0]):
+                mask_avg += len(mask_area[0])
+            mask_avg = mask_avg / mask_result["detection_masks"][0]
+            # Condition 2
+            if mask_avg > largest_mask_avg:
+                largest_mask_avg = mask_avg
+                max_num_mask = [mask_num, i]
+                final_mask_result = mask_result
+    return final_mask_result
+
+
+def _adjust_contrast_brightness(img, alpha, beta):
+    adjusted_images = []
+    for a in alpha:
+        for b in beta:
+            contrast_brightness = cv2.convertScaleAbs(img.copy(), alpha=a, beta=b)
+            adjusted_images.append(contrast_brightness)
+    return adjusted_images
+
+
+def _sharpen_imags(img, iter_num=1):
+    kernel = np.array([
+        [0, -1, 0],
+        [-1, 5, -1],
+        [0, -1, 0]
+    ])
+    sharp_images = []
+    for i in range(1, iter_num + 1):
+        image_sharpened = cv2.filter2D(img.copy(), -1, kernel)
+        sharp_images.append(image_sharpened)
+    return sharp_images
+
 
 def remove_empty_folders(start_dir, top_dir):
     """
