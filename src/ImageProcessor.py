@@ -299,17 +299,9 @@ class ImageProcessor:
                         all_mask_results["num_detections"] += 1
                         all_mask_results["detection_boxes"] = np.concatenate(
                             (all_mask_results["detection_boxes"], [[Y_min, X_min, Y_max, X_max]]), axis=0)
+                        _add_new_detection_scores(all_mask_results, masked_result, mask_num)
+                        _add_new_detection_classes(all_mask_results, masked_result, mask_num)
 
-                        # Add new scores and classes as items in their respective dictionaries.
-                        all_mask_results["detection_scores"].update({
-                            len(all_mask_results['detection_scores'].items()): [
-                                masked_result["detection_scores"][0][mask_num]]
-                        })
-
-                        all_mask_results["detection_classes"].update({
-                            len(all_mask_results['detection_classes']): [
-                                masked_result["detection_classes"][0][mask_num]]
-                        })
                     # If the mask is not new, update the results of the existing mask.
                     else:
 
@@ -318,19 +310,8 @@ class ImageProcessor:
                         updated_full_image_mask[height:height + window_height, width:width + window_width] = mask
                         all_mask_results["detection_masks"][0][update_mask_id] = updated_full_image_mask
 
-                        # Add the mask class and score to the list of classes and scores for the mask.
-                        # The class defined for the mask will be the majority vote of all the classes
-                        # The final score for the mask will be the average score of all the scores.
-                        new_classes = np.concatenate(
-                            (all_mask_results['detection_classes'][update_mask_id],
-                             [masked_result['detection_classes'][0][mask_num]]),
-                            axis=None)
-                        all_mask_results["detection_classes"].update({update_mask_id: new_classes})
-                        new_scores = np.concatenate(
-                            (all_mask_results['detection_scores'][update_mask_id],
-                             [masked_result['detection_scores'][0][mask_num]]),
-                            axis=None)
-                        all_mask_results["detection_scores"].update({update_mask_id: new_scores})
+                        _update_detection_scores(all_mask_results, masked_result, update_mask_id, mask_num)
+                        _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num)
 
                         # Update the bounding boxes of the mask.
                         full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
@@ -414,8 +395,34 @@ class ImageProcessor:
             self.pool.close()
         if self.database_client is not None:
             self.database_client.close()
+def _add_new_detection_classes(all_mask_results, masked_result, mask_num):
+    all_mask_results["detection_classes"].update({
+        len(all_mask_results['detection_classes']): [
+            masked_result["detection_classes"][0][mask_num]]
+    })
+def _add_new_detection_scores(all_mask_results, masked_result, mask_num):
+    # Add new scores and classes as items in their respective dictionaries.
+    all_mask_results["detection_scores"].update({
+        len(all_mask_results['detection_scores'].items()): [
+            masked_result["detection_scores"][0][mask_num]]
+    })
 
+def _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num):
+    # Add the mask class and score to the list of classes and scores for the mask.
+    # The class defined for the mask will be the majority vote of all the classes
+    # The final score for the mask will be the average score of all the scores.
+    new_classes = np.concatenate(
+        (all_mask_results['detection_classes'][update_mask_id],
+         [masked_result['detection_classes'][0][mask_num]]),
+        axis=None)
+    all_mask_results["detection_classes"].update({update_mask_id: new_classes})
 
+def _update_detection_scores(all_mask_results, masked_result, update_mask_id, mask_num):
+    new_scores = np.concatenate(
+        (all_mask_results['detection_scores'][update_mask_id],
+         [masked_result['detection_scores'][0][mask_num]]),
+        axis=None)
+    all_mask_results["detection_scores"].update({update_mask_id: new_scores})
 def _poll_array(poll_item):
     """
     Finds the majority vote in a numpy array.
