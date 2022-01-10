@@ -291,29 +291,16 @@ class ImageProcessor:
                     # If the mask is new, add the new results as new entries for the full image.
                     if new_mask:
                         additional_masks += 1
-                        updated_full_image_mask = full_image_mask
-                        full_image_mask[height:height + window_height, width:width + window_width] = mask
-
-                        # Add the mask as a new entry in the full image results.
-                        all_mask_results["detection_masks"] = np.asarray([np.concatenate(
-                            (all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0)])
-                        all_mask_results["num_detections"] += 1
+                        _add_new_detection_mask(all_mask_results, mask,full_image_mask, height, window_height, width, window_width)
                         _add_new_detection_boxes(all_mask_results, Y_min, X_min, Y_max, X_max)
                         _add_new_detection_scores(all_mask_results, masked_result, mask_num)
                         _add_new_detection_classes(all_mask_results, masked_result, mask_num)
 
                     # If the mask is not new, update the results of the existing mask.
                     else:
-
-                        # Only update the mask in the current window
-                        updated_full_image_mask = all_mask_results["detection_masks"][0][update_mask_id]
-                        updated_full_image_mask[height:height + window_height, width:width + window_width] = mask
-                        all_mask_results["detection_masks"][0][update_mask_id] = updated_full_image_mask
-
+                        _update_detection_mask(all_mask_results, mask, update_mask_id, height, window_height, width, window_width)
                         _update_detection_scores(all_mask_results, masked_result, update_mask_id, mask_num)
                         _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num)
-
-                        # Update the bounding boxes of the mask.
                         _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask_id)
 
                 i += 1
@@ -390,6 +377,15 @@ class ImageProcessor:
             self.database_client.close()
 
 
+def _add_new_detection_mask(all_mask_results, mask, full_image_mask, height, window_height, width, window_width):
+    updated_full_image_mask = full_image_mask
+    full_image_mask[height:height + window_height, width:width + window_width] = mask
+    # Add the mask as a new entry in the full image results.
+    all_mask_results["detection_masks"] = np.asarray([np.concatenate(
+        (all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0)])
+    all_mask_results["num_detections"] += 1
+
+
 def _add_new_detection_boxes(all_mask_results, Y_min, X_min, Y_max, X_max):
     all_mask_results["detection_boxes"] = np.concatenate(
         (all_mask_results["detection_boxes"], [[Y_min, X_min, Y_max, X_max]]), axis=0)
@@ -408,6 +404,13 @@ def _add_new_detection_scores(all_mask_results, masked_result, mask_num):
         len(all_mask_results['detection_scores'].items()): [
             masked_result["detection_scores"][0][mask_num]]
     })
+
+
+def _update_detection_mask(all_mask_results, mask, update_mask_id, height, window_height, width, window_width):
+    # Only update the mask in the current window
+    updated_full_image_mask = all_mask_results["detection_masks"][0][update_mask_id]
+    updated_full_image_mask[height:height + window_height, width:width + window_width] = mask
+    all_mask_results["detection_masks"][0][update_mask_id] = updated_full_image_mask
 
 
 def _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask_id):
