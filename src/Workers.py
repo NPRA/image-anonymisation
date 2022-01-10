@@ -1,5 +1,4 @@
 import os
-
 import config
 from src.Logger import LOGGER
 from src.io import save

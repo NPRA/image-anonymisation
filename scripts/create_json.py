@@ -10,7 +10,7 @@ from socket import gethostname
 import config
 from src.io.TreeWalker import TreeWalker
 from src.Logger import LOGGER, LOG_SEP, logger_excepthook
-from src.Workers import EXIFWorker
+from src.Workers import EXIFWorker, EXIFWorkerOld
 
 
 PROCESSING_EXCEPTIONS = (
@@ -33,6 +33,9 @@ def get_args():
     parser.add_argument("-k", dest="config_file", default=None,
                         help=f"Path to custom configuration file. See the README for details. Default is "
                              f"{config.DEFAULT_CONFIG_FILE}")
+    parser.add_argument("-deprecated", action='store_true',
+                        help=f"Run with an older version of the ExifWorker "
+                             f"meant for old images with old exif data and format that are deprecated.")
     return parser.parse_args()
 
 
@@ -73,11 +76,11 @@ def initialize():
 
     os.makedirs(args.output_folder, exist_ok=True)
     tree_walker = TreeWalker(input_dir, [output_dir], skip_webp=False, precompute_paths=True)
-    return tree_walker
+    return tree_walker, args.deprecated
 
 
 def main():
-    tree_walker = initialize()
+    tree_walker, deprecated = initialize()
 
     for i, paths in enumerate(tree_walker.walk()):
         count_str = f"{i + 1} of {tree_walker.n_valid_images}"
@@ -86,10 +89,10 @@ def main():
         LOGGER.info(__name__, f"Processing file {paths.input_file}")
 
         try:
-            worker = EXIFWorker(None, paths, None)
+            worker = EXIFWorker(None, paths, None) if not deprecated else EXIFWorkerOld(None, paths, None)
             worker.get()
         except PROCESSING_EXCEPTIONS as err:
-            LOGGER.error(f"Got error '{type(err).__name__}: {str(err)}' when creating JSON from image. "
+            LOGGER.error(__name__, f"Got error '{type(err).__name__}: {str(err)}' when creating JSON from image. "
                          f"File: {paths.input_file}")
 
 

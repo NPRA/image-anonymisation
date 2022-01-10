@@ -2,8 +2,6 @@ import os
 import time
 import multiprocessing
 import numpy as np
-import cv2
-
 import config
 from src.Logger import LOGGER
 from src.Workers import SaveWorker, EXIFWorker, EXIFWorkerOld, ERROR_RETVAL

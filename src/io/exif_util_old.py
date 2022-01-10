@@ -9,7 +9,6 @@ import numpy as np
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
-
 import config
 from src.Logger import LOGGER
 
@@ -238,6 +237,8 @@ def get_deterministic_id(exif, feltkode):
 
     :param exif: EXIF metadata contents
     :type exif: dict
+    :param feltkode: The feltkode of the image.
+    :type feltkode: str
     :return: Deterministic unique ID computed from the EXIF metadata
     :rtype: str
     """
@@ -346,25 +347,32 @@ def extract_road_info_from_filename(filepath, parsed_exif, labeled_exif):
     parsed_exif["exif_ankerpunkt"], parsed_exif["exif_kryssdel"], parsed_exif[
         "exif_sideanleggsdel"] = process_strekning_and_kryss(road_info_list[1], filename)
 
+
 def create_roadident_from_extracted_data(parsed_exif):
-    # Vekgategori + Vegstatus + Vegnr + hp + meter + Felt
-    # FV22 2 230 2h
-    # Get the road part on either HP or SxDy format.
-    roadident_roadpart_string = parsed_exif["exif_hp"] if parsed_exif["hp"] \
+    """
+    A helper function to create a roadident string
+    from the parsed_exif data.
+    The string should have the format: "vegkat+vegstatus+vegnr hp/strekning+delstrekning meter feltkode(if applicable)"
+    E.G
+    Old format with hp: FV22 2 230 2h
+    New format with strekning and delstrekning: FV63 S10D10 m41
+    """
+    roadident_roadpart_string = parsed_exif["exif_hp"] if parsed_exif["exif_hp"] \
         else f"S{parsed_exif['exif_delstrekning']}D{parsed_exif['exif_delstrekning']}"
     # Extract special road type and create a suitable string for it.
     kryss_string = f"K{parsed_exif['exif_kryssdel']}"
     sideanlegg_string = f"A{parsed_exif['exif_sideanleggsdel']}"
     roadident_special_roadtype_string = f" {sideanlegg_string} " if parsed_exif[
-        "exif_sideanlegg"] else f" {kryss_string} " \
+        "exif_sideanleggsdel"] else f" {kryss_string} " \
         if parsed_exif["exif_kryssdel"] else ""
     roadident_anchor_string = f" M{parsed_exif['exif_ankerpunkt']} " if parsed_exif['exif_ankerpunkt'] else ""
-    # Insert the created string and insert it to the exif data
-    parsed_exif[ "exif_roadident"] = f"{parsed_exif['exif_vegkat']}{parsed_exif['exif_vegstat']}{parsed_exif['exif_vegnr']}" \
-                            f" {roadident_roadpart_string}" \
-                            f"{roadident_anchor_string}" \
-                            f"{roadident_special_roadtype_string}" \
-                            f" m{parsed_exif['exif_meter']}"
+    # Stitch together the elements of the roadident-string
+    roadident_string = f"{parsed_exif['exif_vegkat']}{parsed_exif['exif_vegstat']}{parsed_exif['exif_vegnr']}" \
+                       f" {roadident_roadpart_string}" \
+                       f"{roadident_anchor_string}" \
+                       f"{roadident_special_roadtype_string}" \
+                       f" m{parsed_exif['exif_meter']}"
+    return roadident_string
 
 
 def process_image_properties(contents, parsed_exif):

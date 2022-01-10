@@ -4,7 +4,6 @@ import re
 import json
 import sys
 import traceback
-
 import iso8601
 import xmltodict
 import xml.dom.minidom
@@ -12,7 +11,6 @@ import numpy as np
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
-
 import config
 from src.Logger import LOGGER
 
@@ -335,8 +333,8 @@ def extract_road_info_from_filename(filepath, parsed_exif, labeled_exif):
 
     # Parse 'strekning' and 'delstrekning'
     parsed_exif["exif_strekning"], parsed_exif["exif_delstrekning"], \
-        parsed_exif["exif_ankerpunkt"], parsed_exif["exif_kryssdel"], \
-        parsed_exif["exif_sideanleggsdel"] = process_strekning_and_kryss(filename)
+    parsed_exif["exif_ankerpunkt"], parsed_exif["exif_kryssdel"], \
+    parsed_exif["exif_sideanleggsdel"] = process_strekning_and_kryss(filename)
 
 
 def process_strekning_and_kryss(filename):
@@ -522,6 +520,7 @@ def get_metadata_from_path(image_path, parsed_exif):
 
     # Set the filename
     parsed_exif["exif_filnavn"] = path_elements[-1]
+
 
 FELT_REGEX = re.compile(r"f(\d\w*)", re.IGNORECASE)
 VEG_REGEX = re.compile(f"([{''.join(LOVLIG_VEGKATEGORI)}])([{''.join(LOVLIG_VEGSTATUS)}])(\d+)", re.IGNORECASE)

@@ -5,7 +5,6 @@ import logging
 import argparse
 from datetime import datetime, timedelta
 from socket import gethostname
-import numpy as np
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'

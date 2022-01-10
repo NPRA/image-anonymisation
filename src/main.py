@@ -5,11 +5,9 @@ import logging
 import argparse
 from datetime import datetime, timedelta
 from socket import gethostname
-import numpy as np
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import tensorflow as tf
-
 import config
 from src.io.TreeWalker import TreeWalker
 from src.io.tf_dataset import get_tf_dataset
