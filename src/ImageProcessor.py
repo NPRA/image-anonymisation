@@ -82,7 +82,8 @@ class ImageProcessor:
         worker = {
             "paths": paths,
             "SaveWorker": SaveWorker(self.pool, paths, image, mask_results),
-            "EXIFWorker": EXIFWorker(self.pool, paths, mask_results) if not self.old_exif_version else EXIFWorkerOld(self.pool, paths, mask_results)
+            "EXIFWorker": EXIFWorker(self.pool, paths, mask_results) if not self.old_exif_version else EXIFWorkerOld(
+                self.pool, paths, mask_results)
         }
         self.workers.append(worker)
 
@@ -297,8 +298,7 @@ class ImageProcessor:
                         all_mask_results["detection_masks"] = np.asarray([np.concatenate(
                             (all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0)])
                         all_mask_results["num_detections"] += 1
-                        all_mask_results["detection_boxes"] = np.concatenate(
-                            (all_mask_results["detection_boxes"], [[Y_min, X_min, Y_max, X_max]]), axis=0)
+                        _add_new_detection_boxes(all_mask_results, Y_min, X_min, Y_max, X_max)
                         _add_new_detection_scores(all_mask_results, masked_result, mask_num)
                         _add_new_detection_classes(all_mask_results, masked_result, mask_num)
 
@@ -314,13 +314,7 @@ class ImageProcessor:
                         _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num)
 
                         # Update the bounding boxes of the mask.
-                        full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
-                        updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2],
-                                                         full_img_bbox[:2], mask_bbox_in_full_img[:2])
-                        updated_mask_bbox_max = np.where(full_img_bbox[2:] > mask_bbox_in_full_img[2:],
-                                                         full_img_bbox[2:], mask_bbox_in_full_img[2:])
-                        updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
-                        all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
+                        _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask_id)
 
                 i += 1
         sliding_window_time_delta = "{:.3f}".format(time.time() - sliding_window_time)
@@ -333,8 +327,7 @@ class ImageProcessor:
 
             # Make final calculations and decisions about the results.
         for mask_num in range(all_mask_results["num_detections"]):
-
-            # Extract the majority vote of all the classes 
+            # Extract the majority vote of all the classes
             majority_vote_class = _poll_array(all_mask_results["detection_classes"][mask_num])
             detection_classes.append(majority_vote_class)
             # Calculate the average score for the mask
@@ -395,17 +388,37 @@ class ImageProcessor:
             self.pool.close()
         if self.database_client is not None:
             self.database_client.close()
+
+
+def _add_new_detection_boxes(all_mask_results, Y_min, X_min, Y_max, X_max):
+    all_mask_results["detection_boxes"] = np.concatenate(
+        (all_mask_results["detection_boxes"], [[Y_min, X_min, Y_max, X_max]]), axis=0)
+
+
 def _add_new_detection_classes(all_mask_results, masked_result, mask_num):
     all_mask_results["detection_classes"].update({
         len(all_mask_results['detection_classes']): [
             masked_result["detection_classes"][0][mask_num]]
     })
+
+
 def _add_new_detection_scores(all_mask_results, masked_result, mask_num):
     # Add new scores and classes as items in their respective dictionaries.
     all_mask_results["detection_scores"].update({
         len(all_mask_results['detection_scores'].items()): [
             masked_result["detection_scores"][0][mask_num]]
     })
+
+
+def _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask_id):
+    full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
+    updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2],
+                                     full_img_bbox[:2], mask_bbox_in_full_img[:2])
+    updated_mask_bbox_max = np.where(full_img_bbox[2:] > mask_bbox_in_full_img[2:],
+                                     full_img_bbox[2:], mask_bbox_in_full_img[2:])
+    updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
+    all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
+
 
 def _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num):
     # Add the mask class and score to the list of classes and scores for the mask.
@@ -417,12 +430,15 @@ def _update_detection_classes(all_mask_results, masked_result, update_mask_id, m
         axis=None)
     all_mask_results["detection_classes"].update({update_mask_id: new_classes})
 
+
 def _update_detection_scores(all_mask_results, masked_result, update_mask_id, mask_num):
     new_scores = np.concatenate(
         (all_mask_results['detection_scores'][update_mask_id],
          [masked_result['detection_scores'][0][mask_num]]),
         axis=None)
     all_mask_results["detection_scores"].update({update_mask_id: new_scores})
+
+
 def _poll_array(poll_item):
     """
     Finds the majority vote in a numpy array.
@@ -455,6 +471,7 @@ def _coordinate_mapping(y, x, original_img, cutout_img, bounding_w, bounding_h):
     X = bounding_w + (x * cutout_img.shape[2])
     Y = bounding_h + (y * cutout_img.shape[1])
     return X / original_img.shape[2], Y / original_img.shape[1]
+
 
 def remove_empty_folders(start_dir, top_dir):
     """
