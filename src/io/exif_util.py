@@ -219,6 +219,9 @@ def get_exif(img, image_path):
     parsed_exif["bildeid"] = get_deterministic_id(parsed_exif, parsed_exif["exif_feltkode"])
     # Insert the folder name
     parsed_exif["mappenavn"] = get_mappenavn(image_path, parsed_exif)
+    # Set roadident if it hasn't already been set.
+    parsed_exif["exif_roadident"] = create_roadident_from_extracted_data(parsed_exif) \
+        if not parsed_exif["exif_roadident"] else parsed_exif["exif_roadident"]
     return parsed_exif
 
 
@@ -330,16 +333,39 @@ def extract_road_info_from_filename(filepath, parsed_exif, labeled_exif):
 
     parsed_exif["exif_filnavn"] = filename
     road_info_list = filename.split(".")[0].split("_")
+    for path_elem in road_info_list:
+        strekning_match = STREKNING_PATTERN.findall(path_elem)
+        if strekning_match:
+            parsed_exif["exif_strekning"], parsed_exif["exif_delstrekning"] = _strekning_delstrekning(
+                strekning_match[0])
 
-    # Parse 'strekning' and 'delstrekning'
-    parsed_exif["exif_strekning"], parsed_exif["exif_delstrekning"], \
-    parsed_exif["exif_ankerpunkt"], parsed_exif["exif_kryssdel"], \
-    parsed_exif["exif_sideanleggsdel"] = process_strekning_and_kryss(filename)
+
+def create_roadident_from_extracted_data(parsed_exif):
+    """
+    A helper function to create a roadident string
+    from the parsed_exif data.
+    The string should have the format: "{vegkat+vegstatus+vegnr} S{strekning}D{delstrekning} m{meter}"
+    E.G: FV63 S10D3 m41
+    """
+    roadident_roadpart_string = f"S{parsed_exif['exif_strekning']}D{parsed_exif['exif_delstrekning']}"
+    kryss_string = f"K{parsed_exif['exif_kryssdel']}"
+    sideanlegg_string = f"A{parsed_exif['exif_sideanleggsdel']}"
+    roadident_special_roadtype_string = f" {sideanlegg_string} " if parsed_exif[
+        "exif_sideanleggsdel"] else f" {kryss_string} " \
+        if parsed_exif["exif_kryssdel"] else ""
+    roadident_anchor_string = f" M{parsed_exif['exif_ankerpunkt']} " if parsed_exif['exif_ankerpunkt'] else ""
+    # Stitch together the elements of the roadident-string
+    roadident_string = f"{parsed_exif['exif_vegkat']}{parsed_exif['exif_vegstat']}{parsed_exif['exif_vegnr']}" \
+                       f" {roadident_roadpart_string}" \
+                       f"{roadident_anchor_string}" \
+                       f"{roadident_special_roadtype_string}" \
+                       f" m{parsed_exif['exif_meter']}"
+    return roadident_string
 
 
-def process_strekning_and_kryss(filename):
+def process_kryss(path_elem):
     # Look for kryss-info in filename
-    kryss_matches = KRYSS_PATTERN.findall(filename)
+    kryss_matches = KRYSS_PATTERN.findall(path_elem)
     if kryss_matches:
         return _kryss(kryss_matches[0])
     return None, None, None, None, None
@@ -363,7 +389,7 @@ def _strekning_delstrekning(matches):
     # Get strekning/delstrekning metadata
     strekning = matches[0]
     delstrekning = matches[1]
-    return strekning, delstrekning, None, None, None
+    return strekning, delstrekning
 
 
 def to_pretty_xml(contents_bytes):
@@ -555,6 +581,7 @@ def _get_metadata_from_path_element(elem, parsed_exif):
     elif kilometer_match:
         meter = 1000 * int(kilometer_match[0][0]) + int(kilometer_match[0][1])
         parsed_exif["exif_meter"] = str(meter)
+    process_kryss(elem)
 
 
 def process_gpsinfo_tag(gpsinfo, parsed_exif):
