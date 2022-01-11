@@ -221,14 +221,9 @@ class ImageProcessor:
                 first_mask = False
                 all_mask_results["detection_boxes"] = np.asarray([detection_box])
             else:
-                all_mask_results["detection_boxes"] = np.concatenate(
-                    (all_mask_results["detection_boxes"], [detection_box]), axis=0)
-            all_mask_results["detection_classes"].update({
-                mask_num: [full_img_mask_result["detection_classes"][0][mask_num]]
-            })
-            all_mask_results["detection_scores"].update({
-                mask_num: full_img_mask_result["detection_scores"][0][mask_num]
-            })
+                _add_new_detection_boxes(all_mask_results, [detection_box])
+            _add_new_detection_classes(all_mask_results, full_img_mask_result, mask_num)
+            _add_new_detection_scores(all_mask_results, full_img_mask_result, mask_num)
 
         sliding_window_time = time.time()
         # Slide a window/cutout of the full image through the full image. 
@@ -264,18 +259,16 @@ class ImageProcessor:
                     # This could happen if the masking of the full image yielded no masks.
                     if first_mask:
                         first_mask = False
-                        insert_mask = np.asarray([full_image_mask])
+                        insert_mask = np.asarray([full_image_mask.copy()])
                         insert_mask[0][
                         height:height + window_height,
                         width:width + window_width,
                         ] = mask
+
+                        all_mask_results["detection_masks"] = np.array([insert_mask])
                         all_mask_results["detection_boxes"] = np.asarray([mask_bbox_in_full_img])
-                        all_mask_results["detection_classes"] = {
-                            0: [masked_result["detection_classes"][0][mask_num]]
-                        }
-                        all_mask_results["detection_scores"] = {
-                            0: [masked_result["detection_scores"][0][mask_num]]
-                        }
+                        _add_new_detection_classes(all_mask_results, masked_result, 0)
+                        _add_new_detection_scores(all_mask_results, masked_result, 0)
                         all_mask_results["num_detections"] += 1
 
                     for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0]):
@@ -292,7 +285,7 @@ class ImageProcessor:
                     if new_mask:
                         additional_masks += 1
                         _add_new_detection_mask(all_mask_results, mask,full_image_mask, height, window_height, width, window_width)
-                        _add_new_detection_boxes(all_mask_results, Y_min, X_min, Y_max, X_max)
+                        _add_new_detection_boxes(all_mask_results, [[Y_min, X_min, Y_max, X_max]])
                         _add_new_detection_scores(all_mask_results, masked_result, mask_num)
                         _add_new_detection_classes(all_mask_results, masked_result, mask_num)
 
@@ -386,9 +379,9 @@ def _add_new_detection_mask(all_mask_results, mask, full_image_mask, height, win
     all_mask_results["num_detections"] += 1
 
 
-def _add_new_detection_boxes(all_mask_results, Y_min, X_min, Y_max, X_max):
+def _add_new_detection_boxes(all_mask_results, detection_box):
     all_mask_results["detection_boxes"] = np.concatenate(
-        (all_mask_results["detection_boxes"], [[Y_min, X_min, Y_max, X_max]]), axis=0)
+        (all_mask_results["detection_boxes"], detection_box), axis=0)
 
 
 def _add_new_detection_classes(all_mask_results, masked_result, mask_num):
