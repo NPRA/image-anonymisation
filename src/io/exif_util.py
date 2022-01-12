@@ -363,7 +363,7 @@ def create_roadident_from_extracted_data(parsed_exif):
     return roadident_string
 
 
-def process_kryss(path_elem):
+def process_strekning_and_kryss(path_elem):
     # Look for kryss-info in filename
     kryss_matches = KRYSS_PATTERN.findall(path_elem)
     if kryss_matches:
@@ -581,7 +581,7 @@ def _get_metadata_from_path_element(elem, parsed_exif):
     elif kilometer_match:
         meter = 1000 * int(kilometer_match[0][0]) + int(kilometer_match[0][1])
         parsed_exif["exif_meter"] = str(meter)
-    process_kryss(elem)
+    process_strekning_and_kryss(elem)
 
 
 def process_gpsinfo_tag(gpsinfo, parsed_exif):

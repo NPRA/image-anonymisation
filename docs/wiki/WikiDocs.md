@@ -144,6 +144,10 @@ This level is given to an image where the exif-data cannot be derived.
  Oftentimes if this level is achieved, some of the values may be found in the path and the file name of the image.
  2. This is the highest quality level where all the exif data that is not optional exists.
 
+NOTE: 
+There also exists an `ExifWorkerOld` which will be used for older versions of how the Exif-data is formatted.
+It will also look for the `ImageProperties` tag and read data from there.
+ 
 #### SaveWorker
 The `SaveWorker` is responsible to save the anonymised image and the potential preview image.
 Additionally it will draw on the masks after the definitions in the configuration-file.
@@ -243,7 +247,8 @@ to a `SDO_GEOMETRY` Oracle database object type.
 #### Extra Scripts
 There are several extra scripts that serve their own functionalities when invoked. 
 
-* `check_folders.py`
+* `anonymise_old.py` 
+*`check_folders.py`
 * `create_json.py`
 * `create_preview.py`
 * `evaluate.py`
@@ -253,7 +258,12 @@ There are several extra scripts that serve their own functionalities when invoke
     * `execute_sql.py`
     * `insert_geom_metadata.py`
     * `json_to_db.py`
-    
+
+##### anonymise_old.py
+The `anonymise_old.py` script is a script to run anonymisation for images pre 2022. 
+This will run an old version of the ExifWorker that is suited for the exif data format predating 2022.
+The script will be deprecated once the older images are anonymised.
+
 ##### check_folders.py
 The `check_folders.py` script is a script that will traverse a file tree with the `TreeWalker`
 and check if the expected files are in the input, output or archive folders depending on the accompanying `config`-file.
