@@ -696,6 +696,9 @@ def get_metadata_from_path(image_path, parsed_exif):
 
     # Set the filename
     parsed_exif["exif_filnavn"] = path_elements[-1]
+    road_info_items = parsed_exif["exif_filnavn"].split(".")[0].split("_")
+    for elem in road_info_items:
+        _get_metadata_from_path_element(elem, parsed_exif)
 
 
 HP_REGEX = re.compile(r"hp(\d+)", re.IGNORECASE)
@@ -721,7 +724,7 @@ def _get_metadata_from_path_element(elem, parsed_exif):
 
     felt_matches = FELT_REGEX.findall(elem)
     if felt_matches:
-        parsed_exif["exif_feltkode"] = felt_matches[0][0].lstrip("0")
+        parsed_exif["exif_feltkode"] = felt_matches[0].lstrip("0")
 
     veg_matches = VEG_REGEX.findall(elem)
     if veg_matches:
