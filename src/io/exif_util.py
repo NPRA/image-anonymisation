@@ -232,6 +232,8 @@ def get_deterministic_id(exif, feltkode):
 
     :param exif: EXIF metadata contents
     :type exif: dict
+    :param feltkode: The "feltkode" (Lane number/name) of the image.
+    :type feltkode: str
     :return: Deterministic unique ID computed from the EXIF metadata
     :rtype: str
     """
@@ -566,7 +568,7 @@ def _get_metadata_from_path_element(elem, parsed_exif):
 
     felt_matches = FELT_REGEX.findall(elem)
     if felt_matches:
-        parsed_exif["exif_feltkode"] = felt_matches[0][0].lstrip("0")
+        parsed_exif["exif_feltkode"] = felt_matches[0].lstrip("0")
 
     veg_matches = VEG_REGEX.findall(elem)
     if veg_matches:
