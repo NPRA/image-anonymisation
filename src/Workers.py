@@ -1,9 +1,9 @@
 import os
-
 import config
 from src.Logger import LOGGER
 from src.io import save
 from src.io import exif_util
+from src.io import exif_util_old
 from src.io.file_access_guard import wait_until_path_is_found
 
 ERROR_RETVAL = -1
@@ -248,7 +248,7 @@ class EXIFWorker(BaseWorker):
 
         # Insert preview file name if it exists.
         # Checks if the preview shoould be saved and if so if it is saved.
-        if (paths.input_preview and config.local_preview)\
+        if (paths.input_preview and config.local_preview) \
                 or (paths.output_preview and config.remote_preview) \
                 or (paths.archive_preview and config.archive_preview) \
                 or (paths.separate_preview_dir and config.separate_preview_directory):
@@ -263,5 +263,87 @@ class EXIFWorker(BaseWorker):
             wait_until_path_is_found([paths.base_output_dir])
             os.makedirs(paths.output_dir, exist_ok=True)
             exif_util.write_exif(exif, paths.output_json)
+
+        return exif
+
+
+class EXIFWorkerOld(BaseWorker):
+    """
+   Only for older images.
+   Worker which reads the EXIF data from the input image using `src.io.exif_util`. The EXIF dict will then be written
+   to the specified location(s).
+
+   :param pool: multiprocessing.Pool to apply async workers in. Can be None if `config.enable_async = False`.
+   :type pool: multiprocessing.Pool | None
+   :param paths: Paths object representing the image file.
+   :type paths: src.io.TreeWalker.Paths
+   :param mask_results: Results from `src.Masker.Masker.mask`
+   :type mask_results: dict
+   """
+
+    def __init__(self, pool, paths, mask_results):
+        super().__init__(pool, paths)
+
+        self.error_message = "Got error while processing EXIF data for image '{image_path}': {err}"
+        self.finished_message = "Saved EXIF to JSON. File: {image_file}"
+        self.worker_exceptions = (
+            AssertionError,
+            FileNotFoundError,
+            PermissionError,
+            OSError,
+        )
+        self.args = (self.paths, mask_results, config.local_json, config.remote_json, config.version)
+        self.start()
+
+    def result_is_valid(self, result):
+        return isinstance(result, dict)
+
+    @staticmethod
+    def async_func(paths, mask_results, local_json, remote_json, version):
+        """
+        Run the EXIF processing: Read the EXIF data, add the required fields, and save it. File exports are controlled
+        in `config`.
+
+        :param paths: Paths object representing the image file.
+        :type paths: src.io.TreeWalker.Paths
+        :param mask_results: Results from `src.Masker.Masker.mask`
+        :type mask_results: dict
+        :param local_json: Write JSON file to the input (local) directory?
+        :type local_json: bool
+        :param remote_json: Write JSON file to the output (remote) directory?
+        :type remote_json: bool
+        :param version: Version tag for the application. Will be written to the JSON-file
+        :type version: str
+        :return: EXIF dict written to the specified locations
+        :rtype: dict
+        """
+        wait_until_path_is_found([paths.input_file])
+        # Get the EXIF data
+        exif = exif_util_old.exif_from_file(paths.input_file)
+        # Insert detected objects
+        if mask_results is not None:
+            exif["detekterte_objekter"] = exif_util_old.get_detected_objects_dict(mask_results)
+        else:
+            exif["detekterte_objekter"] = None
+        # Insert the version number
+        exif["versjon"] = str(version)
+
+        # Insert preview file name if it exists.
+        # Checks if the preview shoould be saved and if so if it is saved.
+        if (paths.input_preview and config.local_preview) \
+                or (paths.output_preview and config.remote_preview) \
+                or (paths.archive_preview and config.archive_preview) \
+                or (paths.separate_preview_dir and config.separate_preview_directory):
+            exif["exif_preview_filnavn"] = paths.preview_filename
+        else:
+            exif["exif_preview_filnavn"] = None
+        if local_json:
+            # Write EXIF to input directory
+            exif_util_old.write_exif(exif, paths.input_json)
+        if remote_json:
+            # Write EXIF to output directory
+            wait_until_path_is_found([paths.base_output_dir])
+            os.makedirs(paths.output_dir, exist_ok=True)
+            exif_util_old.write_exif(exif, paths.output_json)
 
         return exif

@@ -2,13 +2,12 @@ import os
 import time
 import multiprocessing
 import numpy as np
-import cv2
-
 import config
 from src.Logger import LOGGER
-from src.Workers import SaveWorker, EXIFWorker, ERROR_RETVAL
+from src.Workers import SaveWorker, EXIFWorker, EXIFWorkerOld, ERROR_RETVAL
 from src.io.file_checker import check_all_files_written
 from src.io.file_access_guard import wait_until_path_is_found
+import cv2
 
 
 class ImageProcessor:
@@ -24,12 +23,15 @@ class ImageProcessor:
     :type max_num_async_workers: int
     """
 
-    def __init__(self, masker, max_num_async_workers=2):
+    def __init__(self, masker, max_num_async_workers=2, old_exif_version=False):
         self.masker = masker
         self.n_completed = 0
         self.max_worker_starts = 2
         self.workers = []
+        self.old_exif_version = old_exif_version
 
+        if self.old_exif_version:
+            LOGGER.info(__name__, f"ImageProcessor running with the *old* version of the ExifWorker.")
         if config.enable_async:
             self.max_num_async_workers = max_num_async_workers
             self.pool = multiprocessing.Pool(processes=max_num_async_workers)
@@ -76,10 +78,13 @@ class ImageProcessor:
         # Write the cache file indicating that the saving process has begun.
         paths.create_cache_file()
         # Create workers
+        # If the ImageProcessor is working with older images,
+        # it may run an older version of the ExifWorker.
         worker = {
             "paths": paths,
             "SaveWorker": SaveWorker(self.pool, paths, image, mask_results),
-            "EXIFWorker": EXIFWorker(self.pool, paths, mask_results)
+            "EXIFWorker": EXIFWorker(self.pool, paths, mask_results) if not self.old_exif_version else EXIFWorkerOld(
+                self.pool, paths, mask_results)
         }
         self.workers.append(worker)
 
@@ -165,7 +170,47 @@ class ImageProcessor:
 
         self.n_completed += 1
 
-    def process_image_extra(self, image, paths):
+    def _get_one_mask_result_from_images(images, masker, img_h, img_w):
+        # condition 1: max number of masks
+        # condition 2: the largest masks, mean?.
+        # Why: IF max num is the same, go for the one with larger masks.
+        # The highest number of masks found in the images
+        # Format: [number of masks, image number in list]
+        max_num_mask = [0, 0]
+        # The largest avg mask size
+        # Format: [average maks size, image number in list]
+        largest_mask_avg = 0
+        full_image_mask = np.zeros((img_h, img_w), dtype=bool)
+        # The mask results for the whole image.
+        final_mask_result = {
+            "num_detections": 0,
+            "detection_masks": np.asarray([[full_image_mask]]),
+            "detection_classes": {},
+            "detection_scores": {},
+            "detection_boxes": np.asarray([[]])
+        }
+
+        # Go through each image
+        for i, image in enumerate(images):
+            mask_result = masker.mask(image)
+
+            # Calculate largest mask
+            mask_num = np.shape(mask_result["detection_masks"])[1]
+            # Condition 1
+            if mask_num >= max_num_mask[0]:
+                # Calculate average mask size (number of pixels).
+                mask_avg = 0
+                for mask_area in np.where(mask_result["detection_masks"][0]):
+                    mask_avg += len(mask_area[0])
+                mask_avg = mask_avg / mask_result["detection_masks"][0]
+                # Condition 2
+                if mask_avg > largest_mask_avg:
+                    largest_mask_avg = mask_avg
+                    max_num_mask = [mask_num, i]
+                    final_mask_result = mask_result
+        return final_mask_result
+
+    def process_image_extra(self, image):
         """
             :param image: Input image. Must be a 4D color image tensor with shape (1, height, width, 3)
             :type image: tf.python.framework.ops.EagerTensor
@@ -190,7 +235,7 @@ class ImageProcessor:
         :param paths: Paths object representing the image file.
         :type paths: src.io.TreeWalker.Paths
 
-        
+
         """
         # Get the dimensions of the cutout for a sliding window.
         # The dimensions are defined in the config file.
@@ -229,17 +274,12 @@ class ImageProcessor:
                 first_mask = False
                 all_mask_results["detection_boxes"] = np.asarray([detection_box])
             else:
-                all_mask_results["detection_boxes"] = np.concatenate(
-                    (all_mask_results["detection_boxes"], [detection_box]), axis=0)
-            all_mask_results["detection_classes"].update({
-                mask_num: [full_img_mask_result["detection_classes"][0][mask_num]]
-            })
-            all_mask_results["detection_scores"].update({
-                mask_num: full_img_mask_result["detection_scores"][0][mask_num]
-            })
+                _add_new_detection_boxes(all_mask_results, [detection_box])
+            _add_new_detection_classes(all_mask_results, full_img_mask_result, mask_num)
+            _add_new_detection_scores(all_mask_results, full_img_mask_result, mask_num)
 
         sliding_window_time = time.time()
-        # Slide a window/cutout of the full image through the full image. 
+        # Slide a window/cutout of the full image through the full image.
         # Mask every cutout and update the results
         for height in range(0, img_h - window_height + 1, config.cutout_step_factor[0]):
             for width in range(0, img_w - window_width + 1, config.cutout_step_factor[1]):
@@ -267,23 +307,21 @@ class ImageProcessor:
                                                        cutout_image, width, height)
                     mask_bbox_in_full_img = np.asarray([Y_min, X_min, Y_max, X_max])
 
-                    # If the mask is the first mask found in the full image, 
+                    # If the mask is the first mask found in the full image,
                     # initialise the results with the masking results of the cutout.
                     # This could happen if the masking of the full image yielded no masks.
                     if first_mask:
                         first_mask = False
-                        insert_mask = np.asarray([full_image_mask])
+                        insert_mask = np.asarray([full_image_mask.copy()])
                         insert_mask[0][
                         height:height + window_height,
                         width:width + window_width,
                         ] = mask
+
+                        all_mask_results["detection_masks"] = np.array([insert_mask])
                         all_mask_results["detection_boxes"] = np.asarray([mask_bbox_in_full_img])
-                        all_mask_results["detection_classes"] = {
-                            0: [masked_result["detection_classes"][0][mask_num]]
-                        }
-                        all_mask_results["detection_scores"] = {
-                            0: [masked_result["detection_scores"][0][mask_num]]
-                        }
+                        _add_new_detection_classes(all_mask_results, masked_result, 0)
+                        _add_new_detection_scores(all_mask_results, masked_result, 0)
                         all_mask_results["num_detections"] += 1
 
                     for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0]):
@@ -299,63 +337,26 @@ class ImageProcessor:
                     # If the mask is new, add the new results as new entries for the full image.
                     if new_mask:
                         additional_masks += 1
-                        updated_full_image_mask = full_image_mask
-                        full_image_mask[height:height + window_height, width:width + window_width] = mask
+                        _add_new_detection_mask(all_mask_results, mask, full_image_mask, height, window_height, width,
+                                                window_width)
+                        _add_new_detection_boxes(all_mask_results, [[Y_min, X_min, Y_max, X_max]])
+                        _add_new_detection_scores(all_mask_results, masked_result, mask_num)
+                        _add_new_detection_classes(all_mask_results, masked_result, mask_num)
 
-                        # Add the mask as a new entry in the full image results.
-                        all_mask_results["detection_masks"] = np.asarray([np.concatenate(
-                            (all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0)])
-                        all_mask_results["num_detections"] += 1
-                        all_mask_results["detection_boxes"] = np.concatenate(
-                            (all_mask_results["detection_boxes"], [[Y_min, X_min, Y_max, X_max]]), axis=0)
-
-                        # Add new scores and classes as items in their respective dictionaries.
-                        all_mask_results["detection_scores"].update({
-                            len(all_mask_results['detection_scores'].items()): [
-                                masked_result["detection_scores"][0][mask_num]]
-                        })
-
-                        all_mask_results["detection_classes"].update({
-                            len(all_mask_results['detection_classes']): [
-                                masked_result["detection_classes"][0][mask_num]]
-                        })
                     # If the mask is not new, update the results of the existing mask.
                     else:
-
-                        # Only update the mask in the current window
-                        updated_full_image_mask = all_mask_results["detection_masks"][0][update_mask_id]
-                        updated_full_image_mask[height:height + window_height, width:width + window_width] = mask
-                        all_mask_results["detection_masks"][0][update_mask_id] = updated_full_image_mask
-
-                        # Add the mask class and score to the list of classes and scores for the mask.
-                        # The class defined for the mask will be the majority vote of all the classes
-                        # The final score for the mask will be the average score of all the scores.
-                        new_classes = np.concatenate(
-                            (all_mask_results['detection_classes'][update_mask_id],
-                             [masked_result['detection_classes'][0][mask_num]]),
-                            axis=None)
-                        all_mask_results["detection_classes"].update({update_mask_id: new_classes})
-                        new_scores = np.concatenate(
-                            (all_mask_results['detection_scores'][update_mask_id],
-                             [masked_result['detection_scores'][0][mask_num]]),
-                            axis=None)
-                        all_mask_results["detection_scores"].update({update_mask_id: new_scores})
-
-                        # Update the bounding boxes of the mask.
-                        full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
-                        updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2],
-                                                         full_img_bbox[:2], mask_bbox_in_full_img[:2])
-                        updated_mask_bbox_max = np.where(full_img_bbox[2:] > mask_bbox_in_full_img[2:],
-                                                         full_img_bbox[2:], mask_bbox_in_full_img[2:])
-                        updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
-                        all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
+                        _update_detection_mask(all_mask_results, mask, update_mask_id, height, window_height, width,
+                                               window_width)
+                        _update_detection_scores(all_mask_results, masked_result, update_mask_id, mask_num)
+                        _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num)
+                        _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask_id)
 
                 i += 1
         sliding_window_time_delta = "{:.3f}".format(time.time() - sliding_window_time)
         detection_classes = []
         detection_scores = []
 
-        # Convert the image tensor to a numpy array 
+        # Convert the image tensor to a numpy array
         if not isinstance(image, np.ndarray):
             image = image.numpy()
 
@@ -394,14 +395,17 @@ class ImageProcessor:
         :param paths: Paths object representing the image file.
         :type paths: src.io.TreeWalker.Paths
         """
-        img_h, img_w = image.shape[1:3]
-        if config.extra_processing:
-            extra_processed_imgs = self.process_image_extra(image, paths)
-            extra_mask_result = _get_one_mask_result_from_images(extra_processed_imgs, self.masker, img_h, img_w)
-            print(f"extra: {extra_mask_result}")
         start_time = time.time()
         # Compute the detected objects and their masks.
         mask_results = self.masker.mask(image)
+
+        if config.extra_processing:
+            first_mask = False
+            if len(mask_results["detection_masks"][0]) < 1:
+                first_mask = True
+            processed_images = self.process_image_extra(image)
+            extra_processed_mask_result = _get_one_mask_result_from_images(processed_images, self.masker, image.shape[1], image.shape[2])
+            # Update the results
 
         LOGGER.debug(__name__, f"Masked results: {mask_results}")
         time_delta = "{:.3f}".format(time.time() - start_time)
@@ -429,38 +433,61 @@ class ImageProcessor:
             self.database_client.close()
 
 
-def _poll_array(poll_item):
-    """
-    Finds the majority vote in a numpy array.
-    """
-    values, counts = np.unique(poll_item, return_counts=True)
-    index = np.argmax(counts)
-    return values[index]
+def _add_new_detection_mask(all_mask_results, mask, full_image_mask, height, window_height, width, window_width):
+    updated_full_image_mask = full_image_mask
+    full_image_mask[height:height + window_height, width:width + window_width] = mask
+    # Add the mask as a new entry in the full image results.
+    all_mask_results["detection_masks"] = np.asarray([np.concatenate(
+        (all_mask_results['detection_masks'][0], [updated_full_image_mask]), axis=0)])
+    all_mask_results["num_detections"] += 1
 
 
-def _coordinate_mapping(y, x, original_img, cutout_img, bounding_w, bounding_h):
-    """
-    Maps the coordinate y and x in the cutout_img to their correpsondning coordinates
-    in the original image.
+def _add_new_detection_boxes(all_mask_results, detection_box):
+    all_mask_results["detection_boxes"] = np.concatenate(
+        (all_mask_results["detection_boxes"], detection_box), axis=0)
 
-    :param y: The normalized height coordinate for the pixel.
-    :type y: float
-    :param x: The normalized width coordinate for the pixel
-    :type x: float
-    :param original_img: The original image as a 4D-color image tensor with shape (1, height, width, 3).
-    :type original_img: tf.python.framework.ops.EagerTensor
-    :param cutout_img: The cutout image as a 4D-color image tensor with shape (1, height, width, 3)
-    :type cutout_img: tf.python.framework.ops.EagerTensor
-    :param bounding_w: The bounding width coordinate for the cutout
-    :type bounding_w: int
-    :param bounding_h:The bounding height coordinate for the cutout
-    :type bounding_h: int
-    :rtype: float, float
-    """
 
-    X = bounding_w + (x * cutout_img.shape[2])
-    Y = bounding_h + (y * cutout_img.shape[1])
-    return X / original_img.shape[2], Y / original_img.shape[1]
+def _add_new_detection_classes(all_mask_results, masked_result, mask_num):
+    all_mask_results["detection_classes"].update({
+        len(all_mask_results['detection_classes']): [
+            masked_result["detection_classes"][0][mask_num]]
+    })
+
+
+def _add_new_detection_scores(all_mask_results, masked_result, mask_num):
+    # Add new scores and classes as items in their respective dictionaries.
+    all_mask_results["detection_scores"].update({
+        len(all_mask_results['detection_scores'].items()): [
+            masked_result["detection_scores"][0][mask_num]]
+    })
+
+
+def _update_detection_mask(all_mask_results, mask, update_mask_id, height, window_height, width, window_width):
+    # Only update the mask in the current window
+    updated_full_image_mask = all_mask_results["detection_masks"][0][update_mask_id]
+    updated_full_image_mask[height:height + window_height, width:width + window_width] = mask
+    all_mask_results["detection_masks"][0][update_mask_id] = updated_full_image_mask
+
+
+def _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask_id):
+    full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
+    updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2],
+                                     full_img_bbox[:2], mask_bbox_in_full_img[:2])
+    updated_mask_bbox_max = np.where(full_img_bbox[2:] > mask_bbox_in_full_img[2:],
+                                     full_img_bbox[2:], mask_bbox_in_full_img[2:])
+    updated_mask_bbox = np.append(updated_mask_bbox_min, updated_mask_bbox_max)
+    all_mask_results["detection_boxes"][update_mask_id] = updated_mask_bbox
+
+
+def _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num):
+    # Add the mask class and score to the list of classes and scores for the mask.
+    # The class defined for the mask will be the majority vote of all the classes
+    # The final score for the mask will be the average score of all the scores.
+    new_classes = np.concatenate(
+        (all_mask_results['detection_classes'][update_mask_id],
+         [masked_result['detection_classes'][0][mask_num]]),
+        axis=None)
+    all_mask_results["detection_classes"].update({update_mask_id: new_classes})
 
 
 def _get_one_mask_result_from_images(images, masker, img_h, img_w):
@@ -504,6 +531,14 @@ def _get_one_mask_result_from_images(images, masker, img_h, img_w):
     return final_mask_result
 
 
+def _update_detection_scores(all_mask_results, masked_result, update_mask_id, mask_num):
+    new_scores = np.concatenate(
+        (all_mask_results['detection_scores'][update_mask_id],
+         [masked_result['detection_scores'][0][mask_num]]),
+        axis=None)
+    all_mask_results["detection_scores"].update({update_mask_id: new_scores})
+
+
 def _adjust_contrast_brightness(img, alpha, beta):
     adjusted_images = []
     for a in alpha:
@@ -524,6 +559,40 @@ def _sharpen_imags(img, iter_num=1):
         image_sharpened = cv2.filter2D(img.copy(), -1, kernel)
         sharp_images.append(image_sharpened)
     return sharp_images
+
+
+def _poll_array(poll_item):
+    """
+    Finds the majority vote in a numpy array.
+    """
+    values, counts = np.unique(poll_item, return_counts=True)
+    index = np.argmax(counts)
+    return values[index]
+
+
+def _coordinate_mapping(y, x, original_img, cutout_img, bounding_w, bounding_h):
+    """
+    Maps the coordinate y and x in the cutout_img to their correpsondning coordinates
+    in the original image.
+
+    :param y: The normalized height coordinate for the pixel.
+    :type y: float
+    :param x: The normalized width coordinate for the pixel
+    :type x: float
+    :param original_img: The original image as a 4D-color image tensor with shape (1, height, width, 3).
+    :type original_img: tf.python.framework.ops.EagerTensor
+    :param cutout_img: The cutout image as a 4D-color image tensor with shape (1, height, width, 3)
+    :type cutout_img: tf.python.framework.ops.EagerTensor
+    :param bounding_w: The bounding width coordinate for the cutout
+    :type bounding_w: int
+    :param bounding_h:The bounding height coordinate for the cutout
+    :type bounding_h: int
+    :rtype: float, float
+    """
+
+    X = bounding_w + (x * cutout_img.shape[2])
+    Y = bounding_h + (y * cutout_img.shape[1])
+    return X / original_img.shape[2], Y / original_img.shape[1]
 
 
 def remove_empty_folders(start_dir, top_dir):
