@@ -146,6 +146,7 @@ config/email_config.py
 config/360_test_config.yml
 config/test_config.yml
 config/planar_test_config.yml
+config/process_planar_test_config.yml
 
 data/*
 tests/data/real

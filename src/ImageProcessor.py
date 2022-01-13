@@ -254,47 +254,9 @@ class ImageProcessor:
                                                        cutout_image, width, height)
                     mask_bbox_in_full_img = np.asarray([Y_min, X_min, Y_max, X_max])
 
-                    # If the mask is the first mask found in the full image, 
-                    # initialise the results with the masking results of the cutout.
-                    # This could happen if the masking of the full image yielded no masks.
-                    if first_mask:
-                        first_mask = False
-                        insert_mask = np.asarray([full_image_mask.copy()])
-                        insert_mask[0][
-                        height:height + window_height,
-                        width:width + window_width,
-                        ] = mask
-
-                        all_mask_results["detection_masks"] = np.array([insert_mask])
-                        all_mask_results["detection_boxes"] = np.asarray([mask_bbox_in_full_img])
-                        _add_new_detection_classes(all_mask_results, masked_result, 0)
-                        _add_new_detection_scores(all_mask_results, masked_result, 0)
-                        all_mask_results["num_detections"] += 1
-
-                    for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0]):
-                        # Extract the relevant cutout of the existing full image mask for comparison.
-                        existing_mask = existing_mask[height:height + window_height, width:width + window_width]
-
-                        # If there are overlapping masked pixels between the exisiting mask and the cutout mask
-                        # The mask is not new, and the matching existing mask should be updated.
-                        if len(np.where(existing_mask[np.where(mask)] == True)[0]) > 0:
-                            mask = np.where(mask, mask, existing_mask)
-                            new_mask = False
-                            update_mask_id = e_mask_num
-                    # If the mask is new, add the new results as new entries for the full image.
-                    if new_mask:
-                        additional_masks += 1
-                        _add_new_detection_mask(all_mask_results, mask,full_image_mask, height, window_height, width, window_width)
-                        _add_new_detection_boxes(all_mask_results, [[Y_min, X_min, Y_max, X_max]])
-                        _add_new_detection_scores(all_mask_results, masked_result, mask_num)
-                        _add_new_detection_classes(all_mask_results, masked_result, mask_num)
-
-                    # If the mask is not new, update the results of the existing mask.
-                    else:
-                        _update_detection_mask(all_mask_results, mask, update_mask_id, height, window_height, width, window_width)
-                        _update_detection_scores(all_mask_results, masked_result, update_mask_id, mask_num)
-                        _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num)
-                        _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask_id)
+                    first_mask = update_mask_result(full_image_mask, all_mask_results, masked_result, mask,
+                                                    mask_bbox_in_full_img, first_mask, height, window_height,
+                                                    width, window_width, additional_masks, mask_num)
 
                 i += 1
         sliding_window_time_delta = "{:.3f}".format(time.time() - sliding_window_time)
@@ -368,6 +330,55 @@ class ImageProcessor:
             self.pool.close()
         if self.database_client is not None:
             self.database_client.close()
+
+
+def update_mask_result(full_image_mask, all_mask_results, masked_result, mask, mask_bbox_in_full_img, first_mask,
+                       height, window_height, width, window_width, additional_masks, mask_num):
+    new_mask = True
+    # If the mask is the first mask found in the full image,
+    # initialise the results with the masking results of the cutout.
+    # This could happen if the masking of the full image yielded no masks.
+    if first_mask:
+        first_mask = False
+        insert_mask = np.asarray([full_image_mask.copy()])
+        insert_mask[0][
+        height:height + window_height,
+        width:width + window_width,
+        ] = mask
+
+        all_mask_results["detection_masks"] = np.array([insert_mask])
+        all_mask_results["detection_boxes"] = np.asarray([mask_bbox_in_full_img])
+        _add_new_detection_classes(all_mask_results, masked_result, 0)
+        _add_new_detection_scores(all_mask_results, masked_result, 0)
+        all_mask_results["num_detections"] += 1
+
+    for e_mask_num, existing_mask in enumerate(all_mask_results["detection_masks"][0]):
+        # Extract the relevant cutout of the existing full image mask for comparison.
+        existing_mask = existing_mask[height:height + window_height, width:width + window_width]
+
+        # If there are overlapping masked pixels between the exisiting mask and the cutout mask
+        # The mask is not new, and the matching existing mask should be updated.
+        if len(np.where(existing_mask[np.where(mask)] == True)[0]) > 0:
+            mask = np.where(mask, mask, existing_mask)
+            new_mask = False
+            update_mask_id = e_mask_num
+    # If the mask is new, add the new results as new entries for the full image.
+    if new_mask:
+        additional_masks += 1
+        _add_new_detection_mask(all_mask_results, mask, full_image_mask, height, window_height, width,
+                                window_width)
+        _add_new_detection_boxes(all_mask_results, [mask_bbox_in_full_img])
+        _add_new_detection_scores(all_mask_results, masked_result, mask_num)
+        _add_new_detection_classes(all_mask_results, masked_result, mask_num)
+
+    # If the mask is not new, update the results of the existing mask.
+    else:
+        _update_detection_mask(all_mask_results, mask, update_mask_id, height, window_height, width,
+                               window_width)
+        _update_detection_scores(all_mask_results, masked_result, update_mask_id, mask_num)
+        _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num)
+        _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask_id)
+    return first_mask
 
 
 def _add_new_detection_mask(all_mask_results, mask, full_image_mask, height, window_height, width, window_width):
