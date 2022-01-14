@@ -267,7 +267,9 @@ class ImageProcessor:
         if not isinstance(image, np.ndarray):
             image = image.numpy()
 
-            # Make final calculations and decisions about the results.
+        # Make final calculations and decisions about the results.
+        # The class defined for the mask will be the majority vote of all the classes
+        # The final score for the mask will be the average score of all the scores.
         for mask_num in range(all_mask_results["num_detections"]):
             # Extract the majority vote of all the classes
             majority_vote_class = _poll_array(all_mask_results["detection_classes"][mask_num])
@@ -334,6 +336,11 @@ class ImageProcessor:
 
 def update_mask_result(full_image_mask, all_mask_results, masked_result, mask, mask_bbox_in_full_img, first_mask,
                        height, window_height, width, window_width, additional_masks, mask_num):
+    """
+    Update the overall results from masking in the cutout-method.
+    It will take in the results from the cutout masking and update
+    the results for the masking of the full image in a proper manner.
+    """
     new_mask = True
     # If the mask is the first mask found in the full image,
     # initialise the results with the masking results of the cutout.
@@ -382,6 +389,10 @@ def update_mask_result(full_image_mask, all_mask_results, masked_result, mask, m
 
 
 def _add_new_detection_mask(all_mask_results, mask, full_image_mask, height, window_height, width, window_width):
+    """
+    Adds a new mask to the overall masking results and fits it into the full image
+    based on the boudning height, width amd the size of the window.
+    """
     updated_full_image_mask = full_image_mask
     full_image_mask[height:height + window_height, width:width + window_width] = mask
     # Add the mask as a new entry in the full image results.
@@ -391,11 +402,17 @@ def _add_new_detection_mask(all_mask_results, mask, full_image_mask, height, win
 
 
 def _add_new_detection_boxes(all_mask_results, detection_box):
+    """
+    Add a new detection box to the overall results
+    """
     all_mask_results["detection_boxes"] = np.concatenate(
         (all_mask_results["detection_boxes"], detection_box), axis=0)
 
 
 def _add_new_detection_classes(all_mask_results, masked_result, mask_num):
+    """
+    Add a new class suggestion to the overall results.
+    """
     all_mask_results["detection_classes"].update({
         len(all_mask_results['detection_classes']): [
             masked_result["detection_classes"][0][mask_num]]
@@ -403,6 +420,9 @@ def _add_new_detection_classes(all_mask_results, masked_result, mask_num):
 
 
 def _add_new_detection_scores(all_mask_results, masked_result, mask_num):
+    """
+    Add a new score to the overall results
+    """
     # Add new scores and classes as items in their respective dictionaries.
     all_mask_results["detection_scores"].update({
         len(all_mask_results['detection_scores'].items()): [
@@ -411,6 +431,9 @@ def _add_new_detection_scores(all_mask_results, masked_result, mask_num):
 
 
 def _update_detection_mask(all_mask_results, mask, update_mask_id, height, window_height, width, window_width):
+    """
+    Update an existing mask with new masked pixels in the overall results.
+    """
     # Only update the mask in the current window
     updated_full_image_mask = all_mask_results["detection_masks"][0][update_mask_id]
     updated_full_image_mask[height:height + window_height, width:width + window_width] = mask
@@ -418,6 +441,9 @@ def _update_detection_mask(all_mask_results, mask, update_mask_id, height, windo
 
 
 def _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask_id):
+    """
+    Update the bounding boxes of a mask in the overall results
+    """
     full_img_bbox = all_mask_results["detection_boxes"][update_mask_id]
     updated_mask_bbox_min = np.where(full_img_bbox[:2] < mask_bbox_in_full_img[:2],
                                      full_img_bbox[:2], mask_bbox_in_full_img[:2])
@@ -428,9 +454,10 @@ def _update_detection_boxes(all_mask_results, mask_bbox_in_full_img, update_mask
 
 
 def _update_detection_classes(all_mask_results, masked_result, update_mask_id, mask_num):
-    # Add the mask class and score to the list of classes and scores for the mask.
-    # The class defined for the mask will be the majority vote of all the classes
-    # The final score for the mask will be the average score of all the scores.
+    """
+    Update the potential classes for a mask in the overall results,
+    by addind the suggested class to the list of potential classes for the mask.
+    """
     new_classes = np.concatenate(
         (all_mask_results['detection_classes'][update_mask_id],
          [masked_result['detection_classes'][0][mask_num]]),
@@ -439,6 +466,10 @@ def _update_detection_classes(all_mask_results, masked_result, update_mask_id, m
 
 
 def _update_detection_scores(all_mask_results, masked_result, update_mask_id, mask_num):
+    """
+    Update the list of scores for a mask in the overall results by
+    adding the new score to it.
+    """
     new_scores = np.concatenate(
         (all_mask_results['detection_scores'][update_mask_id],
          [masked_result['detection_scores'][0][mask_num]]),
