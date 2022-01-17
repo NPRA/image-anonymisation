@@ -181,6 +181,7 @@ def get_exif(img, image_path):
             parsed_exif["exif_dataeier"] = config.data_eier
 
         reflink_info_xml = labeled.get("ReflinkInfo", None)
+        image_properties_xml = labeled.get("ImageProperties", None)
 
         # This is to make sure the correct time is read from the image.
         if "DateTimeOriginal" in labeled.keys():
@@ -192,6 +193,10 @@ def get_exif(img, image_path):
             timestamp = "T".join(timestamp)
             parsed_exif["exif_tid"] = timestamp
 
+        # Process the `ImageProperties` XML
+        if image_properties_xml:
+            # assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
+            process_image_properties(image_properties_xml, parsed_exif)
         if reflink_info_xml:
             process_reflink_info(reflink_info_xml, parsed_exif)
         else:
@@ -316,6 +321,19 @@ def label_exif(exif):
     return {TAGS.get(key): value for key, value in exif.items()}
 
 
+def extract_baseline_info(image_properties):
+    baseline_pos = image_properties.get("BaseLinePosition", ""),
+    baseline_interval = image_properties.get("BaseLineTickInterval", "")
+    baseline_offset = image_properties.get("BaseLineTickOffset", "")
+    tiltpoint = image_properties.get("TiltPoint", "")
+    tilt = image_properties.get("Tilt", "")
+    if baseline_pos:
+        if isinstance(baseline_pos, tuple):
+            baseline_pos = baseline_pos[0]
+    baseline_str = f"{baseline_pos};{baseline_interval};{baseline_offset};{tiltpoint};{tilt}"
+    return baseline_str
+
+
 def extract_road_info_from_filename(filepath, parsed_exif, labeled_exif):
     """
     Extracts the road info from the file name.
@@ -410,6 +428,40 @@ def to_pretty_xml(contents_bytes):
     return pretty_xml
 
 
+def redact_image_properties(contents):
+    """
+    Redact entries in `contents`. See `REDACT_XML_TAGS` for the list of tags to be redacted.
+
+    :param contents: XML containing tags to be redacted.
+    :type contents: str
+    :return: Redacted contents
+    :rtype: str
+    """
+    for pattern, replace_str in zip(REDACT_XML_REGEX_PATTERNS, REDACT_XML_REPLACE_STRINGS):
+        contents = re.sub(pattern, replace_str, contents)
+    return contents
+
+
+def process_image_properties(contents, parsed_exif):
+    """
+    Process the `ImageProperties` XML from the EXIF header
+
+    :param contents: XML-contents
+    :type contents: bytes
+    :param parsed_exif: Dictionary to hold the extracted values
+    :type parsed_exif: dict
+    :return: Relevant information extracted from `contents`
+    :rtype: dict
+    """
+    contents = to_pretty_xml(contents)
+    contents = redact_image_properties(contents)
+    image_properties = xmltodict.parse(contents)["ImageProperties"]
+    baseline_info = extract_baseline_info(image_properties)
+
+    parsed_exif["exif_imageproperties"] = contents
+    parsed_exif["exif_basislinje"] = baseline_info
+
+
 def process_reflink_info(contents, parsed_exif):
     """
     Process the `ReflinkInfo` XML from the EXIF header.
@@ -429,6 +481,7 @@ def process_reflink_info(contents, parsed_exif):
 
     # Prettify XML
     contents = to_pretty_xml(contents)
+    parsed_exif["exif_reflinkinfo"] = contents
 
     # Parse XML
     parsed_contents = xmltodict.parse(contents)

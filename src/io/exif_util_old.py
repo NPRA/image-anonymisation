@@ -198,6 +198,7 @@ def get_exif(img, image_path):
 
         if reflink_info_xml:
             process_reflink_info(reflink_info_xml, parsed_exif)
+
         if not image_properties_xml and not reflink_info_xml:
             # Lower the quality level to 'missing values'
             parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["missing_values"]
@@ -224,7 +225,7 @@ def get_exif(img, image_path):
     # Insert the folder name
     parsed_exif["mappenavn"] = get_mappenavn(image_path, parsed_exif)
     # Set roadident if it hasn't already been set.
-    parsed_exif["exif_roadident"] = create_roadident_from_extracted_data(parsed_exif) \
+    parsed_exif["exif_roadident"] = create_roadident_from_extracted_data(parsed_exif, image_path[-1]) \
         if not parsed_exif["exif_roadident"] else parsed_exif["exif_roadident"]
 
     return parsed_exif
@@ -348,7 +349,7 @@ def extract_road_info_from_filename(filepath, parsed_exif, labeled_exif):
         "exif_sideanleggsdel"] = process_strekning_and_kryss(road_info_list[1], filename)
 
 
-def create_roadident_from_extracted_data(parsed_exif):
+def create_roadident_from_extracted_data(parsed_exif, filename):
     """
     A helper function to create a roadident string
     from the parsed_exif data.
@@ -366,12 +367,14 @@ def create_roadident_from_extracted_data(parsed_exif):
         "exif_sideanleggsdel"] else f" {kryss_string} " \
         if parsed_exif["exif_kryssdel"] else ""
     roadident_anchor_string = f" M{parsed_exif['exif_ankerpunkt']} " if parsed_exif['exif_ankerpunkt'] else ""
+    meter_match = METER_REGEX.findall(filename)
+
     # Stitch together the elements of the roadident-string
     roadident_string = f"{parsed_exif['exif_vegkat']}{parsed_exif['exif_vegstat']}{parsed_exif['exif_vegnr']}" \
                        f" {roadident_roadpart_string}" \
                        f"{roadident_anchor_string}" \
                        f"{roadident_special_roadtype_string}" \
-                       f" m{parsed_exif['exif_meter']}"
+                       f" m{meter_match[0]}"
     return roadident_string
 
 
@@ -444,7 +447,14 @@ def process_image_properties(contents, parsed_exif):
             felt_matches = FELT_REGEX.findall(road_info_elem)  # Find feltkode in the filename
             if felt_matches:
                 feltkode = felt_matches[0].lstrip("0")
+    baseline_info = extract_baseline_info(image_properties)
 
+    meter_match = METER_REGEX.findall(mapper[-1])
+    print(f"meter match: {meter_match}")
+    km_match = KILOMETER_REGEX.findall(mapper[-1])
+    print(f"kmeter match: {km_match}")
+    road_ident_meter_string = str(1000 * int(km_match[0][0]) + int(km_match[0][1])) \
+        if km_match else meter_match[0].strip("0")
     # Set values
     parsed_exif["exif_tid"] = timestamp
     parsed_exif["exif_dato"] = date
@@ -467,11 +477,23 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
     parsed_exif["exif_filnavn"] = mapper[-1]
     parsed_exif["exif_strekningreferanse"] = "/".join(mapper[-4:-2])
-    parsed_exif["exif_imageproperties"] = None  # contents
+    parsed_exif["exif_imageproperties"] = contents  # contents
     parsed_exif["exif_kvalitet"] = quality
+    parsed_exif["exif_basislinje"] = baseline_info
     parsed_exif[
-        "exif_roadident"] = f"{exif_vegkat}{exif_vegstat}{exif_vegnr} {hp} {str(round(float(image_properties['VegComValues']['VCMeter']), 2))} {feltkode}"
+        "exif_roadident"] = f"{exif_vegkat}{exif_vegstat}{exif_vegnr} {hp} {road_ident_meter_string} {feltkode}"
 
+def extract_baseline_info(image_properties):
+    baseline_pos = image_properties.get("BaseLinePosition", ""),
+    baseline_interval = image_properties.get("BaseLineTickInterval", "")
+    baseline_offset = image_properties.get("BaseLineTickOffset", "")
+    tiltpoint = image_properties.get("TiltPoint", "")
+    tilt = image_properties.get("Tilt", "")
+    if baseline_pos:
+        if isinstance(baseline_pos, tuple):
+            baseline_pos = baseline_pos[0]
+    baseline_str = f"{baseline_pos};{baseline_interval};{baseline_offset};{tiltpoint};{tilt}"
+    return baseline_str
 
 def process_strekning_and_kryss(vchp, filename):
     # Look for kryss-info in filename
@@ -564,6 +586,7 @@ def process_reflink_info(contents, parsed_exif):
 
     # Prettify XML
     contents = to_pretty_xml(contents)
+    parsed_exif["exif_reflinkinfo"] = contents
 
     # Parse XML
     parsed_contents = xmltodict.parse(contents)
