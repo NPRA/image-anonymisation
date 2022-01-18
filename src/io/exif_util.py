@@ -65,7 +65,7 @@ EXIF_TEMPLATE = {
     "exif_camera": None,
     "exif_imagetype": None,
     "exif_imagewidth": None,
-    "exif_imagehigh": None,
+    "exif_imageheight": None,
     "exif_speed_ms": None,
     "exif_heading": None,
     "exif_gpsposisjon": None,
@@ -163,7 +163,7 @@ def get_exif(img, image_path):
     # Add general image metadata to the exif.
     parsed_exif["exif_imagetype"] = config.image_type
     parsed_exif["exif_imagewidth"] = str(img.size[0])
-    parsed_exif["exif_imagehigh"] = str(img.size[1])
+    parsed_exif["exif_imageheight"] = str(img.size[1])
 
     # Get the EXIF data
     exif = img._getexif()
