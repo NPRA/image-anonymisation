@@ -5,7 +5,7 @@
 #: Dataeier
 data_eier: null
 #: The type of images to be processed
-image_type: "planar"
+image_type: "Planar"
 
 #: Apply the mask to the output image?
 draw_mask: True

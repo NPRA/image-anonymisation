@@ -20,7 +20,7 @@ def _load_yml(file_path):
     :rtype: dict
     """
     try:
-        with open(file_path, "r") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             contents = yaml.safe_load(f)
     except Exception as err:
         raise RuntimeError(f"Error while loading YAML-file '{file_path}'") from err
