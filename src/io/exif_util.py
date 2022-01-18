@@ -370,10 +370,10 @@ def create_roadident_from_extracted_data(parsed_exif):
     roadident_roadpart_string = f"S{parsed_exif['exif_strekning']}D{parsed_exif['exif_delstrekning']}"
     kryss_string = f"K{parsed_exif['exif_kryssdel']}"
     sideanlegg_string = f"A{parsed_exif['exif_sideanleggsdel']}"
-    roadident_special_roadtype_string = f" {sideanlegg_string} " if parsed_exif[
-        "exif_sideanleggsdel"] else f" {kryss_string} " \
+    roadident_special_roadtype_string = f" {sideanlegg_string}" if parsed_exif[
+        "exif_sideanleggsdel"] else f" {kryss_string}" \
         if parsed_exif["exif_kryssdel"] else ""
-    roadident_anchor_string = f" M{parsed_exif['exif_ankerpunkt']} " if parsed_exif['exif_ankerpunkt'] else ""
+    roadident_anchor_string = f" M{parsed_exif['exif_ankerpunkt']}" if parsed_exif['exif_ankerpunkt'] else ""
     # Stitch together the elements of the roadident-string
     roadident_string = f"{parsed_exif['exif_vegkat']}{parsed_exif['exif_vegstat']}{parsed_exif['exif_vegnr']}" \
                        f" {roadident_roadpart_string}" \
@@ -458,6 +458,27 @@ def process_image_properties(contents, parsed_exif):
     image_properties = xmltodict.parse(contents)["ImageProperties"]
     baseline_info = extract_baseline_info(image_properties)
 
+    # For planar images where the image properties-xml exist
+    # File path information does not exist in reflink-xml.
+
+    storage_path = image_properties.get("ImageName", None)
+    if storage_path:
+        road_info_string_list = storage_path.split(os.sep)
+        filename = road_info_string_list[-1]
+        _, _, ankerpunkt, \
+        kryssdel, sideanleggsdel = process_strekning_and_kryss(filename)
+        mappenavn = f"/".join(road_info_string_list[:len(road_info_string_list) - 1])
+        for elem in road_info_string_list:
+            _get_metadata_from_path_element(elem, parsed_exif)
+        parsed_exif["exif_filnavn"] = filename
+        parsed_exif["exif_ankerpunkt"] = ankerpunkt
+        parsed_exif["exif_kryssdel"] = kryssdel
+        parsed_exif["exif_sideanleggsdel"] = sideanleggsdel
+        parsed_exif["exif_mappenavn"] = mappenavn
+
+    if image_properties.get("VegComValues"):
+        parsed_exif["exif_fylke"] = image_properties["VegComValues"].get("VCCountyNo")
+        parsed_exif["exif_meter"] = str(round(float(image_properties["VegComValues"].get("VCMeter", None)), 2))
     parsed_exif["exif_imageproperties"] = contents
     parsed_exif["exif_basislinje"] = baseline_info
 
@@ -507,7 +528,8 @@ def process_reflink_info(contents, parsed_exif):
                 # the exif quality will be lowered to "missing valuse", "1"
                 parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["missing_values"]
 
-            image_info = parsed_contents["AdditionalInfoNorway2"]["ImageInfo"]
+            # image info only exist in 360-images.
+            image_info = parsed_contents.get("AdditionalInfoNorway2", {}).get("ImageInfo", None)
             update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info)
     except KeyError as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -533,20 +555,32 @@ def update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info)
     :rtype: None
     """
 
+    kryssdel = parsed_exif["exif_kryssdel"]
+    ankerpunkt = parsed_exif["exif_ankerpunkt"]
+    sideanleggsdel = parsed_exif["exif_sideanleggsdel"]
+    meter = parsed_exif["exif_meter"]
+    road_type = parsed_exif["exif_roadtype"]
+    filename = parsed_exif["exif_filnavn"]
+    mappenavn = parsed_exif["exif_mappenavn"]
+
+    if image_info:
+        road_type = image_info["roadtype"]
+        meter = str(round(float(image_info["meter"]), 2))
+        road_info_string_list = image_info["StorageFile"].split(os.sep)
+
+        filename = road_info_string_list[-1]
+        _, _, ankerpunkt, \
+        kryssdel, sideanleggsdel = process_strekning_and_kryss(filename)
+        mappenavn = f"/".join(road_info_string_list[:len(road_info_string_list) - 1])
+        for elem in road_info_string_list:
+            _get_metadata_from_path_element(elem, parsed_exif)
+
     # Create the gps_posisjon-string to the correct format.
     gps_posisjon_string = f"srid=4326;POINT Z( {gnss_info['Longitude']} {gnss_info['Latitude']} {gnss_info['Altitude']} )"
-    road_info_string_list = image_info["StorageFile"].split(os.sep)
-    filename = road_info_string_list[-1]
     strekningsreferanse_list = road_info["RoadIdent"].split(" ")[1]
     strekning = strekningsreferanse_list[1:strekningsreferanse_list.index("D")]
     delstrekning = strekningsreferanse_list[strekningsreferanse_list.index("D") + 1:]
     strekningsreferanse = "/".join([f"S{strekning}", f"D{delstrekning}"])
-    for elem in road_info_string_list:
-        _get_metadata_from_path_element(elem, parsed_exif)
-
-    _, _, ankerpunkt, \
-    kryssdel, sideanleggsdel = process_strekning_and_kryss(filename)
-    mappenavn = f"/".join(road_info_string_list[:len(road_info_string_list) - 1])
 
     # A dictionary to map where the information for each tag is read from.
     exif_tags_lookup_reflink = {
@@ -566,8 +600,8 @@ def update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info)
         "exif_speed_ms": str(round(float(gnss_info["Speed"]), 2)),
         "exif_gpsposisjon": gps_posisjon_string,
         "exif_heading": gnss_info["Heading"],
-        "exif_roadtype": image_info["roadtype"],
-        "exif_meter": str(round(float(image_info["meter"]), 2)),
+        "exif_roadtype": road_type,
+        "exif_meter": meter,
         "exif_strekning": strekning,
         "exif_delstrekning": delstrekning,
         "exif_strekningreferanse": strekningsreferanse,
@@ -605,7 +639,7 @@ def get_metadata_from_path(image_path, parsed_exif):
 
 FELT_REGEX = re.compile(r"f(\d\w*)", re.IGNORECASE)
 VEG_REGEX = re.compile(f"([{''.join(LOVLIG_VEGKATEGORI)}])([{''.join(LOVLIG_VEGSTATUS)}])(\d+)", re.IGNORECASE)
-METER_REGEX = re.compile(r"(?<!k)m(\d+)")
+METER_REGEX = re.compile(r"(?<!k)m(\d+)_f")
 KILOMETER_REGEX = re.compile(r"km(\d{2})[_,\.](\d{3})")
 FYLKE_REGEX = re.compile(r"^(\d{2})\b")
 LOVLIGE_FYLKER = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "14", "15", "16", "17", "18",
@@ -629,14 +663,20 @@ def _get_metadata_from_path_element(elem, parsed_exif):
         parsed_exif["exif_vegstat"] = veg_matches[0][1].upper()
         parsed_exif["exif_vegnr"] = veg_matches[0][2].lstrip("0")
 
+    strekning, delstrekning, ankerpunkt, kryssdel, sideanleggsdel = process_strekning_and_kryss(elem)
+    parsed_exif["exif_strekning"] = parsed_exif["exif_strekning"] if not strekning else strekning
+    parsed_exif["exif_delstrekning"] = parsed_exif["exif_delstrekning"] if not delstrekning else delstrekning
+    parsed_exif["exif_ankerpunkt"] = parsed_exif["exif_ankerpunkt"] if not ankerpunkt else ankerpunkt
+    parsed_exif["exif_kryssdel"] = parsed_exif["exif_kryssdel"] if not kryssdel else kryssdel
+    parsed_exif["exif_sideanleggsdel"] = parsed_exif["exif_sideanleggsdel"] if not sideanleggsdel else sideanleggsdel
+
     meter_match = METER_REGEX.findall(elem)
     kilometer_match = KILOMETER_REGEX.findall(elem)
     if meter_match:
-        parsed_exif["exif_meter"] = meter_match[0].lstrip("0")
+        parsed_exif["exif_meter"] = meter_match[0].lstrip("0") if not parsed_exif["exif_meter"] else parsed_exif["exif_meter"]
     elif kilometer_match:
         meter = 1000 * int(kilometer_match[0][0]) + int(kilometer_match[0][1])
-        parsed_exif["exif_meter"] = str(meter)
-    process_strekning_and_kryss(elem)
+        parsed_exif["exif_meter"] = str(meter) if not parsed_exif["exif_meter"] else parsed_exif["exif_meter"]
 
 
 def process_gpsinfo_tag(gpsinfo, parsed_exif):
