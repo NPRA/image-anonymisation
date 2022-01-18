@@ -450,9 +450,7 @@ def process_image_properties(contents, parsed_exif):
     baseline_info = extract_baseline_info(image_properties)
 
     meter_match = METER_REGEX.findall(mapper[-1])
-    print(f"meter match: {meter_match}")
     km_match = KILOMETER_REGEX.findall(mapper[-1])
-    print(f"kmeter match: {km_match}")
     road_ident_meter_string = str(1000 * int(km_match[0][0]) + int(km_match[0][1])) \
         if km_match else meter_match[0].strip("0")
     # Set values
