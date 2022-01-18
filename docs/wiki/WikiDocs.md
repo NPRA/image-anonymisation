@@ -64,7 +64,7 @@ This will produce a `.jpg`-image in the desired location
 * `exif_dataeier`: Set in the config file by the user.
 * `exif_camera`: Read from the exif data of the input image
 * `exif_imagetype`: Set in the config file by the user.
-* `exif_imagehigh`: Read from image data
+* `exif_imageheight`: Read from image data
 * `exif_imagewidth`: Read from image data
 * `exif_speed_ms`: [changed name] from `exif_speed`
 * `exif_moh`: Read from the exif data of the input image

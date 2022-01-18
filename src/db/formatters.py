@@ -104,7 +104,7 @@ def Bildebredde(json_data):
 
 
 def Bildehoyde(json_data):
-    return json_data["exif_imagehigh"]
+    return json_data["exif_imageheight"]
 
 
 def Retning(json_data):

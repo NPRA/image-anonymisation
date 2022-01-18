@@ -159,7 +159,7 @@ columns:
   - name: Basislinje
     dtype: VARCHAR(256)
     formatter: Basislinje
-    extra: 
+    extra:
 
   - name: Mappenavn
     dtype: VARCHAR(256)
