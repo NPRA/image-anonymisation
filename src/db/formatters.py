@@ -195,6 +195,10 @@ def Meter(json_data):
     return to_number(json_data["exif_meter"])
 
 
+def Basislinje(json_data):
+    return json_data["exif_basislinje"]
+
+
 def Mappenavn(json_data):
     return json_data["mappenavn"]
 

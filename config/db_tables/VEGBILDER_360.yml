@@ -156,6 +156,11 @@ columns:
     formatter: Meter
     extra: NOT NULL
 
+  - name: Basislinje
+    dtype: VARCHAR(256)
+    formatter: Basislinje
+    extra: 
+
   - name: Mappenavn
     dtype: VARCHAR(256)
     formatter: Mappenavn
