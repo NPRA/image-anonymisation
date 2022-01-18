@@ -147,7 +147,7 @@ config/360_test_config.yml
 config/test_config.yml
 config/planar_test_config.yml
 config/process_planar_test_config.yml
-
+config/mrfk_json.yml
 data/*
 tests/data/real
 tests/data/json_files
@@ -162,3 +162,4 @@ scripts/test_json.py
 scripts/test.py
 scripts/tmp
 /scripts/extract_labels.py
+/config/mrfk_json.yml
