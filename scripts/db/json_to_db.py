@@ -131,13 +131,6 @@ def convert_north_east_to_east_north_coordinates(coordinate_string):
     return new_coordinate_string
 
 
-def check_if_conversion_is_needed(data):
-    """
-    Returns true if the JSON was written with the ViaAIUtility tool
-    """
-    return data["versjon"].split(" - ")[0] == "ViaAIUtility"
-
-
 def load_json(paths):
     wait_until_path_is_found(paths.input_file)
     with open(paths.input_file, "r", encoding="utf-8") as f:
@@ -158,7 +151,7 @@ def main():
         try:
             json_dict = load_json(paths)
             # Convert value strings if necessary
-            if check_if_conversion_is_needed(json_dict):
+            if config.flip_wkt:
                 json_dict["exif_gpsposisjon"] = convert_north_east_to_east_north_coordinates(
                     json_dict["exif_gpsposisjon"])
                 for key, value in json_dict.items():

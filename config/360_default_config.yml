@@ -71,6 +71,12 @@ exif_top_dir: "TilSladding"
 #: E.g: 'Vegbilder\2021\Planar\EV00006\S1...' is converted to 'Vegbilder\2021\EV00006\S1...'
 remove_imagetype_filepath: False
 
+#: If True, the longitude and latitude values of the wkt gps string will flip their position
+#: when reading the .json file to the database.
+#: E.g: The wkt gps string a: srid=4326;POINT Z( 1.0 2.0 66.08 )
+#: becomes wkt gps string b: srid=4326;POINT Z( 2.0 1.0 66.08 )
+flip_wkt: False
+
 
 
 # ===================
