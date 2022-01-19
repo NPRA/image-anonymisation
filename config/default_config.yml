@@ -64,7 +64,7 @@ exif_mappenavn: "Vegbilder/{relative_input_dir}"
 #: Top directory for `relative_input_dir`. See above for an explanation.
 exif_top_dir: "tilSladding"
 
-#: If true, the image type between year and road number is removed
+#: If true, the image type of either 'planar', 'dekke' or '360 is removed
 #: from the filepath in the 'mappenavn'-field in the .json-file.
 #: This is relevant for images from 2021 and older.
 #: E.g: 'Vegbilder\2021\Planar\EV00006\S1...' is converted to 'Vegbilder\2021\EV00006\S1...'

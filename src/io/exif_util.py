@@ -273,6 +273,7 @@ def get_rel_path(image_path):
 
 def get_mappenavn(image_path, exif):
     dirs = image_path.split(os.sep)[:-1]
+
     if config.exif_top_dir in dirs:
         # Uncomment below for forward-slash separator or backward-slash.
         rel_path = "/".join(dirs[(dirs.index(config.exif_top_dir) + 1):])
@@ -299,6 +300,11 @@ def get_mappenavn(image_path, exif):
     folder_name = config.exif_mappenavn.format(**format_values)
     assert "{" not in folder_name and "}" not in folder_name, f"Invalid `Mappenavn`: {config.db_folder_name} -> " \
                                                               f"{folder_name}."
+    if config.remove_imagetype_filepath:
+        possible_imagetype_folders = ["planar", "dekke", "360"]
+        for imgtype in possible_imagetype_folders:
+            case_insesitive_imagetype = re.compile(re.escape(f"/{imgtype}"), re.IGNORECASE)
+            folder_name = case_insesitive_imagetype.sub('', folder_name)
     return folder_name
 
 
