@@ -595,7 +595,7 @@ def update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info)
         "exif_pitchrmserror": gnss_info["PitchRmsError"],
         "exif_headingrmserror": gnss_info["HeadingRmsError"],
         "exif_altitude": gnss_info["Altitude"],
-        "exif_moh": gnss_info["Altitude"],
+        "exif_moh": str(float(gnss_info["Altitude"]) - float(gnss_info["GeoidalSeparation"])),
         "exif_fylke": image_info["fylke"] if image_info else None,
         "exif_speed_ms": str(round(float(gnss_info["Speed"]), 2)),
         "exif_gpsposisjon": gps_posisjon_string,
