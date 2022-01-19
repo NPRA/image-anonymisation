@@ -62,7 +62,8 @@ def check_config(args):
         raise ValueError("Parameter 'remote_preview' and 'local_preview' requires 'preview_dim'")
     if config.archive_preview and not config.remote_preview:
         raise ValueError("Parameter 'archive_preview' requires remote_preview=True.")
-
+    if config.force_fylke and not config.fylkesnummer:
+        raise ValueError(f"Parameter 'force_fylke' requires fylkesnummer not null.")
     #if config.archive_mask and not config.remote_mask:
         #raise ValueError("Parameter 'archive_mask' requires remote_mask=True.")
 

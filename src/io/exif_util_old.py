@@ -228,6 +228,8 @@ def get_exif(img, image_path):
     parsed_exif["exif_roadident"] = create_roadident_from_extracted_data(parsed_exif, image_path[-1]) \
         if not parsed_exif["exif_roadident"] else parsed_exif["exif_roadident"]
 
+    if config.force_fylke or not parsed_exif["exif_fylke"]:
+        parsed_exif["exif_fylke"] = str(config.fylkesnummer)
     return parsed_exif
 
 

@@ -4,6 +4,19 @@
 
 #: Dataeier
 data_eier: null
+
+#: Fylkesnummer/Kommunenummer
+#: If the ExifWorker cannot find any other relevant
+#: values for "exif_fylke" in the image's exif data,
+#: The value of fylkesnummer will be used.
+fylkesnummer: null
+
+#: If True, the "exif_fylke"-field in the output .json-file will
+#: be forced to have the "fylkesnummer"-value from above.
+#: This will overwrite potential other values that "exif_fylke" may have
+#: extracted from the exif data in the image.
+force_fylke: False
+
 #: The type of images to be processed
 image_type: "Planar"
 
@@ -51,6 +64,11 @@ exif_mappenavn: "Vegbilder/{relative_input_dir}"
 #: Top directory for `relative_input_dir`. See above for an explanation.
 exif_top_dir: "tilSladding"
 
+#: If true, the image type between year and road number is removed
+#: from the filepath in the 'mappenavn'-field in the .json-file.
+#: This is relevant for images from 2021 and older.
+#: E.g: 'Vegbilder\2021\Planar\EV00006\S1...' is converted to 'Vegbilder\2021\EV00006\S1...'
+remove_imagetype_filepath: False
 
 # ===================
 # File I/O parameters

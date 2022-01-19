@@ -163,3 +163,4 @@ scripts/test.py
 scripts/tmp
 /scripts/extract_labels.py
 /config/mrfk_json.yml
+/config/nordland.yml

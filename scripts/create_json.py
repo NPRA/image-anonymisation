@@ -63,6 +63,9 @@ def initialize():
 
     args = get_args()
 
+    if config.force_fylke and not config.fylkesnummer:
+        raise ValueError(f"Parameter 'force_fylke' requires fylkesnummer not null.")
+
     if args.log_folder is not None:
         log_dir = os.path.abspath(args.log_folder)
         os.makedirs(args.log_folder, exist_ok=True)

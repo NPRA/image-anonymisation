@@ -6,6 +6,18 @@
 #: Dataeier
 data_eier: null
 
+#: Fylkesnummer/Kommunenummer
+#: If the ExifWorker cannot find any other relevant
+#: values for "exif_fylke" in the image's exif data,
+#: The value of fylkesnummer will be used.
+fylkesnummer: null
+
+#: If True, the "exif_fylke"-field in the output .json-file will
+#: be forced to have the "fylkesnummer"-value from above.
+#: This will overwrite potential other values that "exif_fylke" may have
+#: extracted from the exif data in the image.
+force_fylke: False
+
 #: The type of images to be processed
 image_type: "360"
 
