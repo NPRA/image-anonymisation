@@ -131,6 +131,10 @@ def Strekningsnavn(json_data):
     return json_data["exif_strekningsnavn"]
 
 
+def Strekningsreferanse(json_data):
+    return json_data["exif_strekningreferanse"]
+
+
 def SenterlinjePosisjon(json_data):
     return to_position(json_data["senterlinjeposisjon"], dim=3)
 
@@ -195,6 +199,10 @@ def Meter(json_data):
     return to_number(json_data["exif_meter"])
 
 
+def Hastighet(json_data):
+    return to_number(json_data["exif_speed_ms"])
+
+
 def Basislinje(json_data):
     return json_data["exif_basislinje"]
 
@@ -221,6 +229,10 @@ def ReflinkID(json_data):
 
 def ReflinkPosisjon(json_data):
     return to_number(get_value_for_multiple_keys(json_data, keys=["exif_reflinkposisjon", "veglenkepos"]))
+
+
+def ReflinkInfo(json_data):
+    return json_data["exif_reflinkinfo"]
 
 
 def DetekterteObjekter(json_data):
@@ -250,3 +262,39 @@ def XpTitle(json_data):
 
 def ExifKvalitet(json_data):
     return to_number(json_data.get("exif_kvalitet", None))
+
+
+def Roll(json_data):
+    return to_number(json_data["exif_roll"])
+
+
+def Pitch(json_data):
+    return to_number(json_data["exif_pitch"])
+
+
+def Geoidalseparation(json_data):
+    return to_number(json_data["exif_geoidalseparation"])
+
+
+def Northrmserror(json_data):
+    return to_number(json_data["exif_northrmserror"])
+
+
+def Eastrmserror(json_data):
+    return to_number(json_data["exif_eastrmserror"])
+
+
+def Downrmserror(json_data):
+    return to_number(json_data["exif_downrmserror"])
+
+
+def Rollrmserror(json_data):
+    return to_number(json_data["exif_rollrmserror"])
+
+
+def Pitchrmserror(json_data):
+    return to_number(json_data["exif_pitchrmserror"])
+
+
+def Headingrmserror(json_data):
+    return to_number(json_data["exif_headingrmserror"])

@@ -1,0 +1,287 @@
+pk_column: ID
+columns:
+  - name: ID
+    dtype: VARCHAR(256)
+    formatter: ID
+    extra: PRIMARY KEY
+
+  - name: Tidspunkt
+    dtype: DATE
+    formatter: Tidspunkt
+    extra: NOT NULL
+
+  - name: Dataeier
+    dtype: VARCHAR(64)
+    formatter: Dataeier
+    extra: NOT NULL
+
+  - name: Kamera
+    dtype: VARCHAR(64)
+    formatter: Kamera
+    extra:
+
+  - name: Bildetype
+    dtype: VARCHAR(8)
+    formatter: Bildetype
+    extra: NOT NULL
+
+  - name: Bildebredde
+    dtype: NUMBER
+    formatter: Bildebredde
+    extra:
+
+  - name: Bildehoyde
+    dtype: NUMBER
+    formatter: Bildehoyde
+    extra:
+
+  - name: Moh
+    dtype: NUMBER
+    formatter: Moh
+    extra:
+
+  - name: Strekningsnavn
+    dtype: VARCHAR(64)
+    formatter: Strekningsnavn
+    extra:
+
+  - name: Strekningsreferanse
+    dtype: VARCHAR(64)
+    formatter: Strekningsreferanse
+    extra:
+
+  - name: Retning
+    dtype: NUMBER
+    formatter: Retning
+    extra:
+
+  - name: Posisjon
+    dtype: SDO_GEOMETRY
+    formatter: Posisjon_2d
+    extra:
+    spatial_metadata:
+      srid: 4326
+      dimension: 2
+      dim_elements:
+        - name: Longitude
+          min: -180
+          max: 180
+          tol: 0.5
+
+        - name: Latitude
+          min: -90
+          max: 90
+          tol: 0.5
+
+  - name: PosisjonHoyde
+    dtype: NUMBER
+    formatter: Hoyde
+    extra:
+
+  - name: SenterlinjePosisjon
+    dtype: SDO_GEOMETRY
+    formatter: SenterlinjePosisjon_2d
+    extra:
+    spatial_metadata:
+      srid: 25833
+      dimension: 2
+      dim_elements:
+        - name: X
+          min: -100000
+          max: 1120000
+          tol: 0.01
+
+        - name: Y
+          min: 6430000
+          max: 7960000
+          tol: 0.01
+
+  - name: SenterlinjeHoyde
+    dtype: NUMBER
+    formatter: SenterlinjeHoyde
+    extra:
+
+  - name: FylkeNummer
+    dtype: NUMBER
+    formatter: FylkeNummer
+    extra: NOT NULL
+
+  - name: Vegkategori
+    dtype: VARCHAR(8)
+    formatter: Vegkategori
+    extra: NOT NULL
+
+  - name: Vegstatus
+    dtype: VARCHAR(8)
+    formatter: Vegstatus
+    extra: NOT NULL
+
+  - name: Vegnummer
+    dtype: NUMBER
+    formatter: Vegnummer
+    extra: NOT NULL
+
+  - name: Vegtype
+    dtype: VARCHAR(16)
+    formatter: Vegtype
+    extra:
+
+  - name: HP
+    dtype: NUMBER
+    formatter: HP
+    extra:
+
+  - name: Strekning
+    dtype: NUMBER
+    formatter: Strekning
+    extra:
+
+  - name: Delstrekning
+    dtype: NUMBER
+    formatter: Delstrekning
+    extra:
+
+  - name: Ankerpunkt
+    dtype: NUMBER
+    formatter: Ankerpunkt
+    extra:
+
+  - name: Kryssdel
+    dtype: NUMBER
+    formatter: Kryssdel
+    extra:
+
+  - name: Sideanleggsdel
+    dtype: NUMBER
+    formatter: Sideanleggsdel
+    extra:
+
+  - name: Meter
+    dtype: NUMBER
+    formatter: Meter
+    extra: NOT NULL
+
+  - name: Hastighet
+    dtype: NUMBER
+    formatter: Hastighet
+    extra:
+
+  - name: Basislinje
+    dtype: VARCHAR(64)
+    formatter: Basislinje
+    extra:
+
+  - name: Mappenavn
+    dtype: VARCHAR(256)
+    formatter: Mappenavn
+    extra: NOT NULL
+
+  - name: Filnavn
+    dtype: VARCHAR(64)
+    formatter: Filnavn
+    extra: NOT NULL
+
+  - name: PreviewFilnavn
+    dtype: VARCHAR(64)
+    formatter: PreviewFilnavn
+    extra:
+
+  - name: JsonData
+    dtype: CLOB
+    formatter: JsonData
+    extra:
+
+  - name: ReflinkID
+    dtype: NUMBER
+    formatter: ReflinkID
+    extra:
+
+  - name: ReflinkPosisjon
+    dtype: NUMBER
+    formatter: ReflinkPosisjon
+    extra:
+
+  - name: ReflinkInfo
+    dtype: CLOB
+    formatter: ReflinkInfo
+    extra:
+
+  - name: DetekterteObjekter
+    dtype: CLOB
+    formatter: DetekterteObjekter
+    extra:
+
+  - name: Aar
+    dtype: NUMBER
+    formatter: Aar
+    extra: NOT NULL
+
+  - name: Feltkode
+    dtype: VARCHAR(8)
+    formatter: Feltkode
+    extra: NOT NULL
+
+  - name: VegIdentitet
+    dtype: VARCHAR(64)
+    formatter: VegIdentitet
+    extra:
+
+  - name: Versjon
+    dtype: VARCHAR(31)
+    formatter: Versjon
+    extra:
+
+  - name: XpTitle
+    dtype: VARCHAR(64)
+    formatter: XpTitle
+    extra:
+
+  - name: ExifKvalitet
+    dtype: NUMBER
+    formatter: ExifKvalitet
+    extra:
+
+  - name: Roll
+    dtype: NUMBER
+    formatter: Roll
+    extra:
+
+  - name: Pitch
+    dtype: NUMBER
+    formatter: Pitch
+    extra:
+
+  - name: Geoidalseparation
+    dtype: NUMBER
+    formatter: Geoidalseparation
+    extra:
+
+  - name: Northrmserror
+    dtype: NUMBER
+    formatter: Northrmserror
+    extra:
+
+  - name: Eastrmserror
+    dtype: NUMBER
+    formatter: Eastrmserror
+    extra:
+
+  - name: Downrmserror
+    dtype: NUMBER
+    formatter: Downrmserror
+    extra:
+
+  - name: Rollrmserror
+    dtype: NUMBER
+    formatter: Rollrmserror
+    extra:
+
+  - name: Pitchrmserror
+    dtype: NUMBER
+    formatter: Pitchrmserror
+    extra:
+
+  - name: Headingrmserror
+    dtype: NUMBER
+    formatter: Headingrmserror
+    extra:
