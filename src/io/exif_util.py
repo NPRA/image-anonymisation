@@ -368,8 +368,8 @@ def create_roadident_from_extracted_data(parsed_exif):
     E.G: FV63 S10D3 m41
     """
     roadident_roadpart_string = f"S{parsed_exif['exif_strekning']}D{parsed_exif['exif_delstrekning']}"
-    kryss_string = f"K{parsed_exif['exif_kryssdel']}"
-    sideanlegg_string = f"A{parsed_exif['exif_sideanleggsdel']}"
+    kryss_string = f"KD{parsed_exif['exif_kryssdel']}"
+    sideanlegg_string = f"AD{parsed_exif['exif_sideanleggsdel']}"
     roadident_special_roadtype_string = f" {sideanlegg_string}" if parsed_exif[
         "exif_sideanleggsdel"] else f" {kryss_string}" \
         if parsed_exif["exif_kryssdel"] else ""
