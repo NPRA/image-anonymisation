@@ -455,6 +455,4 @@ responsible for the database writing.
 | `db_max_cache_size`         |      1000     |   `int`   | The maximum number of cached rows before a `RuntimeError is raised`                           |                                                                                                                                                                                                                                                                                                |                                                                                                           |
 
 
-# The Next Steps
-
 
