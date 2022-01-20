@@ -300,9 +300,10 @@ def get_mappenavn(image_path, exif):
     assert "{" not in folder_name and "}" not in folder_name, f"Invalid `Mappenavn`: {config.db_folder_name} -> " \
                                                               f"{folder_name}."
     if config.remove_imagetype_filepath:
-        possible_imagetype_folders = "planar"
-        case_insesitive_imagetype = re.compile(re.escape(f"/{possible_imagetype_folders}"), re.IGNORECASE)
-        folder_name = case_insesitive_imagetype.sub('', folder_name)
+        replace_token = "planar"
+        planar_filepath_regex = f"({timestamp.year})/{replace_token}"
+        case_insesitive_imagetype = re.compile(planar_filepath_regex, re.IGNORECASE)
+        folder_name = case_insesitive_imagetype.sub(r'\1', folder_name)
     return folder_name
 
 
