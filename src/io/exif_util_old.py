@@ -407,7 +407,6 @@ def process_image_properties(contents, parsed_exif):
     geo_tag = image_properties.get("GeoTag", None)
     if geo_tag is not None:
         ewkt = f"srid=4326;POINT Z( {geo_tag['dLongitude']} {geo_tag['dLatitude']} {geo_tag['dAltitude']} )"
-        parsed_exif["exif_moh"] = geo_tag['dAltitude']
         parsed_exif["exif_altitude"] = geo_tag['dAltitude']
     else:
         ewkt = None
@@ -679,7 +678,7 @@ def update_exif_reflink_additional_info(parsed_exif, road_info, gnss_info, image
         "exif_pitchrmserror": gnss_info["PitchRmsError"],
         "exif_headingrmserror": gnss_info["HeadingRmsError"],
         "exif_altitude": gnss_info["Altitude"],
-        "exif_moh": gnss_info["Altitude"],
+        "exif_moh": str(float(gnss_info["Altitude"]) - float(gnss_info["GeoidalSeparation"])),
         "exif_fylke": image_info["fylke"] if image_info else None,
         "exif_speed_ms": str(round(float(gnss_info["Speed"]), 2)),
         "exif_gpsposisjon": gps_posisjon_string,
