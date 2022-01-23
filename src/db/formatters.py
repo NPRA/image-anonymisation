@@ -5,7 +5,6 @@ import numpy as np
 
 from src.db import geometry
 from src.Logger import LOGGER
-from src.io.exif_util import get_deterministic_id
 
 WKT_GEOMETRY_REGEX = re.compile(
     r"srid=(\d+);POINT Z\(\s*(-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan) (-?\d+\.?\d*|NaN|nan)\s*\)")
@@ -76,6 +75,8 @@ def ID(json_data):
 
     # If 'bilde_id' could not be found in the json_data. Create it from the contents.
     if image_id is None:
+        from src.io.exif_util import get_deterministic_id
+
         LOGGER.warning(__name__, "Could not find 'bildeid' in JSON data. The ID will be created from the contents of "
                                  "the JSON data instead.")
         image_id = get_deterministic_id(json_data)

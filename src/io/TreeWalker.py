@@ -81,7 +81,6 @@ class Paths:
             self.remaining_mirror_dirs = None
 
         self.cache_file = os.path.join(config.CACHE_DIRECTORY, str(uuid4()) + ".json")
-
     @property
     def error_output_dir(self):
         error_extension = "_error"

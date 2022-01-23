@@ -10,7 +10,7 @@ from cryptography.fernet import Fernet
 
 DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "default_config.yml")
 DEFAULT_360_CONFIG_FILE =  os.path.join(os.path.dirname(os.path.abspath(__file__)), "360_default_config.yml")
-def _load_yml(file_path):
+def load_yml(file_path):
     """
     Load the contents of the YAML file `file_path`
 
@@ -44,13 +44,13 @@ def _get_config_file():
 
 
 def _load_from_config_file(config_file):
-    default_config = _load_yml(DEFAULT_CONFIG_FILE)
+    default_config = load_yml(DEFAULT_CONFIG_FILE)
     if config_file == DEFAULT_CONFIG_FILE:
         # If we got the default config file, use its variables.
         config_vars = default_config
     else:
         # Load the custom config file
-        custom_config = _load_yml(config_file)
+        custom_config = load_yml(config_file)
         config_vars = {}
         # Iterate the keys from the default config file, and get the corresponding values from the custom config.
         for key in default_config.keys():
@@ -85,7 +85,7 @@ def get_db_table_dict(table_name):
     :rtype: dict
     """
     table_file = os.path.join(PROJECT_ROOT, "config", "db_tables", f"{table_name}.yml")
-    table_dict = _load_yml(table_file)
+    table_dict = load_yml(table_file)
 
     # Check that the dict is valid
     expected_elements = [

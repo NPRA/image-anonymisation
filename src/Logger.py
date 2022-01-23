@@ -1,6 +1,7 @@
 import os
 import logging
 from shutil import copy2
+import json
 
 import config
 
@@ -53,11 +54,18 @@ class Logger:
         with open(msg_file, "w") as error_file:
             error_file.write(msg)
 
+    def _save_error_json(self, exif):
+        os.makedirs(self.paths.error_output_dir, exist_ok=True)
+        error_json_outfilename = os.path.splitext(self.paths.filename)[0] + "_exif_error.json"
+        with open(os.path.join(self.paths.error_output_dir, error_json_outfilename), "w", encoding="utf-8") as out_file:
+            json.dump(exif, out_file, indent=4, ensure_ascii=False)
+
     def _save_error(self, message):
         self._save_error_img()
         self._save_error_msg(message)
 
-    def _log(self, level, namespace, msg, *args, save=False, email=False, email_mode="error", **kwargs):
+    def _log(self, level, namespace, msg, *args, save=False, save_json=False, exif_error=None, email=False,
+             email_mode="error", **kwargs):
         logger = self.logger
         logger.log(level, msg, *args, **kwargs)
         if save:
@@ -70,7 +78,8 @@ class Logger:
                 return
             else:
                 logger.log(logging.INFO, f"Copied image file to {self.paths.error_output_dir} for manual inspection.")
-
+        if save_json and exif_error:
+            self._save_error_json(exif_error)
         if email and config.processing_error_email:
             from src.email_sender import send_mail
             send_mail(email_mode, msg=msg)
@@ -107,7 +116,7 @@ def config_string():
     lines = lines[start_line:]
     config_str = "".join(lines)
     config_str = 40 * "#" + " CONFIG START " + 40 * "#" + "\n" + config_str + "\n" + \
-        40 * "#" + " CONFIG END " + 40 * "#"
+                 40 * "#" + " CONFIG END " + 40 * "#"
     return config_str
 
 

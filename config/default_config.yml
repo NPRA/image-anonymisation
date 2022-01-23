@@ -234,3 +234,7 @@ db_max_n_errors: 1000
 
 #: If the number of cached rows exceeds this number, a RuntimeError will be raised.
 db_max_cache_size: 1000
+
+#: Config table name to check non nullable values against.
+#: If this value is None, a nullable check is not run on the json-file.
+table_name: "VEGBILDER_ADDED_FIELDS"

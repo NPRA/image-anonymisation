@@ -13,6 +13,8 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
 import config
 from src.Logger import LOGGER
+from src.db import  formatters
+import yaml
 
 #: Tags from Viatech
 VIATECH_TAGS = {40055: "ImageProperties", 40056: "ReflinkInfo"}
@@ -113,6 +115,18 @@ EXIF_TEMPLATE = {
 }
 
 
+def check_nullable(table_name, exif):
+    db_config_fields = config.get_db_table_dict(table_name)
+    all_columns = db_config_fields["columns"]
+    for column_definition in all_columns:
+        if column_definition['extra']:
+            if 'NOT NULL' in column_definition['extra']:
+                value = getattr(formatters, column_definition['formatter'])
+                if not value(exif):
+                    raise ValueError(f"Non nullable field: '{column_definition['name']}' "
+                                     f"is of type {type(value(exif))}")
+
+
 def exif_from_file(image_path):
     """
     Retrieve the EXIF-data from the image located at `image_path`
@@ -124,6 +138,14 @@ def exif_from_file(image_path):
     """
     pil_img = Image.open(image_path)
     exif = get_exif(pil_img, image_path=image_path)
+    exif["exif_feltkode"]  = None
+    if config.table_name:
+        try:
+            check_nullable(config.table_name, exif)
+        except ValueError as ve:
+            LOGGER.error(__name__, str(ve), save_json=True, exif_error=exif)
+            raise ValueError(str(ve))
+
     return exif
 
 
@@ -683,7 +705,8 @@ def _get_metadata_from_path_element(elem, parsed_exif):
     meter_match = METER_REGEX.findall(elem)
     kilometer_match = KILOMETER_REGEX.findall(elem)
     if meter_match:
-        parsed_exif["exif_meter"] = meter_match[0].lstrip("0") if not parsed_exif["exif_meter"] else parsed_exif["exif_meter"]
+        parsed_exif["exif_meter"] = meter_match[0].lstrip("0") if not parsed_exif["exif_meter"] else parsed_exif[
+            "exif_meter"]
     elif kilometer_match:
         meter = 1000 * int(kilometer_match[0][0]) + int(kilometer_match[0][1])
         parsed_exif["exif_meter"] = str(meter) if not parsed_exif["exif_meter"] else parsed_exif["exif_meter"]

@@ -189,7 +189,7 @@ columns:
   - name: JsonData
     dtype: CLOB
     formatter: JsonData
-    extra:
+    extra: NOT NULL
 
   - name: ReflinkID
     dtype: NUMBER

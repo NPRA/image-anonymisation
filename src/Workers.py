@@ -214,7 +214,7 @@ class EXIFWorker(BaseWorker):
         self.start()
 
     def result_is_valid(self, result):
-        return isinstance(result, dict)
+        return isinstance(result, dict) or -1
 
     @staticmethod
     def async_func(paths, mask_results, local_json, remote_json, version):
@@ -236,35 +236,43 @@ class EXIFWorker(BaseWorker):
         :rtype: dict
         """
         wait_until_path_is_found([paths.input_file])
-        # Get the EXIF data
-        exif = exif_util.exif_from_file(paths.input_file)
-        # Insert detected objects
-        if mask_results is not None:
-            exif["detekterte_objekter"] = exif_util.get_detected_objects_dict(mask_results)
-        else:
-            exif["detekterte_objekter"] = None
-        # Insert the version number
-        exif["versjon"] = str(version)
+        LOGGER.set_state(paths)
+        try:
+            # Get the EXIF data
+            exif = exif_util.exif_from_file(paths.input_file)
+            # Insert detected objects
+            if mask_results is not None:
+                exif["detekterte_objekter"] = exif_util.get_detected_objects_dict(mask_results)
+            else:
+                exif["detekterte_objekter"] = None
+            # Insert the version number
+            exif["versjon"] = str(version)
 
-        # Insert preview file name if it exists.
-        # Checks if the preview shoould be saved and if so if it is saved.
-        if (paths.input_preview and config.local_preview) \
-                or (paths.output_preview and config.remote_preview) \
-                or (paths.archive_preview and config.archive_preview) \
-                or (paths.separate_preview_dir and config.separate_preview_directory):
-            exif["exif_preview_filnavn"] = paths.preview_filename
-        else:
-            exif["exif_preview_filnavn"] = None
-        if local_json:
-            # Write EXIF to input directory
-            exif_util.write_exif(exif, paths.input_json)
-        if remote_json:
-            # Write EXIF to output directory
-            wait_until_path_is_found([paths.base_output_dir])
-            os.makedirs(paths.output_dir, exist_ok=True)
-            exif_util.write_exif(exif, paths.output_json)
+            # Insert preview file name if it exists.
+            # Checks if the preview shoould be saved and if so if it is saved.
+            if (paths.input_preview and config.local_preview) \
+                    or (paths.output_preview and config.remote_preview) \
+                    or (paths.archive_preview and config.archive_preview) \
+                    or (paths.separate_preview_dir and config.separate_preview_directory):
+                exif["exif_preview_filnavn"] = paths.preview_filename
+            else:
+                exif["exif_preview_filnavn"] = None
+            if local_json:
+                # Write EXIF to input directory
+                exif_util.write_exif(exif, paths.input_json)
+            if remote_json:
+                # Write EXIF to output directory
+                wait_until_path_is_found([paths.base_output_dir])
+                os.makedirs(paths.output_dir, exist_ok=True)
+                exif_util.write_exif(exif, paths.output_json)
+            return exif
 
-        return exif
+        except ValueError as e:
+            LOGGER.error(__name__, f"JSON-file contained NULL values for non nullable fields. "
+                                   f"The image will be saved with an error-text file and the json-file."
+                                   f"\nOriginal error message: {str(e)} ",
+                         save=True)
+            return -1
 
 
 class EXIFWorkerOld(BaseWorker):
