@@ -643,7 +643,7 @@ def update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info)
         "exif_altitude": gnss_info["Altitude"],
         "exif_moh": str(float(gnss_info["Altitude"]) - float(gnss_info["GeoidalSeparation"])),
         "exif_fylke": image_info["fylke"] if image_info else None,
-        "exif_speed_ms": str(round(float(gnss_info["Speed"]), 2)),
+        "exif_speed_ms": f"{round(float(gnss_info['Speed']), 2):.2f}",
         "exif_gpsposisjon": gps_posisjon_string,
         "exif_heading": gnss_info["Heading"],
         "exif_roadtype": road_type,
@@ -753,7 +753,7 @@ def process_gpsinfo_tag(gpsinfo, parsed_exif):
     # Parse the speed information and convert it to m/s
     speed = gpsinfo.get('GPSSpeed', None)
     if speed:
-        parsed_exif['exif_speed_ms'] = str(to_ms(speed, gpsinfo['GPSSpeedRef'].strip()))
+        parsed_exif['exif_speed_ms'] = f"{to_ms(speed, gpsinfo['GPSSpeedRef'].strip()):.2f}"
 
     # Parse the direction information.
     direction = gpsinfo.get('GPSImgDirection', None)

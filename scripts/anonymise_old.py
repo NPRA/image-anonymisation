@@ -57,6 +57,8 @@ def get_args():
 
 def check_config(args):
     """ Check that the specified configuration variables are valid. """
+    if (config.archive_json or config.archive_preview) and not args.archive_folder:
+        raise ValueError("Parameter 'archive_json' and 'archive_previe' requires the argument 'archive_folder'.")
     if config.archive_json and not config.remote_json:
         raise ValueError("Parameter 'archive_json' requires remote_json=True.")
     if (config.remote_preview or config.local_preview) and not config.preview_dim:
