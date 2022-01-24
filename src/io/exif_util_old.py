@@ -432,7 +432,6 @@ def process_image_properties(contents, parsed_exif):
     :rtype: dict
     """
     parsed_exif["exif_imageproperties"] = contents.decode("utf-8")  # contents
-    print(f"img props: {parsed_exif['exif_imageproperties']}")
 
     contents = to_pretty_xml(contents)
     contents = redact_image_properties(contents)
@@ -623,10 +622,11 @@ def process_reflink_info(contents, parsed_exif):
     :return: Relevant information extracted from `contents`
     :rtype: None
     """
+    parsed_exif["exif_reflinkinfo"] = contents.decode("utf-8")
+
     if contents is None:
         # If we got None, it means that the EXIF header did not contain  the `ReflinkInfo` XML.
         return
-    parsed_exif["exif_reflinkinfo"] = contents
 
     # Prettify XML
     contents = to_pretty_xml(contents)
