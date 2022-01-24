@@ -58,15 +58,17 @@ def get_expected_files(paths):
     """
     expected_files = [paths.output_file]
 
-    if config.local_json:
-        expected_files.append(paths.input_json)
-    if config.remote_json:
-        expected_files.append(paths.output_json)
+    if not os.path.isfile(
+            os.path.join(paths.error_output_dir, os.path.splitext(paths.filename)[0] + "_exif_error.json")):
+        if config.local_json:
+            expected_files.append(paths.input_json)
+        if config.remote_json:
+            expected_files.append(paths.output_json)
 
-    #if config.local_mask:
-        #expected_files.append(paths.input_webp)
-    #if config.remote_mask:
-        #expected_files.append(paths.output_webp)
+    # if config.local_mask:
+    # expected_files.append(paths.input_webp)
+    # if config.remote_mask:
+    # expected_files.append(paths.output_webp)
     if config.local_preview:
         expected_files.append(paths.input_preview)
     if config.remote_preview:
@@ -77,8 +79,8 @@ def get_expected_files(paths):
             expected_files.append(paths.archive_json)
         if config.archive_preview:
             expected_files.append(paths.archive_preview)
-        #if config.archive_mask:
-            #expected_files.append(paths.archive_webp)
+        # if config.archive_mask:
+        # expected_files.append(paths.archive_webp)
 
     return expected_files
 
@@ -164,8 +166,8 @@ def clear_cache_file(file_path):
         wait_until_path_is_found([paths.base_input_dir, *paths.base_mirror_dirs])
     except PathNotReachableError as err:
         raise PathNotReachableError(f"The directories pointed to by the cache file '{file_path}' could not be found. If"
-                                    f" they were deleted manually, delete this cache file and run the program again")\
-                                   from err
+                                    f" they were deleted manually, delete this cache file and run the program again") \
+            from err
 
     # Remove any expected output files if they are present
     for expected_file in get_expected_files(paths):

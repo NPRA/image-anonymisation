@@ -111,9 +111,23 @@ EXIF_TEMPLATE = {
     "mappenavn": None,
 }
 
+
 def check_nullable(table_name, exif):
+    """
+    checks for non-nullable values in the exif-dict that still are None.
+    It will also check for the primary key in a special case if
+    the primary key is specified in the config file.
+    """
     db_config_fields = config.get_db_table_dict(table_name)
     all_columns = db_config_fields["columns"]
+    if config.table_primary_key:
+        pk = exif.get(config.table_primary_key, -1)
+        if not pk:
+            raise ValueError(f"Primary key '{config.table_primary_key}' "
+                             f"is of type {type(pk)}.")
+        elif pk == -1:
+            raise KeyError(f"The specified primary key '{config.table_primary_key}' "
+                           f" does not exist.")
     for column_definition in all_columns:
         if column_definition['extra']:
             if 'NOT NULL' in column_definition['extra']:
@@ -121,6 +135,8 @@ def check_nullable(table_name, exif):
                 if not value(exif):
                     raise ValueError(f"Non nullable field: '{column_definition['name']}' "
                                      f"is of type {type(value(exif))}")
+
+
 def exif_from_file(image_path):
     """
     Retrieve the EXIF-data from the image located at `image_path`
@@ -132,6 +148,15 @@ def exif_from_file(image_path):
     """
     pil_img = Image.open(image_path)
     exif = get_exif(pil_img, image_path=image_path)
+    if config.table_name:
+        try:
+            check_nullable(config.table_name, exif)
+        except ValueError as ve:
+            LOGGER.error(__name__, str(ve), save_json=True, exif_error=exif)
+            raise ValueError(str(ve))
+        except KeyError as ke:
+            LOGGER.error(__name__, str(ke), save_json=True, exif_error=exif)
+            raise KeyError(str(ke))
     return exif
 
 
@@ -406,6 +431,9 @@ def process_image_properties(contents, parsed_exif):
     :return: Relevant information extracted from `contents`
     :rtype: dict
     """
+    parsed_exif["exif_imageproperties"] = contents.decode("utf-8")  # contents
+    print(f"img props: {parsed_exif['exif_imageproperties']}")
+
     contents = to_pretty_xml(contents)
     contents = redact_image_properties(contents)
     image_properties = xmltodict.parse(contents)["ImageProperties"]
@@ -491,11 +519,11 @@ def process_image_properties(contents, parsed_exif):
     parsed_exif["exif_mappenavn"] = "/".join(mapper[0:-1])
     parsed_exif["exif_filnavn"] = mapper[-1]
     parsed_exif["exif_strekningreferanse"] = "/".join(mapper[-4:-2])
-    parsed_exif["exif_imageproperties"] = contents  # contents
     parsed_exif["exif_kvalitet"] = quality
     parsed_exif["exif_basislinje"] = baseline_info
     parsed_exif[
         "exif_roadident"] = f"{exif_vegkat}{exif_vegstat}{exif_vegnr} {hp} {road_ident_meter_string} {feltkode}"
+
 
 def extract_baseline_info(image_properties):
     baseline_pos = image_properties.get("BaseLinePosition", ""),
@@ -508,6 +536,7 @@ def extract_baseline_info(image_properties):
             baseline_pos = baseline_pos[0]
     baseline_str = f"{baseline_pos};{baseline_interval};{baseline_offset};{tiltpoint};{tilt}"
     return baseline_str
+
 
 def process_strekning_and_kryss(vchp, filename):
     # Look for kryss-info in filename
@@ -597,10 +626,10 @@ def process_reflink_info(contents, parsed_exif):
     if contents is None:
         # If we got None, it means that the EXIF header did not contain  the `ReflinkInfo` XML.
         return
+    parsed_exif["exif_reflinkinfo"] = contents
 
     # Prettify XML
     contents = to_pretty_xml(contents)
-    parsed_exif["exif_reflinkinfo"] = contents
 
     # Parse XML
     parsed_contents = xmltodict.parse(contents)

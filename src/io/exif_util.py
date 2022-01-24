@@ -216,7 +216,6 @@ def get_exif(img, image_path):
         parsed_exif["exif_camera"] = labeled.get("Model", None)
         if config.data_eier:
             parsed_exif["exif_dataeier"] = config.data_eier
-
         reflink_info_xml = labeled.get("ReflinkInfo", None)
         image_properties_xml = labeled.get("ImageProperties", None)
 
@@ -232,9 +231,12 @@ def get_exif(img, image_path):
 
         # Process the `ImageProperties` XML
         if image_properties_xml:
+            parsed_exif["exif_imageproperties"] = image_properties_xml.decode("utf-8")
+
             # assert image_properties_xml is not None, "Unable to get key 40055:`ImageProperties` from EXIF."
             process_image_properties(image_properties_xml, parsed_exif)
         if reflink_info_xml:
+            parsed_exif["exif_reflinkinfo"] = reflink_info_xml.decode("utf-8")
             process_reflink_info(reflink_info_xml, parsed_exif)
         else:
             # Lower the quality level to 'missing values'
@@ -526,7 +528,6 @@ def process_image_properties(contents, parsed_exif):
     if image_properties.get("VegComValues"):
         parsed_exif["exif_fylke"] = image_properties["VegComValues"].get("VCCountyNo")
         parsed_exif["exif_meter"] = str(round(float(image_properties["VegComValues"].get("VCMeter", None)), 2))
-    parsed_exif["exif_imageproperties"] = contents
     parsed_exif["exif_basislinje"] = baseline_info
 
 
@@ -546,10 +547,8 @@ def process_reflink_info(contents, parsed_exif):
         # If we got None, it means that the EXIF header did not contain  the `ReflinkInfo` XML.
         parsed_exif["exif_kvalitet"] = EXIF_QUALITIES["missing_values"]
         return
-
     # Prettify XML
     contents = to_pretty_xml(contents)
-    parsed_exif["exif_reflinkinfo"] = contents
 
     # Parse XML
     parsed_contents = xmltodict.parse(contents)
