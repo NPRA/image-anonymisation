@@ -158,7 +158,7 @@ class TreeWalker:
         return [input_dir.replace(self.input_folder, mirror_base, 1) for mirror_base in self.mirror_folders]
 
     def _path_is_valid(self, input_dir, mirror_dirs, filename):
-        if not filename.endswith(self.ext):
+        if not filename.endswith(self.ext) or "preview" in filename:
             return False
 
         input_filepath = os.path.join(input_dir, filename)
