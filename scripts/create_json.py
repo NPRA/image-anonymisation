@@ -7,8 +7,10 @@ import logging
 import argparse
 from datetime import datetime
 from socket import gethostname
+from PIL import Image
 import config
 from src.io.TreeWalker import TreeWalker
+from src.io.save import save_preview
 from src.Logger import LOGGER, LOG_SEP, logger_excepthook
 from src.Workers import EXIFWorker, EXIFWorkerOld
 
@@ -56,6 +58,14 @@ def set_excepthook(hooks):
     # Register the custom hook
     sys.excepthook = excepthook
 
+def get_images(tree_walker):
+    """
+    Generator of images in the input directory.
+    """
+    # Go through each path and yield the images as a PIL.Image.
+    for paths in tree_walker.walk():
+        img = Image.open(paths.input_file)
+        yield img
 
 def initialize():
     logging.basicConfig(level=logging.DEBUG, format=LOGGER.fmt, datefmt=LOGGER.datefmt)
@@ -79,11 +89,12 @@ def initialize():
 
     os.makedirs(args.output_folder, exist_ok=True)
     tree_walker = TreeWalker(input_dir, [output_dir], skip_webp=False, precompute_paths=True)
-    return tree_walker, args.deprecated
+    image_iterator = iter(get_images(tree_walker))
+    return tree_walker, image_iterator, args.deprecated
 
 
 def main():
-    tree_walker, deprecated = initialize()
+    tree_walker, image_iterator, deprecated = initialize()
 
     for i, paths in enumerate(tree_walker.walk()):
         count_str = f"{i + 1} of {tree_walker.n_valid_images}"
@@ -94,6 +105,9 @@ def main():
         try:
             worker = EXIFWorker(None, paths, None) if not deprecated else EXIFWorkerOld(None, paths, None)
             worker.get()
+            img = next(image_iterator)
+            os.makedirs(paths.output_dir, exist_ok=True)
+            save_preview(img, paths, config.local_preview, config.remote_preview, config.archive_preview)
         except PROCESSING_EXCEPTIONS as err:
             LOGGER.error(__name__, f"Got error '{type(err).__name__}: {str(err)}' when creating JSON from image. "
                          f"File: {paths.input_file}")
