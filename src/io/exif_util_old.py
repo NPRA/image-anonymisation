@@ -11,6 +11,7 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
 import config
 from src.Logger import LOGGER
+from src.db import formatters
 
 #: Tags from Viatech
 VIATECH_TAGS = {40055: "ImageProperties", 40056: "ReflinkInfo"}
@@ -110,7 +111,16 @@ EXIF_TEMPLATE = {
     "mappenavn": None,
 }
 
-
+def check_nullable(table_name, exif):
+    db_config_fields = config.get_db_table_dict(table_name)
+    all_columns = db_config_fields["columns"]
+    for column_definition in all_columns:
+        if column_definition['extra']:
+            if 'NOT NULL' in column_definition['extra']:
+                value = getattr(formatters, column_definition['formatter'])
+                if not value(exif):
+                    raise ValueError(f"Non nullable field: '{column_definition['name']}' "
+                                     f"is of type {type(value(exif))}")
 def exif_from_file(image_path):
     """
     Retrieve the EXIF-data from the image located at `image_path`

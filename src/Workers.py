@@ -273,6 +273,13 @@ class EXIFWorker(BaseWorker):
                                    f"\nOriginal error message: {str(e)} ",
                          save=True)
             return -1
+        except KeyError as e:
+            LOGGER.error(__name__, f"The specified primary key '{config.table_primary_key}' "
+                                   f"Does not exist in the JSON-dict created by the ExifWorker. "
+                                   f"Please double check the 'table_primary_key' in the config-file."
+                                   f"\nOriginal error message: {str(e)}",
+                         save=True)
+            return -1
 
 
 class EXIFWorkerOld(BaseWorker):

@@ -244,3 +244,10 @@ db_max_cache_size: 1000
 #: Config table name to check non nullable values against.
 #: If this value is None, a nullable check is not run on the json-file.
 table_name: "VEGBILDER_ADDED_FIELDS"
+
+#: The exif tag used as the primary key in the database
+#: If None, a special handling of primary keys is not done.
+#: This configuration is necessary for the nullable check to avoid the two way dependency
+#: between the exif_util and the formatter when a new ID is created
+#: if the ID doesnt exist.
+table_primary_key: "bildeid"

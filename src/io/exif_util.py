@@ -116,8 +116,21 @@ EXIF_TEMPLATE = {
 
 
 def check_nullable(table_name, exif):
+    """
+    checks for non-nullable values in the exif-dict that still are None.
+    It will also check for the primary key in a special case if
+    the primary key is specified in the config file.
+    """
     db_config_fields = config.get_db_table_dict(table_name)
     all_columns = db_config_fields["columns"]
+    if config.table_primary_key:
+        pk = exif.get(config.table_primary_key, -1)
+        if not pk:
+            raise ValueError(f"Primary key '{config.table_primary_key}' "
+                             f"is of type {type(pk)}.")
+        elif pk == -1:
+            raise KeyError(f"The specified primary key '{config.table_primary_key}' "
+                           f" does not exist.")
     for column_definition in all_columns:
         if column_definition['extra']:
             if 'NOT NULL' in column_definition['extra']:
@@ -130,6 +143,7 @@ def check_nullable(table_name, exif):
 def exif_from_file(image_path):
     """
     Retrieve the EXIF-data from the image located at `image_path`
+    Will also do a nullable check if a table name is provided.
 
     :param image_path: Path to input image
     :type image_path: str
@@ -138,14 +152,15 @@ def exif_from_file(image_path):
     """
     pil_img = Image.open(image_path)
     exif = get_exif(pil_img, image_path=image_path)
-    exif["exif_feltkode"]  = None
     if config.table_name:
         try:
             check_nullable(config.table_name, exif)
         except ValueError as ve:
             LOGGER.error(__name__, str(ve), save_json=True, exif_error=exif)
             raise ValueError(str(ve))
-
+        except KeyError as ke:
+            LOGGER.error(__name__, str(ke), save_json=True, exif_error=exif)
+            raise KeyError(str(ke))
     return exif
 
 
