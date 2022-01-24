@@ -232,10 +232,6 @@ def ReflinkPosisjon(json_data):
     return to_number(get_value_for_multiple_keys(json_data, keys=["exif_reflinkposisjon", "veglenkepos"]))
 
 
-def ReflinkInfo(json_data):
-    return json_data["exif_reflinkinfo"]
-
-
 def DetekterteObjekter(json_data):
     return to_clob(json_data["detekterte_objekter"])
 

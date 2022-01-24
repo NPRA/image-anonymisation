@@ -201,11 +201,6 @@ columns:
     formatter: ReflinkPosisjon
     extra:
 
-  - name: ReflinkInfo
-    dtype: CLOB
-    formatter: ReflinkInfo
-    extra:
-
   - name: DetekterteObjekter
     dtype: CLOB
     formatter: DetekterteObjekter
