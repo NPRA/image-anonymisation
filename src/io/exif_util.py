@@ -657,7 +657,6 @@ def update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info)
         "exif_filnavn": filename,
         "exif_mappenavn": mappenavn
     }
-
     # Set the a value for each tag.
     # Only set new values to the parsed exif tag if it hasn't already been set.
     for key, value in exif_tags_lookup_reflink.items():

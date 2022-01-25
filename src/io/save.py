@@ -184,7 +184,6 @@ def save_preview(img, paths, local_preview, remote_preview, archive_preview):
         wait_until_path_is_found([paths.separate_preview_dir])
         _save_preview(img, config.preview_dim, config.preview_center, paths.separate_preview)
     if archive_preview:
-        print(f"archie dir: {paths.archive_dir}")
         os.makedirs(paths.archive_dir, exist_ok=True)
         wait_until_path_is_found([paths.archive_dir])
         _save_preview(img, config.preview_dim, config.preview_center, paths.archive_preview)
