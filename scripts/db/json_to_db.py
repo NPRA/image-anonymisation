@@ -154,9 +154,9 @@ def main():
             if config.flip_wkt:
                 json_dict["exif_gpsposisjon"] = convert_north_east_to_east_north_coordinates(
                     json_dict["exif_gpsposisjon"])
-                for key, value in json_dict.items():
-                    if isinstance(value, str):
-                        json_dict[key] = convert_comma_to_dot(value)
+            for key, value in json_dict.items():
+                if isinstance(value, str):
+                    json_dict[key] = convert_comma_to_dot(value)
             database_client.add_row(json_dict)
         except PROCESSING_EXCEPTIONS as err:
             LOGGER.error(__name__, f"Got error '{type(err).__name__}: {str(err)}' when writing JSON to Database. "
