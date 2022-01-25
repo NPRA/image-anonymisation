@@ -119,7 +119,7 @@ def convert_comma_to_dot(string_to_convert):
     Replaces each occurance of ',' in a number string with '.'
     """
     converted_string = string_to_convert.replace(",", ".")
-    if "srid" in converted_string or it_floats(converted_string):
+    if "srid" in converted_string or it_floats(converted_string) or converted_string == "0.00":
         return converted_string
     return string_to_convert
 
