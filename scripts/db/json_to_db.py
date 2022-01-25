@@ -107,11 +107,21 @@ def get_summary(tree_walker, database_client, start_datetime):
     return summary
 
 
+def it_floats(string):
+    try:
+        return float(string)
+    except ValueError:
+        return False
+
+
 def convert_comma_to_dot(string_to_convert):
     """
-    Replaces each occurance of ',' in the string with '.'
+    Replaces each occurance of ',' in a number string with '.'
     """
-    return string_to_convert.replace(",", ".")
+    converted_string = string_to_convert.replace(",", ".")
+    if "srid" in converted_string or it_floats(converted_string):
+        return converted_string
+    return string_to_convert
 
 
 def convert_north_east_to_east_north_coordinates(coordinate_string):
