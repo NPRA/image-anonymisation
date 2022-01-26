@@ -8,7 +8,7 @@ import logging
 import argparse
 from datetime import datetime
 from socket import gethostname
-
+import re
 import config
 from src.db.DatabaseClient import DatabaseClient, DatabaseError
 from src.io.TreeWalker import TreeWalker
@@ -144,9 +144,24 @@ def convert_north_east_to_east_north_coordinates(coordinate_string):
 def load_json(paths):
     wait_until_path_is_found(paths.input_file)
     with open(paths.input_file, "r", encoding="utf-8") as f:
-        json_dict = json.load(f)
+        json_dict = json.load(f, cls=SingleBackslashDecoder)
     return json_dict
 
+
+class SingleBackslashDecoder(json.JSONDecoder):
+    """
+    A special decoder for ViaTech JSON-files that have not escaped backslashes in filepaths.
+    """
+
+    def decode(self, s, **kwargs):
+        # Matches all literal backslashes that have a following
+        # word, digigt or underscore character or not a quote character.
+        unescaped_filepath_regex = r'\\([^"][\w\d\_]*)'
+        # Substitute the unescaped matching strings with double backslashes,
+        # consequently escaping them.
+        escaped_string = re.compile(unescaped_filepath_regex).sub(r"\\\\\1", s)
+        # Decode the new escaped json-string with the built in json decoder.
+        return super().decode(escaped_string, **kwargs)
 
 def main():
     tree_walker, database_client = initialize()
