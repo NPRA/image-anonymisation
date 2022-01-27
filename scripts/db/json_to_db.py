@@ -154,14 +154,15 @@ class SingleBackslashDecoder(json.JSONDecoder):
     """
 
     def decode(self, s, **kwargs):
-        # Matches all literal backslashes that have a following
-        # word, digigt or underscore character or not a quote character.
-        unescaped_filepath_regex = r'\\([^"][\w\d\_]*)'
+        # Matches all literal backslashes that does not have a preceding backslash,
+        # and that have a following word, digit, hyphen or underscore character.
+        unescaped_filepath_regex = r'[^\\](\\)([\w\d\_\-])'
         # Substitute the unescaped matching strings with double backslashes,
         # consequently escaping them.
-        escaped_string = re.compile(unescaped_filepath_regex).sub(r"\\\\\1", s)
-        # Decode the new escaped json-string with the built in json decoder.
+        escaped_string = re.compile(unescaped_filepath_regex).sub(r"\\\\\2", s)
+        # Decode the new escaped json-string with the built in json decoder
         return super().decode(escaped_string, **kwargs)
+
 
 def main():
     tree_walker, database_client = initialize()
