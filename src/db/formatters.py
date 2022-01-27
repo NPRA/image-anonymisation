@@ -79,7 +79,7 @@ def ID(json_data):
 
         LOGGER.warning(__name__, "Could not find 'bildeid' in JSON data. The ID will be created from the contents of "
                                  "the JSON data instead.")
-        image_id = get_deterministic_id(json_data)
+        image_id = get_deterministic_id(json_data, json_data["exif_feltkode"])
 
     return image_id
 

@@ -90,8 +90,6 @@ class Table:
                      f"SET {col_names_equals_values} " \
                      f"WHERE {self.pk_column} = :{self.pk_column}"
 
-        print(f"**** INSERT SQL ****\n{insert_sql}")
-        print(f"*** UPDATE SQL ****\n{update_sql}")
         return insert_sql, update_sql
 
     def create_row(self, json_dict):
@@ -107,8 +105,6 @@ class Table:
         for col in self.columns:
             try:
                 value = col.get_value(json_dict)
-                if "Bildetype" in col.name:
-                    print(f"Creating row for: Bildetype\nValue: {value}")
             except Exception as err:
                 LOGGER.warning(__name__, f"Got error '{type(err).__name__}: {err}' while getting value for database "
                                          f"column {col.name}. Value will be set to None")
