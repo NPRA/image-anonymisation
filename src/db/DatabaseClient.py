@@ -83,6 +83,7 @@ class DatabaseClient:
         :param json_dict: EXIF data
         :type json_dict: dict
         """
+
         row = self.table.create_row(json_dict)
         self.accumulated_rows.append(row)
 
