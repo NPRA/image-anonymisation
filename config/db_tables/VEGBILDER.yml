@@ -10,6 +10,46 @@ columns:
     formatter: Tidspunkt
     extra: NOT NULL
 
+  - name: Dataeier
+    dtype: VARCHAR(64)
+    formatter: Dataeier
+    extra: NOT NULL
+
+  - name: Kamera
+    dtype: VARCHAR(64)
+    formatter: Kamera
+    extra:
+
+  - name: Bildetype
+    dtype: VARCHAR(8)
+    formatter: Bildetype
+    extra: NOT NULL
+
+  - name: Bildebredde
+    dtype: NUMBER
+    formatter: Bildebredde
+    extra:
+
+  - name: Bildehoyde
+    dtype: NUMBER
+    formatter: Bildehoyde
+    extra:
+
+  - name: Moh
+    dtype: NUMBER
+    formatter: Moh
+    extra:
+
+  - name: Strekningsnavn
+    dtype: VARCHAR(64)
+    formatter: Strekningsnavn
+    extra:
+
+  - name: Strekningsreferanse
+    dtype: VARCHAR(64)
+    formatter: Strekningsreferanse
+    extra:
+
   - name: Retning
     dtype: NUMBER
     formatter: Retning
@@ -81,6 +121,11 @@ columns:
     formatter: Vegnummer
     extra: NOT NULL
 
+  - name: Vegtype
+    dtype: VARCHAR(16)
+    formatter: Vegtype
+    extra:
+
   - name: HP
     dtype: NUMBER
     formatter: HP
@@ -116,6 +161,16 @@ columns:
     formatter: Meter
     extra: NOT NULL
 
+  - name: Hastighet
+    dtype: NUMBER
+    formatter: Hastighet
+    extra:
+
+  - name: Basislinje
+    dtype: VARCHAR(64)
+    formatter: Basislinje
+    extra:
+
   - name: Mappenavn
     dtype: VARCHAR(256)
     formatter: Mappenavn
@@ -125,6 +180,11 @@ columns:
     dtype: VARCHAR(64)
     formatter: Filnavn
     extra: NOT NULL
+
+  - name: PreviewFilnavn
+    dtype: VARCHAR(64)
+    formatter: PreviewFilnavn
+    extra:
 
   - name: JsonData
     dtype: CLOB
@@ -166,7 +226,57 @@ columns:
     formatter: Versjon
     extra:
 
+  - name: XpTitle
+    dtype: VARCHAR(64)
+    formatter: XpTitle
+    extra:
+
   - name: ExifKvalitet
     dtype: NUMBER
     formatter: ExifKvalitet
+    extra:
+
+  - name: Roll
+    dtype: NUMBER
+    formatter: Roll
+    extra:
+
+  - name: Pitch
+    dtype: NUMBER
+    formatter: Pitch
+    extra:
+
+  - name: Geoidalseparation
+    dtype: NUMBER
+    formatter: Geoidalseparation
+    extra:
+
+  - name: Northrmserror
+    dtype: NUMBER
+    formatter: Northrmserror
+    extra:
+
+  - name: Eastrmserror
+    dtype: NUMBER
+    formatter: Eastrmserror
+    extra:
+
+  - name: Downrmserror
+    dtype: NUMBER
+    formatter: Downrmserror
+    extra:
+
+  - name: Rollrmserror
+    dtype: NUMBER
+    formatter: Rollrmserror
+    extra:
+
+  - name: Pitchrmserror
+    dtype: NUMBER
+    formatter: Pitchrmserror
+    extra:
+
+  - name: Headingrmserror
+    dtype: NUMBER
+    formatter: Headingrmserror
     extra:
