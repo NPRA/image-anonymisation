@@ -340,6 +340,7 @@ To start the test database, run:
 Note that the tests marked with `db` will fail if the test database is not running.
 
 ## Extra scripts
+
 The following extra scripts are available:
 * `scripts.create_json`: Traverses a directory tree and creates JSON-files for all `.jpg` files found in the tree.
 * `scripts.check_folders`: Traverses a set of input/output/archive folders and checks that all files are present/not present, as specified in the config file.
@@ -355,3 +356,12 @@ python -m <script> <args>
 ```
 Use the `-h` argument to get a description for each script, and a list of possible arguments.
 
+**NOTE:** 
+
+The following script is a "main" script for running an older version of the `ExifWorker`, 
+which supports older formats of the exif data of the images.
+
+The script is invoked the same way as the [`src.main`](#usage)-script
+```
+python -m src.anonymisation_old <args>
+```
