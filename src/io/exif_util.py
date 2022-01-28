@@ -772,7 +772,6 @@ def process_gpsinfo_tag(gpsinfo, parsed_exif):
     if direction:
         parsed_exif['exif_heading'] = direction[0] / direction[1]
 
-
 def to_ms(speed, speed_ref):
     """
     Converts the speed value of speed_ref to m/s.

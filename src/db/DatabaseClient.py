@@ -169,7 +169,7 @@ class DatabaseClient:
         msg = f"Got {len(errors)} error(s) while {action} the database:\n"
         msg += "\n".join([err.message for err in errors])
         # Log the error
-        LOGGER.error(__name__, msg, save=False, email=True, email_mode="error")
+        LOGGER.error(__name__, msg, save=False, email=config.uncaught_exception_email or config.processing_error_email, email_mode="error")
 
     def _insert_rows(self, cursor, rows):
         LOGGER.info(__name__, f"Attempting to insert {len(rows)} row(s) into the database.")

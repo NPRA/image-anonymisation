@@ -115,7 +115,7 @@ def _handle_missing_files(paths, missing_files):
     current_logger_state = LOGGER.get_state()
     LOGGER.set_state(paths)
     LOGGER.error(__name__, f"Missing output files {missing_files} for image: {paths.input_file}", save=True,
-                 email=True, email_mode="error")
+                 email=config.uncaught_exception_email or config.processing_error_email, email_mode="error")
     LOGGER.set_state(current_logger_state)
 
 

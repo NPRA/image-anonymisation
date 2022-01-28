@@ -130,7 +130,7 @@ class ImageProcessor:
         """
         if worker.n_starts > self.max_worker_starts:
             LOGGER.error(__name__, f"{worker.__class__.__name__} failed for image: {paths.input_file}.", save=True,
-                         email=True, email_mode="error")
+                         email=config.uncaught_exception_email or config.processing_error_email, email_mode="error")
             return False
         else:
             worker.start()

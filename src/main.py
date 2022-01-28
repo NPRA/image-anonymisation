@@ -250,7 +250,6 @@ def main():
     start_datetime = datetime.now()
     args, tree_walker, image_processor, dataset_iterator = initialize()
     n_imgs = "?" if config.lazy_paths else (tree_walker.n_valid_images + tree_walker.n_skipped_images)
-
     # Mask images
     time_at_iter_start = time.time()
     for i, paths in enumerate(tree_walker.walk()):
@@ -274,7 +273,7 @@ def main():
                 image_processor.process_image_without_cutouts(img, paths)
         except PROCESSING_EXCEPTIONS as err:
             error_msg = f"'{str(err)}'. File: {paths.input_file}"
-            LOGGER.error(__name__, error_msg, save=True, email=True, email_mode="error")
+            LOGGER.error(__name__, error_msg, save=True, email=config.uncaught_exception_email or config.processing_error_email, email_mode="error")
             continue
 
         est_done = get_estimated_done(time_at_iter_start, n_imgs, i+1)
@@ -290,7 +289,7 @@ def main():
     # Summary
     summary_str = get_summary(tree_walker, image_processor, start_datetime)
     LOGGER.info(__name__, LOG_SEP)
-    LOGGER.info(__name__, summary_str, email=True, email_mode="finished")
+    LOGGER.info(__name__, summary_str, email=config.finished_email, email_mode="finished")
 
 
 if __name__ == '__main__':
