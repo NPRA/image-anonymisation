@@ -13,7 +13,7 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
 import config
 from src.Logger import LOGGER
-from src.db import  formatters
+from src.db import formatters
 import yaml
 
 #: Tags from Viatech
@@ -584,6 +584,15 @@ def process_reflink_info(contents, parsed_exif):
                                  f"Full traceback {traceback.print_exc(exc_type, exc_value, exc_traceback)}")
 
 
+def to_number(x):
+    if x is None:
+        return None
+    x = float(x)
+    if np.isnan(x):
+        return None
+    return int(x) if x.is_integer() else x
+
+
 def update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info):
     """
     Update the parsed_exif with the relevant values that can be found in the "AdditionalInfoNorway2"-tag
@@ -627,6 +636,10 @@ def update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info)
     strekning = strekningsreferanse_list[1:strekningsreferanse_list.index("D")]
     delstrekning = strekningsreferanse_list[strekningsreferanse_list.index("D") + 1:]
     strekningsreferanse = "/".join([f"S{strekning}", f"D{delstrekning}"])
+    moh = None
+    geoidalsep = to_number(gnss_info.get("GeoidalSeparation", "NaN"))
+    if geoidalsep is not None:
+        moh = str(to_number(gnss_info["Altitude"]) - geoidalsep)
 
     # A dictionary to map where the information for each tag is read from.
     exif_tags_lookup_reflink = {
@@ -641,9 +654,9 @@ def update_exif_with_reflink_data(parsed_exif, road_info, gnss_info, image_info)
         "exif_pitchrmserror": gnss_info["PitchRmsError"],
         "exif_headingrmserror": gnss_info["HeadingRmsError"],
         "exif_altitude": gnss_info["Altitude"],
-        "exif_moh": str(float(gnss_info["Altitude"]) - float(gnss_info["GeoidalSeparation"])),
+        "exif_moh": moh,
         "exif_fylke": image_info["fylke"] if image_info else None,
-        "exif_speed_ms": f"{round(float(gnss_info['Speed']), 2):.2f}",
+        "exif_speed_ms": f"{round(to_number(gnss_info['Speed']), 2):.2f}",
         "exif_gpsposisjon": gps_posisjon_string,
         "exif_heading": gnss_info["Heading"],
         "exif_roadtype": road_type,

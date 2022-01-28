@@ -166,9 +166,9 @@ columns:
     formatter: Hastighet
     extra:
 
-  - name: Basislinje
+  - name: Basislinjeinfo
     dtype: VARCHAR(64)
-    formatter: Basislinje
+    formatter: Basislinjeinfo
     extra:
 
   - name: Mappenavn

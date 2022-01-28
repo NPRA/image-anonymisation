@@ -204,7 +204,7 @@ def Hastighet(json_data):
     return to_number(json_data["exif_speed_ms"])
 
 
-def Basislinje(json_data):
+def Basislinjeinfo(json_data):
     return json_data["exif_basislinje"]
 
 
