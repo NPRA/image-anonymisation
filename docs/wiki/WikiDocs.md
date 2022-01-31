@@ -86,12 +86,12 @@ as well as multiple helper-scripts and classes.
 #### Main components
 * [`ImageProcessor`](#imageprocessor)
 * [`Masker`](#masker)
-* `ExifWorker`
-* `SaveWorker`
+* [`ExifWorker`](#exifworker)
+* [`SaveWorker`](#saveworker)
 
 #### Helper Classes
-* `TreeWalker`
-* `Path`
+* [`TreeWalker`](#treewalker)
+* [`Path`](#path)
 * `DatabaseClient.py`
 * `Table.py`
 
@@ -166,16 +166,16 @@ The SDOGeometry class is a helper class to represent a `SDO_GEOMETRY` object in 
 ## Scripts
 
 #### Helper Scripts
-* `email_sender.py`
+* [`email_sender.py`](#email_senderpy)
 * I/O
-    * `exif_util.py`
-    * `file_access_guard.py`
-    * `file_checker.py`
-    * `save.py`
-    * `tf_dataset.py`
+    * [`exif_util.py`](#exif_utilpy)
+    * [`file_access_guard.py`](#file_access_guardpy)
+    * [`file_checker.py`](#file_checkerpy)
+    * [`save.py`](#savepy)
+    * [`tf_dataset.py`](#tf_datasetpy)
 * Database
-    * `formatters.py`
-    * `geometry.py`
+    * [`formatters.py`](#formatterspy)
+    * [`geometry.py`](#geometrypy)
 ##### email_sender.py    
 The `email_sender.py` is a helper script to send emails.
 The sending of email is configured in the accompanying `config`-file when running. 
@@ -247,17 +247,17 @@ to a `SDO_GEOMETRY` Oracle database object type.
 #### Extra Scripts
 There are several extra scripts that serve their own functionalities when invoked. 
 
-* `anonymise_old.py` 
-*`check_folders.py`
-* `create_json.py`
-* `create_preview.py`
-* `evaluate.py`
+* [`anonymise_old.py`](#anonymise_oldpy) 
+* [`check_folders.py`](#check_folderspy)
+* [`create_json.py`](#create_jsonpy)
+* [`create_preview.py`](#create_previewpy)
+* [`evaluate.py`](#evaluatepy)
 * Database
-    * `create_db_config.py`
-    * `create_table.py`
-    * `execute_sql.py`
-    * `insert_geom_metadata.py`
-    * `json_to_db.py`
+    * [`create_db_config.py`](#create_db_configpy)
+    * [`create_table.py`](#create_tablepy)
+    * [`execute_sql.py`](#execute_sqlpy)
+    * [`insert_geom_metadata.py`](#insert_geom_metadatapy)
+    * [`json_to_db.py`](#json_to_dbpy)
 
 ##### anonymise_old.py
 The `anonymise_old.py` script is a script to run anonymisation for images pre 2022. 
@@ -341,6 +341,19 @@ It has helper functions that will extract and create the metadata in a compatibl
 This script is invoked by running the following command from root:
 ```
 python -m script.insert_geom_metadata <args>
+```
+
+##### json_to_db.py
+The ``json_to_db.py``  is a script that will insert/update a database table with information from
+the input json-files. 
+It extracts the information from the json-files with the help from the [`formatters.py`](#formatterspy)-script.
+If the `flip_wkt`-config option is `True`, the wkt-string will have the longitude and latitude value flipped.
+It will also convet all the number-values to have `.` as the decimal separator,
+as opposed to `,`.
+
+This script is invoked by running the following command from root:
+```
+python -m script.json_to_db <args>
 ```
 ## Configuration
 
