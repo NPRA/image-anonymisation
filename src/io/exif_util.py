@@ -224,6 +224,8 @@ def get_exif(img, image_path):
             # Convert time format "year:month:day hours:minutes:seconds" -> "year-month-dayThours:minutes:seconds"
             timestamp = labeled["DateTimeOriginal"].split(" ")
             timestamp[0] = timestamp[0].replace(":", "-")
+            timestamp[0] = timestamp[0].replace(".", "-")
+            timestamp[1] = timestamp[1].replace(".", ":")
             # Save date
             parsed_exif["exif_dato"] = timestamp[0]
             timestamp = "T".join(timestamp)
