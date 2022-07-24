@@ -1,0 +1,217 @@
+"""
+Find all JSON-files in a directory tree, and insert their contents into the table specified in `src.db.db_config`.
+"""
+import shutil
+import os
+import sys
+import json
+import logging
+import argparse
+from datetime import datetime
+from socket import gethostname
+import re
+import config
+from src.db.DatabaseClient import DatabaseClient, DatabaseError
+from src.io.TreeWalker import TreeWalker
+from src.io.file_access_guard import wait_until_path_is_found
+from src.Logger import LOGGER, LOG_SEP, logger_excepthook
+
+PROCESSING_EXCEPTIONS = (
+    OSError,
+    SystemError,
+    FileNotFoundError,
+    KeyError,
+    json.JSONDecodeError,
+    DatabaseError
+)
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input-folder", dest="input_dir",
+                        help="Base directory for finding .json files.")
+    parser.add_argument("-a", "--jsonarkiv-folder", dest="json_dir",
+                        help="Base directory for achive .json files.")
+    parser.add_argument("-t", "--table-name", dest="table_name", default=None,
+                        help="Database table name.")
+    parser.add_argument("-l", "--log-folder", dest="log_folder", default=None,
+                        help="Optional path to directory of log file. The log file will be named "
+                             "<log\\folder>\\<timestamp> <hostname>.log")
+    parser.add_argument("-k", dest="config_file", default=None,
+                        help=f"Path to custom configuration file. See the README for details. Default is "
+                             f"{config.DEFAULT_CONFIG_FILE}")
+    return parser.parse_args()
+
+
+def set_excepthook(hooks):
+    """
+    Configure sys.excepthook to call all functions in `hooks` before calling the default excepthook.
+
+    :param hooks: List of hooks. Each element must be a function with three arguments: Exception type, exception
+                  instance, and traceback instance.
+    :type hooks: list of function
+    """
+
+    def excepthook(etype, ex, tb):
+        # Call hooks
+        for hook in hooks:
+            hook(etype, ex, tb)
+        # Call the default excepthook.
+        sys.__excepthook__(etype, ex, tb)
+
+    # Register the custom hook
+    sys.excepthook = excepthook
+
+
+def initialize():
+    logging.basicConfig(level=logging.DEBUG, format=LOGGER.fmt, datefmt=LOGGER.datefmt)
+    set_excepthook([logger_excepthook])
+
+    args = get_args()
+
+    if args.log_folder is not None:
+        os.makedirs(args.log_folder, exist_ok=True)
+        log_file_name = config.log_file_name.format(datetime=datetime.now().strftime("%Y-%m-%d_%H%M%S"),
+                                                    hostname=gethostname())
+        log_file = os.path.join(args.log_folder, log_file_name)
+        LOGGER.set_log_file(log_file)
+
+    tree_walker = TreeWalker(args.input_dir, [], skip_webp=False, precompute_paths=True, ext="json")
+    database_client = DatabaseClient(table_name=args.table_name,
+                                     max_n_accumulated_rows=config.db_max_n_accumulated_rows,
+                                     max_n_errors=config.db_max_n_errors,
+                                     max_cache_size=config.db_max_cache_size,
+                                     enable_cache=False)
+    return tree_walker, database_client
+
+
+def get_summary(tree_walker, database_client, start_datetime):
+    """
+    Log a summary of the masking process.
+
+    :param tree_walker: `TreeWalker` instance used in masking.
+    :type tree_walker: TreeWalker
+    :param database_client:
+    :type database_client:
+    :param start_datetime: Datetime object indicating when the program started.
+    :type start_datetime: datetime.datetime
+    """
+
+    lines = [
+        "Script finished.",
+        f"Files found: {tree_walker.n_valid_images}",
+        f"Row(s) inserted into the database: {database_client.total_inserted}",
+        f"Row(s) updated in the database: {database_client.total_updated}",
+        f"Row(s) failed to insert/update in the database: {database_client.total_errors}",
+        f"Total time spent: {str(datetime.now() - start_datetime)}"
+    ]
+    summary = "\n".join(lines)
+    return summary
+
+
+def it_floats(string):
+    try:
+        return float(string)
+    except ValueError:
+        return False
+
+
+def convert_comma_to_dot(string_to_convert):
+    """
+    Replaces each occurance of ',' in a number string with '.'
+    """
+    converted_string = string_to_convert.replace(",", ".")
+    if "srid" in converted_string or it_floats(converted_string) or converted_string == "0.00":
+        return converted_string
+    return string_to_convert
+
+
+def convert_north_east_to_east_north_coordinates(coordinate_string):
+    """
+    Converts the gps position string to define the coordinates in the order of 'east, north' instead of 'north, east'
+    """
+    # Get the coordinates from the string 'north east height'
+    coordinates = coordinate_string[coordinate_string.find("(") + 1:coordinate_string.find(")")]
+    # Put the coordinates in a list, split them by space, " "
+    coordinates_split = coordinates.split(" ")
+    # Swap north and east coordinates
+    coordinates_split[1], coordinates_split[2] = coordinates_split[2], coordinates_split[1]
+    # Join each coordinate to a string split by space, " "
+    coordinates_string = " ".join(coordinates_split[1:len(coordinates_split) - 1])
+    # Stitch together the 'exif_gpsposisjon' string again with the new coordinate order
+    new_coordinate_string = f"{coordinate_string[:coordinate_string.find('(') + 1]} {coordinates_string} {coordinate_string[coordinate_string.find(')'):]}"
+    return new_coordinate_string
+
+
+def load_json(paths):
+    wait_until_path_is_found(paths.input_file)
+    with open(paths.input_file, "r", encoding="utf-8") as f:
+        json_dict = json.load(f, cls=SingleBackslashDecoder)
+    return json_dict
+
+
+class SingleBackslashDecoder(json.JSONDecoder):
+    """
+    A special decoder for ViaTech JSON-files that have not escaped backslashes in filepaths.
+    """
+
+    def decode(self, s, **kwargs):
+        # Matches all literal backslashes that does not have a preceding backslash,
+        # and that have a following word, digit, hyphen or underscore character.
+        unescaped_filepath_regex = r'[^\\](\\)([\w\d\_\-])'
+        # Substitute the unescaped matching strings with double backslashes,
+        # consequently escaping them.
+        escaped_string = re.compile(unescaped_filepath_regex).sub(r"\\\\\2", s)
+        # Decode the new escaped json-string with the built in json decoder
+        return super().decode(escaped_string, **kwargs)
+
+
+def main():
+    tree_walker, database_client = initialize()
+    start_datetime = datetime.now()
+    args = get_args()
+    folder_json_arkiv = args.json_dir
+    folder_json_kilde = args.input_dir
+    
+
+    for i, paths in enumerate(tree_walker.walk()):
+        count_str = f"{i + 1} of {tree_walker.n_valid_images}"
+        LOGGER.info(__name__, LOG_SEP)
+        LOGGER.info(__name__, f"Iteration: {count_str}.")
+        LOGGER.info(__name__, f"Processing file {paths.input_file}")
+
+        try:
+            json_dict = load_json(paths)
+            # Convert value strings if necessary
+            if config.flip_wkt:
+                json_dict["exif_gpsposisjon"] = convert_north_east_to_east_north_coordinates(
+                    json_dict["exif_gpsposisjon"])
+            for key, value in json_dict.items():
+                if isinstance(value, str):
+                    json_dict[key] = convert_comma_to_dot(value)
+            database_client.add_row(json_dict)
+            
+            #Finner filnavnet uten sti
+            filname_arkiv=paths.input_file.replace(paths.input_dir,"")
+            #Finner arkivkatalogen json fil skal plasseres i
+            directory_arkiv=paths.input_dir.replace(folder_json_kilde,folder_json_arkiv)
+            #Lager arkivkatalogen, om den ikke eksisterer
+            os.makedirs(directory_arkiv, exist_ok=True)
+            #Flytter json fil til arkivkatalog
+            shutil.move(paths.input_file, directory_arkiv+filname_arkiv)
+            
+        except PROCESSING_EXCEPTIONS as err:
+            LOGGER.error(__name__, f"Got error '{type(err).__name__}: {str(err)}' when writing JSON to Database. "
+                                   f"File: {paths.input_file}")
+
+    LOGGER.info(__name__, LOG_SEP)
+    LOGGER.info(__name__, "Writing remaining files to Database")
+    database_client.close()
+
+    summary_str = get_summary(tree_walker, database_client, start_datetime)
+    LOGGER.info(__name__, LOG_SEP)
+    LOGGER.info(__name__, summary_str)
+
+
+if __name__ == '__main__':
+    main()
